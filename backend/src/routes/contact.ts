@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Resend } from 'resend';
+import { db } from '../firebase';
 
 const router = Router();
 
@@ -139,6 +140,17 @@ router.post('/', async (req: Request, res: Response) => {
 </body>
 </html>
 `
+    });
+
+    await db.collection('leads').add({
+      nombre,
+      email,
+      pais: pais || '',
+      interes,
+      mensaje,
+      estado: 'nuevo',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
     res.status(200).json({ ok: true });
