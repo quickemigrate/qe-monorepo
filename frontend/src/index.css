@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -14,7 +14,27 @@
   html {
     scroll-behavior: smooth;
   }
+  :root {
+    --brand: #25D366;
+    --ink: #1A1C1C;
+    --surface: #F3F3F4;
+    --brand-ink: #0b2014;
+  }
 }
+
+@keyframes qe-rise-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.qe-rise {
+  opacity: 0;
+  animation: qe-rise-in 0.55s cubic-bezier(.22,.68,0,1.2) forwards;
+}
+.qe-rise-1 { animation-delay: 0.08s; }
+.qe-rise-2 { animation-delay: 0.18s; }
+.qe-rise-3 { animation-delay: 0.28s; }
+.qe-rise-4 { animation-delay: 0.38s; }
 
 .glass {
   background: rgba(255, 255, 255, 0.8);
