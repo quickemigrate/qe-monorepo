@@ -11,12 +11,17 @@ import TrustSection from './components/TrustSection';
 import FaqSection from './components/FaqSection';
 import ContactSection from './components/ContactSection';
 import AboutPage from './pages/AboutPage';
-import { BlogListPage, BlogPostPage } from './pages/BlogPage';
+import { BlogListPage } from './pages/BlogPage';
+import ArticlePage from './pages/ArticlePage';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLeads from './pages/admin/AdminLeads';
 import AdminExpedientes from './pages/admin/AdminExpedientes';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminBlog from './pages/admin/AdminBlog';
+import ClientLogin from './pages/client/ClientLogin';
+import ClientDashboard from './pages/client/ClientDashboard';
+import ClientProtectedRoute from './components/ClientProtectedRoute';
 
 const HomePage = () => (
   <div className="bg-surface-container-lowest min-h-screen font-sans selection:bg-primary-container/30">
@@ -36,21 +41,25 @@ const HomePage = () => (
 function AppShell() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const isClient = location.pathname.startsWith('/cliente');
 
   return (
     <div className="font-sans selection:bg-primary-container/30">
-      {!isAdmin && <Navbar />}
+      {!isAdmin && !isClient && <Navbar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/nosotros" element={<AboutPage />} />
         <Route path="/blog" element={<BlogListPage />} />
-        <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/blog/:slug" element={<ArticlePage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/leads" element={<ProtectedRoute><AdminLeads /></ProtectedRoute>} />
         <Route path="/admin/expedientes" element={<ProtectedRoute><AdminExpedientes /></ProtectedRoute>} />
+        <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
+        <Route path="/cliente/login" element={<ClientLogin />} />
+        <Route path="/cliente" element={<ClientProtectedRoute><ClientDashboard /></ClientProtectedRoute>} />
       </Routes>
-      {!isAdmin && <Footer />}
+      {!isAdmin && !isClient && <Footer />}
     </div>
   );
 }

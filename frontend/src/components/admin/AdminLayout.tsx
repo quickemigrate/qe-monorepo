@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, Users, FolderOpen, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FolderOpen, FileText, LogOut } from 'lucide-react';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Users,           label: 'Leads',     path: '/admin/leads' },
   { icon: FolderOpen,      label: 'Expedientes', path: '/admin/expedientes' },
+  { icon: FileText,        label: 'Blog',        path: '/admin/blog' },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

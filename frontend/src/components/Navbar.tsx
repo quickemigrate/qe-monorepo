@@ -62,9 +62,12 @@ const Navbar = () => {
             Blog
           </Link>
           <div className="h-4 w-px bg-on-background/10" />
-          <span className="text-sm font-semibold text-on-background/40 cursor-not-allowed">
-            Área cliente <span className="text-xs">(próximamente)</span>
-          </span>
+          <Link
+            to="/cliente/login"
+            className={location.pathname.startsWith('/cliente') ? activeLink : navLink}
+          >
+            Acceder a mi expediente
+          </Link>
           <a
             href={isHome ? '#servicios' : '/#servicios'}
             className="bg-primary-container text-on-background px-6 py-2.5 rounded-full font-bold text-sm
@@ -106,9 +109,9 @@ const Navbar = () => {
               <Link to="/nosotros" className="text-lg font-medium text-on-background">Nosotros</Link>
               <Link to="/blog" className="text-lg font-medium text-on-background">Blog</Link>
               <hr className="border-on-background/5" />
-              <span className="text-lg font-medium text-on-background/40 cursor-not-allowed">
-                Área cliente <span className="text-sm">(próximamente)</span>
-              </span>
+              <Link to="/cliente/login" className="text-lg font-medium text-on-background">
+                Acceder a mi expediente
+              </Link>
               <a
                 href={isHome ? '#servicios' : '/#servicios'}
                 onClick={() => setMobileMenuOpen(false)}

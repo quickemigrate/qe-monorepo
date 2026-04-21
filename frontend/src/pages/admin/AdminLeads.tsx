@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ArrowRightCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,14 +26,41 @@ const ESTADO_BADGE: Record<string, string> = {
   descartado: 'bg-gray-100 text-gray-500',
 };
 
+const TIPOS_VISADO = [
+  'Diagnóstico de viabilidad',
+  'Visado de estudios',
+  'Visado no lucrativo',
+  'TIE/NIE',
+  'Prórroga de estudios',
+];
+
+const ESTADOS_EXP_INICIAL = ['nuevo', 'en proceso'];
+
+interface ConvertForm {
+  nombre: string;
+  email: string;
+  pais: string;
+  tipoVisado: string;
+  estado: string;
+  notas: string;
+}
+
 export default function AdminLeads() {
   const { getToken } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Side panel
   const [selected, setSelected] = useState<Lead | null>(null);
   const [editEstado, setEditEstado] = useState('');
   const [editNotas, setEditNotas] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Convert modal
+  const [convertLead, setConvertLead] = useState<Lead | null>(null);
+  const [convertForm, setConvertForm] = useState<ConvertForm | null>(null);
+  const [converting, setConverting] = useState(false);
+  const [convertResult, setConvertResult] = useState<'success' | 'error' | null>(null);
 
   const fetchLeads = async () => {
     const token = await getToken();
@@ -62,16 +89,65 @@ export default function AdminLeads() {
     const token = await getToken();
     await fetch(`${API}/api/leads/${selected.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ estado: editEstado, notas: editNotas }),
     });
     setSaving(false);
     setSelected(null);
     fetchLeads();
   };
+
+  const openConvertModal = (lead: Lead) => {
+    setConvertLead(lead);
+    setConvertForm({
+      nombre: lead.nombre,
+      email: lead.email,
+      pais: lead.pais || '',
+      tipoVisado: TIPOS_VISADO[0],
+      estado: 'nuevo',
+      notas: '',
+    });
+    setConvertResult(null);
+  };
+
+  const handleConvert = async () => {
+    if (!convertLead || !convertForm) return;
+    setConverting(true);
+    setConvertResult(null);
+    try {
+      const token = await getToken();
+
+      const expRes = await fetch(`${API}/api/expedientes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(convertForm),
+      });
+
+      if (!expRes.ok) throw new Error('Error creando expediente');
+
+      await fetch(`${API}/api/leads/${convertLead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ estado: 'convertido' }),
+      });
+
+      setConvertResult('success');
+      fetchLeads();
+      setTimeout(() => {
+        setConvertLead(null);
+        setConvertForm(null);
+        setConvertResult(null);
+      }, 1500);
+    } catch {
+      setConvertResult('error');
+    } finally {
+      setConverting(false);
+    }
+  };
+
+  const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
+                    bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition`;
+  const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1.5';
 
   return (
     <AdminLayout>
@@ -88,7 +164,7 @@ export default function AdminLeads() {
               <table className="w-full text-[13.5px]">
                 <thead>
                   <tr className="border-b border-black/5">
-                    {['Nombre','Email','País','Interés','Mensaje','Estado','Fecha'].map(h => (
+                    {['Nombre', 'Email', 'País', 'Interés', 'Mensaje', 'Estado', 'Fecha', ''].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
                         {h}
                       </th>
@@ -107,9 +183,7 @@ export default function AdminLeads() {
                       <td className="px-5 py-3.5 text-on-background/60">{lead.email}</td>
                       <td className="px-5 py-3.5 text-on-background/60">{lead.pais || '—'}</td>
                       <td className="px-5 py-3.5 text-on-background/60">{lead.interes || '—'}</td>
-                      <td className="px-5 py-3.5 text-on-background/50 max-w-[180px] truncate">
-                        {lead.mensaje}
-                      </td>
+                      <td className="px-5 py-3.5 text-on-background/50 max-w-[180px] truncate">{lead.mensaje}</td>
                       <td className="px-5 py-3.5">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${ESTADO_BADGE[lead.estado] || 'bg-gray-100 text-gray-500'}`}>
                           {lead.estado}
@@ -117,6 +191,19 @@ export default function AdminLeads() {
                       </td>
                       <td className="px-5 py-3.5 text-on-background/40">
                         {new Date(lead.createdAt).toLocaleDateString('es-ES')}
+                      </td>
+                      <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
+                        {lead.estado !== 'convertido' && lead.estado !== 'descartado' && (
+                          <button
+                            onClick={() => openConvertModal(lead)}
+                            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary-container
+                                       bg-primary-container/10 hover:bg-primary-container/20 px-3 py-1.5 rounded-lg
+                                       transition-colors whitespace-nowrap"
+                          >
+                            <ArrowRightCircle size={13} />
+                            Convertir
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -161,28 +248,22 @@ export default function AdminLeads() {
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">
-                  Estado
-                </label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">Estado</label>
                 <select
                   value={editEstado}
-                  onChange={(e) => setEditEstado(e.target.value)}
+                  onChange={e => setEditEstado(e.target.value)}
                   className="w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
                              bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition"
                 >
-                  {ESTADOS.map(e => (
-                    <option key={e} value={e}>{e}</option>
-                  ))}
+                  {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">
-                  Notas internas
-                </label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">Notas internas</label>
                 <textarea
                   value={editNotas}
-                  onChange={(e) => setEditNotas(e.target.value)}
+                  onChange={e => setEditNotas(e.target.value)}
                   rows={4}
                   className="w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
                              bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition"
@@ -200,6 +281,121 @@ export default function AdminLeads() {
               >
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Convert modal */}
+      {convertLead && convertForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }} />
+          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-7 py-5 border-b border-black/5">
+              <h2 className="text-[18px] font-semibold text-on-background">Convertir a expediente</h2>
+              <button
+                onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }}
+                className="text-on-background/40 hover:text-on-background transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="px-7 py-6 space-y-4">
+              {convertResult === 'success' && (
+                <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13.5px] text-emerald-700 font-medium">
+                  <CheckCircle2 size={16} />
+                  Expediente creado correctamente.
+                </div>
+              )}
+              {convertResult === 'error' && (
+                <div className="flex items-center gap-2.5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+                  <AlertCircle size={16} />
+                  Error al crear el expediente. Inténtalo de nuevo.
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Nombre *</label>
+                  <input
+                    value={convertForm.nombre}
+                    onChange={e => setConvertForm(f => f ? { ...f, nombre: e.target.value } : f)}
+                    className={inputCls}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Email</label>
+                  <input
+                    value={convertForm.email}
+                    readOnly
+                    className={`${inputCls} bg-surface-container-low text-on-background/50 cursor-not-allowed`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>País</label>
+                <input
+                  value={convertForm.pais}
+                  onChange={e => setConvertForm(f => f ? { ...f, pais: e.target.value } : f)}
+                  className={inputCls}
+                  placeholder="Argentina, Colombia..."
+                />
+              </div>
+
+              <div>
+                <label className={labelCls}>Tipo de visado</label>
+                <select
+                  value={convertForm.tipoVisado}
+                  onChange={e => setConvertForm(f => f ? { ...f, tipoVisado: e.target.value } : f)}
+                  className={inputCls}
+                >
+                  {TIPOS_VISADO.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelCls}>Estado inicial</label>
+                <select
+                  value={convertForm.estado}
+                  onChange={e => setConvertForm(f => f ? { ...f, estado: e.target.value } : f)}
+                  className={inputCls}
+                >
+                  {ESTADOS_EXP_INICIAL.map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelCls}>Notas</label>
+                <textarea
+                  rows={3}
+                  value={convertForm.notas}
+                  onChange={e => setConvertForm(f => f ? { ...f, notas: e.target.value } : f)}
+                  className={`${inputCls} resize-none`}
+                  placeholder="Observaciones iniciales..."
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setConvertLead(null); setConvertForm(null); }}
+                  disabled={converting}
+                  className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14.5px] text-on-background/60 hover:bg-surface-container-low transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConvert}
+                  disabled={converting || convertResult === 'success'}
+                  className="flex-1 rounded-xl bg-on-background text-white font-semibold py-3 text-[14.5px] hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {converting ? 'Creando...' : 'Crear expediente'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
