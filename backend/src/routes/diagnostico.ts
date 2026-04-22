@@ -278,7 +278,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
     // ── PORTADA ──────────────────────────────────────────────
     doc.rect(0, 0, pageWidth, pageHeight).fill('#1A1C1C');
 
-    const logoPath = path.join(__dirname, '../../..', 'assets/logos/logo-dark-iso.png');
+    const logoPath = path.join(__dirname, '../assets/logo-dark-iso.png');
     doc.image(logoPath, margin, 55, { height: 55 });
     doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(20).text('Quick Emigrate', margin + 65, 74);
 
