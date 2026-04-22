@@ -1,36 +1,83 @@
-import type { Service, Faq } from './types';
+import type { Faq } from './types';
 
-export const SERVICES: Service[] = [
+export interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  cta: string;
+  ctaLink: string;
+  isPopular?: boolean;
+  isFree?: boolean;
+}
+
+export const PLANS: Plan[] = [
   {
-    id: 'diagnóstico',
-    title: 'Diagnóstico de viabilidad',
-    description: 'Análisis detallado de tu perfil para identificar la mejor vía migratoria y probabilidades de éxito reales.',
-    price: '59 €',
+    id: 'free',
+    name: 'Free',
+    price: '0€',
+    period: '',
+    description: 'Para explorar si Quick Emigrate es para ti.',
+    features: [
+      'Diagnóstico básico (3 preguntas)',
+      'Recomendación general de vía migratoria',
+      'Acceso al blog y guías gratuitas',
+    ],
+    cta: 'Empezar gratis',
+    ctaLink: '#contacto',
+    isFree: true,
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: '59€',
+    period: 'pago único',
+    description: 'Tu diagnóstico completo con inteligencia artificial.',
+    features: [
+      'Diagnóstico completo con IA (10 preguntas)',
+      'Informe PDF personalizado con tu ruta',
+      'Checklist de documentos para tu perfil',
+      'Alertas de riesgos específicos',
+      'Recomendación de vía migratoria con probabilidad de éxito',
+    ],
+    cta: 'Obtener diagnóstico',
+    ctaLink: '#contacto',
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '39€',
+    period: 'al mes',
+    description: 'La plataforma completa para gestionar tu proceso.',
+    features: [
+      'Todo lo incluido en Starter',
+      'Área privada con tracking de expediente',
+      'Subida y análisis de documentos con IA',
+      'Checklist dinámica actualizada en tiempo real',
+      'Chat con asistente IA personalizado',
+      'Alertas y recordatorios automáticos',
+    ],
+    cta: 'Empezar con Pro',
+    ctaLink: '#contacto',
     isPopular: true,
   },
   {
-    id: 'estudios',
-    title: 'Gestión de visado de estudios',
-    description: 'Gestión integral de tu visado para estudiar en España. Desde la admisión hasta la presentación consular.',
-    price: '299 €',
-  },
-  {
-    id: 'no-lucrativo',
-    title: 'Gestión de visado no lucrativo',
-    description: 'Para quienes desean residir en España sin realizar actividades laborales o profesionales.',
-    price: '349 €',
-  },
-  {
-    id: 'tie-nie',
-    title: 'Trámites TIE / NIE',
-    description: 'Asistencia para la obtención de tu Tarjeta de Identidad de Extranjero o Número de Identidad de Extranjero.',
-    price: 'desde 79 €',
-  },
-  {
-    id: 'prorroga',
-    title: 'Prórroga de estancia por estudios',
-    description: 'Gestión para renovar tu estancia legal como estudiante en territorio español.',
-    price: 'desde 199 €',
+    id: 'premium',
+    name: 'Premium',
+    price: '399€',
+    period: 'servicio completo',
+    description: 'Acompañamiento humano de principio a fin.',
+    features: [
+      'Todo lo incluido en Pro',
+      'Asesor humano dedicado a tu caso',
+      'Videollamada de 45 minutos',
+      'Revisión manual de tu expediente completo',
+      'Acompañamiento hasta el visado aprobado',
+    ],
+    cta: 'Contratar Premium',
+    ctaLink: '#contacto',
   },
 ];
 

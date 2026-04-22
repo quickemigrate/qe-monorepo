@@ -1,65 +1,108 @@
-import React from 'react';
 import { motion } from 'motion/react';
-import { LayoutDashboard, ArrowRight } from 'lucide-react';
-import { SERVICES } from '../data';
+import { Check } from 'lucide-react';
+import { PLANS } from '../data';
 
 const ServicesSection = () => (
-  <section id="servicios" className="py-24 px-6 bg-on-background text-surface-container-lowest">
+  <section id="servicios" className="py-24 px-6 bg-on-background text-white">
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Nuestros Servicios</h2>
-          <p className="text-surface-container-lowest/60 text-lg font-medium">
-            Transparencia desde el primer día. Precios cerrados para que sepas exactamente cuánto cuesta tu tranquilidad.
-          </p>
-        </div>
-        <div className="hidden md:block">
-          <div className="bg-surface-container-lowest/10 border border-surface-container-lowest/20 px-6 py-4 rounded-2xl">
-            <span className="text-sm font-bold uppercase tracking-widest opacity-60">Foco Actual</span>
-            <div className="text-xl font-bold">Visados para España</div>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.02em] mb-4">
+          Elige tu plan
+        </h2>
+        <p className="text-white/50 text-lg font-medium">
+          Transparencia desde el primer día. Sin letra pequeña.
+        </p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {SERVICES.map((service) => (
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {PLANS.map((plan, i) => (
           <motion.div
-            key={service.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            whileHover={{ y: -10 }}
+            key={plan.id}
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`relative p-10 rounded-3xl flex flex-col ${service.isPopular ? 'bg-primary-container text-on-background' : 'bg-surface-container-lowest text-on-background'}`}
+            transition={{ duration: 0.55, delay: i * 0.08 }}
+            className={`relative flex flex-col rounded-[20px] p-7 transition-all
+              ${plan.isPopular
+                ? 'border-2 bg-white/6'
+                : plan.isFree
+                ? 'border border-white/10 bg-transparent'
+                : 'border border-white/10 bg-white/4'
+              }`}
+            style={plan.isPopular ? { borderColor: 'var(--brand)' } : undefined}
           >
-            {service.isPopular && (
-              <div className="absolute -top-4 left-10 bg-on-background text-surface-container-lowest px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
-                Punto de partida
+            {/* Popular badge */}
+            {plan.isPopular && (
+              <div
+                className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full
+                           text-[11px] font-black uppercase tracking-widest whitespace-nowrap"
+                style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+              >
+                Más popular
               </div>
             )}
-            <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
-            <p className={`flex-grow leading-relaxed mb-10 ${service.isPopular ? 'text-on-background/80' : 'text-on-background/60'}`}>
-              {service.description}
-            </p>
-            <div className="mt-auto">
-              <div className="text-4xl font-extrabold mb-8">{service.price}</div>
-              <a href="#contacto" className={`block w-full py-4 rounded-full font-bold transition-all text-center ${service.isPopular ? 'bg-on-background text-surface-container-lowest' : 'bg-primary-container text-on-background hover:bg-primary-container/80'}`}>
-                {service.id === 'diagnóstico' ? 'Empezar ahora' : 'Contratar servicio'}
-              </a>
+
+            {/* Plan name */}
+            <div className="mb-5">
+              <span className={`text-[12px] font-bold uppercase tracking-[0.14em] ${plan.isPopular ? 'text-white' : 'text-white/40'}`}>
+                {plan.name}
+              </span>
             </div>
+
+            {/* Price */}
+            <div className="mb-1">
+              <span className="text-[42px] font-extrabold tracking-[-0.03em] leading-none">
+                {plan.price}
+              </span>
+            </div>
+            {plan.period && (
+              <div className="text-[13px] text-white/40 font-medium mb-4">{plan.period}</div>
+            )}
+            {!plan.period && <div className="mb-4" />}
+
+            {/* Description */}
+            <p className="text-[14px] text-white/55 leading-[1.55] mb-6 flex-none">
+              {plan.description}
+            </p>
+
+            {/* Features */}
+            <ul className="flex-1 space-y-2.5 mb-8">
+              {plan.features.map(feature => (
+                <li key={feature} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-[3px] w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: 'var(--brand)' }}
+                  >
+                    <Check size={10} strokeWidth={3} style={{ color: 'var(--brand-ink)' }} />
+                  </span>
+                  <span className="text-[13.5px] text-white/70 leading-[1.45]">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* CTA */}
+            <a
+              href={plan.ctaLink}
+              className={`block w-full py-3.5 rounded-full font-bold text-[14.5px] text-center transition-all
+                hover:scale-[1.03] active:scale-[0.97]
+                ${plan.isPopular
+                  ? 'text-on-background'
+                  : 'bg-white/10 text-white hover:bg-white/16'
+                }`}
+              style={plan.isPopular ? { background: 'var(--brand)', color: 'var(--brand-ink)' } : undefined}
+            >
+              {plan.cta}
+            </a>
           </motion.div>
         ))}
-
-        <div className="p-10 rounded-3xl border-2 border-surface-container-lowest/20 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-surface-container-lowest/10 rounded-full flex items-center justify-center mb-6">
-            <LayoutDashboard size={28} />
-          </div>
-          <h3 className="text-xl font-bold mb-4">¿Necesitas algo específico?</h3>
-          <p className="text-surface-container-lowest/60 text-sm mb-8">Cuéntanos tu caso particular y buscaremos la mejor forma de guiarte.</p>
-          <a href="#contacto" className="text-primary-container font-black flex items-center gap-2 group">
-            Consultar ahora
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </a>
-        </div>
       </div>
     </div>
   </section>
