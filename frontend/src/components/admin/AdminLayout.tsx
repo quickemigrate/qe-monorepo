@@ -29,9 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {/* Logo */}
         <div className="px-5 py-6 border-b border-white/8">
           <Link to="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary-container rounded-lg flex items-center justify-center font-black text-on-background text-sm">
-              Q
-            </div>
+            <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />
             <span className="text-white font-bold tracking-tight text-[15px]">Quick Emigrate</span>
           </Link>
         </div>

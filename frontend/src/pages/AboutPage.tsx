@@ -149,9 +149,7 @@ const OriginStory = () => (
               y una ruta ordenada.
             </p>
             <div className="mt-7 pt-6 border-t border-white/10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[var(--brand)] grid place-items-center text-[var(--brand-ink)] font-semibold text-[14px]">
-                QE
-              </div>
+              <img src="/logo-dark.png" alt="Quick Emigrate" className="h-10 w-auto" />
               <div>
                 <div className="text-[13px] font-semibold">Equipo Quick Emigrate</div>
                 <div className="text-[12px] text-white/50">Madrid, 2026</div>

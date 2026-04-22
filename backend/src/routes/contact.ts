@@ -14,7 +14,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   try {
     await resend.emails.send({
-      from: 'Quick Emigrate <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'Quick Emigrate <hola@quickemigrate.com>',
       to: process.env.CONTACT_EMAIL || '',
       subject: `Nuevo contacto de ${nombre} (${pais || 'país no indicado'})`,
       html: `
@@ -33,9 +33,6 @@ router.post('/', async (req: Request, res: Response) => {
             <td style="background-color:#1A1C1C;padding:32px 40px;">
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="vertical-align:middle;">
-                    <span style="display:inline-block;background-color:#25D366;color:#ffffff;font-size:22px;font-weight:900;width:44px;height:44px;line-height:44px;text-align:center;border-radius:10px;margin-right:12px;">Q</span>
-                  </td>
                   <td style="vertical-align:middle;">
                     <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.5px;">Quick Emigrate</span>
                   </td>

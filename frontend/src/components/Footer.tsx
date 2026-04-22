@@ -8,7 +8,7 @@ const Footer = () => (
       <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
         <div className="max-w-xs">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-primary-container rounded-lg flex items-center justify-center font-black">Q</div>
+            <img src="/logo-light.png" alt="Quick Emigrate" className="h-8 w-auto" />
             <span className="text-xl font-bold tracking-tight text-on-background">Quick Emigrate</span>
           </Link>
           <p className="text-on-background/60 font-medium">

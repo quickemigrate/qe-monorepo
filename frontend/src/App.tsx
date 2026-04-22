@@ -22,6 +22,8 @@ import AdminBlog from './pages/admin/AdminBlog';
 import ClientLogin from './pages/client/ClientLogin';
 import ClientDashboard from './pages/client/ClientDashboard';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
+import DiagnosticoPage from './pages/DiagnosticoPage';
+import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 
 const HomePage = () => (
   <div className="bg-surface-container-lowest min-h-screen font-sans selection:bg-primary-container/30">
@@ -56,6 +58,8 @@ function AppShell() {
         <Route path="/admin/leads" element={<ProtectedRoute><AdminLeads /></ProtectedRoute>} />
         <Route path="/admin/expedientes" element={<ProtectedRoute><AdminExpedientes /></ProtectedRoute>} />
         <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
+        <Route path="/diagnostico" element={<DiagnosticoPage />} />
+        <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
         <Route path="/cliente" element={<ClientProtectedRoute><ClientDashboard /></ClientProtectedRoute>} />
       </Routes>

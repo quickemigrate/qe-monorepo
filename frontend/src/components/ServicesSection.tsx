@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { PLANS } from '../data';
 
 const ServicesSection = () => (
@@ -89,18 +90,28 @@ const ServicesSection = () => (
             </ul>
 
             {/* CTA */}
-            <a
-              href={plan.ctaLink}
-              className={`block w-full py-3.5 rounded-full font-bold text-[14.5px] text-center transition-all
-                hover:scale-[1.03] active:scale-[0.97]
-                ${plan.isPopular
-                  ? 'text-on-background'
-                  : 'bg-white/10 text-white hover:bg-white/16'
-                }`}
-              style={plan.isPopular ? { background: 'var(--brand)', color: 'var(--brand-ink)' } : undefined}
-            >
-              {plan.cta}
-            </a>
+            {plan.id === 'starter' ? (
+              <Link
+                to="/diagnostico"
+                className={`block w-full py-3.5 rounded-full font-bold text-[14.5px] text-center transition-all
+                  hover:scale-[1.03] active:scale-[0.97] bg-white/10 text-white hover:bg-white/16`}
+              >
+                {plan.cta}
+              </Link>
+            ) : (
+              <a
+                href={plan.ctaLink}
+                className={`block w-full py-3.5 rounded-full font-bold text-[14.5px] text-center transition-all
+                  hover:scale-[1.03] active:scale-[0.97]
+                  ${plan.isPopular
+                    ? 'text-on-background'
+                    : 'bg-white/10 text-white hover:bg-white/16'
+                  }`}
+                style={plan.isPopular ? { background: 'var(--brand)', color: 'var(--brand-ink)' } : undefined}
+              >
+                {plan.cta}
+              </a>
+            )}
           </motion.div>
         ))}
       </div>

@@ -29,9 +29,7 @@ export default function ClientLogin() {
       <div className="w-full max-w-[400px]">
         <div className="bg-white rounded-[24px] border border-black/5 p-8 shadow-sm tonal-lift">
           <div className="flex items-center gap-2.5 mb-8">
-            <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center font-black text-on-background text-lg">
-              Q
-            </div>
+            <img src="/logo-light.png" alt="Quick Emigrate" className="h-10 w-auto" />
             <span className="text-lg font-bold tracking-tight text-on-background">Quick Emigrate</span>
           </div>
 

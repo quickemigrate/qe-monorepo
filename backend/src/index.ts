@@ -6,6 +6,7 @@ import leadsRouter from './routes/leads';
 import expedientesRouter from './routes/expedientes';
 import clientRouter from './routes/client';
 import articlesRouter from './routes/articles';
+import diagnosticoRouter from './routes/diagnostico';
 
 dotenv.config();
 
@@ -13,6 +14,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(corsMiddleware);
+
+// Webhook de Stripe requiere body raw antes de express.json()
+app.use('/api/diagnostico/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
@@ -21,6 +26,7 @@ app.use('/api/leads', leadsRouter);
 app.use('/api/expedientes', expedientesRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/articles', articlesRouter);
+app.use('/api/diagnostico', diagnosticoRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend Quick Emigrate corriendo en http://localhost:${PORT}`);

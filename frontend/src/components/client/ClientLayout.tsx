@@ -19,9 +19,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <header className="bg-white border-b border-black/5 sticky top-0 z-10">
         <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/cliente" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-primary-container rounded-lg flex items-center justify-center font-black text-on-background">
-              Q
-            </div>
+            <img src="/logo-light.png" alt="Quick Emigrate" className="h-8 w-auto" />
             <span className="text-base font-bold tracking-tight text-on-background">Quick Emigrate</span>
           </Link>
 

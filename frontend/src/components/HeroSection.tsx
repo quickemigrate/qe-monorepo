@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -35,10 +36,10 @@ const HeroSection = () => (
           Asistencia digital para hispanoamericanos. Sin promesas falsas, solo un camino estructurado hacia tu nueva vida en España.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <a href="#servicios" className="group bg-primary-container text-on-background px-8 py-4 rounded-full font-bold text-center flex items-center justify-center gap-2 hover:bg-primary-container/90 transition-colors shadow-lg">
+          <Link to="/diagnostico" className="group bg-primary-container text-on-background px-8 py-4 rounded-full font-bold text-center flex items-center justify-center gap-2 hover:bg-primary-container/90 transition-colors shadow-lg">
             Reservar diagnóstico
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </a>
+          </Link>
           <a href="#soluciones" className="bg-on-background text-surface-container-lowest px-8 py-4 rounded-full font-bold text-center hover:opacity-90 transition-opacity">
             Ver servicios
           </a>
