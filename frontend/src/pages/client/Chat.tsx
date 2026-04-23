@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Bot, Lock, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Send, Bot, Loader2 } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,6 +23,7 @@ interface EstadoChat {
 
 export default function Chat() {
   const { getToken } = useAuth();
+  const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -160,38 +162,10 @@ export default function Chat() {
     );
   }
 
-  // Plan starter — no tiene acceso al chat
+  // Plan starter — redirigir a /cliente/plan
   if (estado.plan === 'starter') {
-    return (
-      <ClientLayout>
-        <div className="space-y-4">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background">
-            Asistente IA
-          </h1>
-          <div className="bg-white rounded-2xl border border-black/5 p-8 text-center space-y-4">
-            <div className="flex justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center">
-                <Lock size={22} className="text-on-background/30" />
-              </div>
-            </div>
-            <h2 className="text-[17px] font-semibold text-on-background">
-              El chat IA está disponible en planes Pro y Premium
-            </h2>
-            <p className="text-[14px] text-on-background/50 max-w-[380px] mx-auto">
-              Hazte con un plan Pro o Premium para hablar directamente con nuestro asistente de inmigración
-              y recibir respuestas personalizadas a tu situación.
-            </p>
-            <a
-              href="/#servicios"
-              className="inline-flex items-center gap-2 bg-primary-container text-on-background font-bold
-                         px-6 py-2.5 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95 shadow-sm"
-            >
-              Ver planes
-            </a>
-          </div>
-        </div>
-      </ClientLayout>
-    );
+    navigate('/cliente/plan', { replace: true });
+    return null;
   }
 
   const limiteAlcanzado = estado.mensajesUsados >= estado.mensajesLimit;

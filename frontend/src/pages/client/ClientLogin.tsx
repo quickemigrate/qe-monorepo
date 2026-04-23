@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 
+const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
 export default function ClientLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -15,8 +17,26 @@ export default function ClientLogin() {
     setError('');
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/cliente');
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      const token = await credential.user.getIdToken();
+
+      try {
+        const res = await fetch(`${API}/api/chat/estado`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const plan = data.data?.plan;
+          if (plan === 'premium') navigate('/cliente/expediente');
+          else if (plan === 'pro') navigate('/cliente/chat');
+          else navigate('/cliente/perfil');
+          return;
+        }
+      } catch {
+        // Si falla la consulta de plan, ir a perfil por defecto
+      }
+
+      navigate('/cliente/perfil');
     } catch {
       setError('Email o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.');
     } finally {
@@ -34,10 +54,10 @@ export default function ClientLogin() {
           </div>
 
           <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-background mb-1">
-            Accede a tu expediente
+            Accede a tu área privada
           </h1>
           <p className="text-[14px] text-on-background/50 mb-8">
-            Introduce tu email y contraseña para ver el estado de tu proceso
+            Introduce tu email y contraseña para continuar
           </p>
 
           {error && (

@@ -25,6 +25,10 @@ import Config from './pages/admin/Config';
 import Chat from './pages/client/Chat';
 import ClientLogin from './pages/client/ClientLogin';
 import ClientDashboard from './pages/client/ClientDashboard';
+import Perfil from './pages/client/Perfil';
+import Plan from './pages/client/Plan';
+import Documentos from './pages/client/Documentos';
+import Expediente from './pages/client/Expediente';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
@@ -69,6 +73,10 @@ function AppShell() {
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
         <Route path="/cliente" element={<ClientProtectedRoute><ClientDashboard /></ClientProtectedRoute>} />
+        <Route path="/cliente/perfil" element={<ClientProtectedRoute><Perfil /></ClientProtectedRoute>} />
+        <Route path="/cliente/plan" element={<ClientProtectedRoute><Plan /></ClientProtectedRoute>} />
+        <Route path="/cliente/documentos" element={<ClientProtectedRoute><Documentos /></ClientProtectedRoute>} />
+        <Route path="/cliente/expediente" element={<ClientProtectedRoute><Expediente /></ClientProtectedRoute>} />
         <Route path="/cliente/chat" element={<ClientProtectedRoute><Chat /></ClientProtectedRoute>} />
       </Routes>
       {!isAdmin && !isClient && <Footer />}
