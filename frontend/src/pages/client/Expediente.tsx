@@ -37,7 +37,7 @@ const ESTADO_BADGE: Record<string, string> = {
 };
 
 export default function Expediente() {
-  const { user, getToken } = useAuth();
+  const { getToken } = useAuth();
   const { plan, loading: loadingPlan } = useClientePlan();
   const navigate = useNavigate();
   const [expediente, setExpediente] = useState<Expediente | null>(null);
@@ -49,8 +49,6 @@ export default function Expediente() {
       navigate('/cliente/plan', { replace: true });
     }
   }, [plan, loadingPlan]);
-
-  const nombre = user?.email?.split('@')[0] || 'cliente';
 
   useEffect(() => {
     const fetchExpediente = async () => {
@@ -76,6 +74,9 @@ export default function Expediente() {
     };
     fetchExpediente();
   }, []);
+
+  // No renderizar nada hasta confirmar que es premium
+  if (loadingPlan || plan !== 'premium') return null;
 
   const currentStateIndex = expediente
     ? ESTADOS.findIndex(e => e.key === expediente.estado)

@@ -25,6 +25,7 @@ import Config from './pages/admin/Config';
 import Chat from './pages/client/Chat';
 import ClientLogin from './pages/client/ClientLogin';
 import ClientDashboard from './pages/client/ClientDashboard';
+import Inicio from './pages/client/Inicio';
 import Perfil from './pages/client/Perfil';
 import Plan from './pages/client/Plan';
 import Documentos from './pages/client/Documentos';
@@ -72,7 +73,8 @@ function AppShell() {
         <Route path="/diagnostico" element={<DiagnosticoPage />} />
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
-        <Route path="/cliente" element={<ClientProtectedRoute><ClientDashboard /></ClientProtectedRoute>} />
+        <Route path="/cliente" element={<ClientProtectedRoute><Inicio /></ClientProtectedRoute>} />
+        <Route path="/cliente/inicio" element={<ClientProtectedRoute><Inicio /></ClientProtectedRoute>} />
         <Route path="/cliente/perfil" element={<ClientProtectedRoute><Perfil /></ClientProtectedRoute>} />
         <Route path="/cliente/plan" element={<ClientProtectedRoute><Plan /></ClientProtectedRoute>} />
         <Route path="/cliente/documentos" element={<ClientProtectedRoute><Documentos /></ClientProtectedRoute>} />
