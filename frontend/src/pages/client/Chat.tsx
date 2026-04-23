@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Bot, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -249,7 +251,43 @@ export default function Chat() {
                   ? 'bg-primary-container text-on-background rounded-br-sm'
                   : 'bg-surface-container-low text-on-background rounded-bl-sm'
               }`}>
-                {msg.contenido}
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="ml-2">{children}</li>,
+                      strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                      em: ({ children }) => <em className="italic">{children}</em>,
+                      h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                      code: ({ children }) => (
+                        <code className="bg-black/10 rounded px-1 py-0.5 text-sm font-mono">
+                          {children}
+                        </code>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-2 border-primary-container pl-3 italic opacity-80 mb-2">
+                          {children}
+                        </blockquote>
+                      ),
+                      a: ({ href, children }) => (
+                        <a href={href} target="_blank" rel="noopener noreferrer"
+                           className="text-primary-container underline hover:opacity-80">
+                          {children}
+                        </a>
+                      ),
+                      hr: () => <hr className="border-black/15 my-2" />,
+                    }}
+                  >
+                    {msg.contenido}
+                  </ReactMarkdown>
+                ) : (
+                  <p>{msg.contenido}</p>
+                )}
               </div>
             </div>
           ))}
