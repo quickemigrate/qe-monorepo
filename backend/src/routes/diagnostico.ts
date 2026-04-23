@@ -130,6 +130,17 @@ async function procesarDiagnostico(diagnosticoId: string, email: string, nombre:
 
   if (!data) throw new Error('Diagnóstico no encontrado');
 
+  await db.collection('usuarios').doc(email).set({
+    email,
+    nombre: data.nombre || nombre,
+    plan: 'starter',
+    diagnosticoId,
+    mensajesUsados: 0,
+    consentimientoDiagnostico: false,
+    creadoEn: new Date().toISOString(),
+    actualizadoEn: new Date().toISOString(),
+  }, { merge: true });
+
   const contextoLegal = await obtenerContextoLegal(data.pais || '', data.objetivo || '').catch(() => '');
 
   const promptBase = `Eres un experto en inmigración española. Genera un informe de diagnóstico migratorio para el siguiente perfil.

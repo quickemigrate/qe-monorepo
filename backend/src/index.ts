@@ -8,6 +8,10 @@ import clientRouter from './routes/client';
 import articlesRouter from './routes/articles';
 import diagnosticoRouter from './routes/diagnostico';
 import conocimientoRouter from './routes/conocimiento';
+import usuariosRouter from './routes/usuarios';
+import chatRouter from './routes/chat';
+import configRouter from './routes/config';
+import { db } from './firebase';
 
 dotenv.config();
 
@@ -50,7 +54,20 @@ app.use('/api/client', clientRouter);
 app.use('/api/articles', articlesRouter);
 app.use('/api/diagnostico', diagnosticoRouter);
 app.use('/api/conocimiento', conocimientoRouter);
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/config', configRouter);
+
+async function initConfig() {
+  const configRef = db.collection('config').doc('chat');
+  const doc = await configRef.get();
+  if (!doc.exists) {
+    await configRef.set({ limiteMensajesPro: 50, limiteMensajesPremium: 200 });
+    console.log('Config de chat inicializada');
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`Backend Quick Emigrate corriendo en http://localhost:${PORT}`);
+  initConfig().catch(err => console.error('Error initConfig:', err));
 });

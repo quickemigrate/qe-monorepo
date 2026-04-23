@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, MessageCircle } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -24,6 +25,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </Link>
 
           <div className="flex items-center gap-4">
+            <Link
+              to="/cliente/chat"
+              className={`inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors
+                ${location.pathname === '/cliente/chat'
+                  ? 'text-on-background'
+                  : 'text-on-background/50 hover:text-on-background'
+                }`}
+            >
+              <MessageCircle size={15} />
+              <span className="hidden sm:inline">Asistente IA</span>
+            </Link>
             <span className="text-[13px] text-on-background/50 hidden sm:block">{user?.email}</span>
             <button
               onClick={handleSignOut}
