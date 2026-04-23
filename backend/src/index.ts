@@ -7,6 +7,7 @@ import expedientesRouter from './routes/expedientes';
 import clientRouter from './routes/client';
 import articlesRouter from './routes/articles';
 import diagnosticoRouter from './routes/diagnostico';
+import conocimientoRouter from './routes/conocimiento';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/expedientes', expedientesRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/articles', articlesRouter);
 app.use('/api/diagnostico', diagnosticoRouter);
+app.use('/api/conocimiento', conocimientoRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend Quick Emigrate corriendo en http://localhost:${PORT}`);

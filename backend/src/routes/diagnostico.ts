@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { Resend } from 'resend';
 import PDFDocument from 'pdfkit';
 import path from 'path';
+import { obtenerContextoLegal } from '../services/rag';
 
 const router = Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -129,7 +130,9 @@ async function procesarDiagnostico(diagnosticoId: string, email: string, nombre:
 
   if (!data) throw new Error('Diagnóstico no encontrado');
 
-  const prompt = `Eres un experto en inmigración española. Genera un informe de diagnóstico migratorio para el siguiente perfil.
+  const contextoLegal = await obtenerContextoLegal(data.pais || '', data.objetivo || '').catch(() => '');
+
+  const promptBase = `Eres un experto en inmigración española. Genera un informe de diagnóstico migratorio para el siguiente perfil.
 
 IMPORTANTE: No uses markdown (sin ##, sin **, sin tablas, sin guiones como listas). Usa EXACTAMENTE estos marcadores para estructurar el informe:
 
@@ -190,6 +193,10 @@ Genera el informe con estas secciones en orden:
 [TEXTO] mensaje motivador
 
 Sé específico, útil y directo. Máximo 1500 palabras en total.`;
+
+  const prompt = contextoLegal
+    ? `CONTEXTO LEGAL ACTUALIZADO (usa esta información como base):\n\n${contextoLegal}\n\n---\n\n${promptBase}`
+    : promptBase;
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-5',
