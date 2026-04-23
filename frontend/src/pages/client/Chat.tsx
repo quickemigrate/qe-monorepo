@@ -172,7 +172,7 @@ export default function Chat() {
 
   return (
     <ClientLayout>
-      <div className="flex flex-col h-[calc(100vh-120px)] max-h-[800px]">
+      <div className="flex flex-col h-screen p-8 gap-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -227,7 +227,7 @@ export default function Chat() {
         )}
 
         {/* Área de mensajes */}
-        <div className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3">
+        <div className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4">
           {mensajes.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-12">
               <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center">
