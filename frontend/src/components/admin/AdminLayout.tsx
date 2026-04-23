@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, Users, FolderOpen, FileText, BookOpen, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FolderOpen, FileText, BookOpen, Settings, LogOut, Menu, X } from 'lucide-react';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,22 +19,42 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut(auth);
     navigate('/admin/login');
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="flex min-h-screen">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-[220px] bg-on-background flex flex-col z-40">
-        {/* Logo */}
-        <div className="px-5 py-6 border-b border-white/8">
-          <Link to="/admin" className="flex items-center gap-2.5">
+      <aside className={`fixed top-0 left-0 h-full w-[220px] bg-on-background flex flex-col z-30
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+
+        {/* Logo + close button (mobile) */}
+        <div className="px-5 py-6 border-b border-white/8 flex items-center justify-between">
+          <Link to="/admin" className="flex items-center gap-2.5" onClick={closeSidebar}>
             <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />
             <span className="text-white font-bold tracking-tight text-[15px]">Quick Emigrate</span>
           </Link>
+          <button
+            onClick={closeSidebar}
+            className="lg:hidden text-white/40 hover:text-white transition-colors p-1"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Nav */}
@@ -45,6 +65,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <Link
                 key={path}
                 to={path}
+                onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-colors
                   ${active
                     ? 'bg-white/12 text-white'
@@ -78,9 +99,25 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="ml-[220px] flex-1 min-h-screen bg-surface-container-low">
-        {children}
-      </main>
+      <div className="lg:ml-[220px] flex-1 flex flex-col min-h-screen">
+        {/* Mobile header */}
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-on-background sticky top-0 z-10">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-white/60 hover:text-white transition-colors p-1"
+          >
+            <Menu size={22} />
+          </button>
+          <Link to="/admin" className="flex items-center gap-2">
+            <img src="/logo-dark.png" alt="Quick Emigrate" className="h-7 w-auto" />
+            <span className="text-white font-bold tracking-tight text-[14px]">Quick Emigrate</span>
+          </Link>
+        </header>
+
+        <main className="flex-1 bg-surface-container-low">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

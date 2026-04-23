@@ -174,7 +174,7 @@ export default function Chat() {
 
   return (
     <ClientLayout>
-      <div className="flex flex-col h-screen p-8 gap-0">
+      <div className="flex flex-col h-[100dvh] lg:h-screen p-4 lg:p-8 gap-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings } from 'lucide-react';
+import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings, Menu, X } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -23,11 +23,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const navigate = useNavigate();
   const location = useLocation();
   const { plan, loading: loadingPlan } = useClientePlan();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut(auth);
     navigate('/cliente/login');
   };
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   const isPro = plan === 'pro' || plan === 'premium';
   const isPremium = plan === 'premium';
@@ -41,14 +44,31 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="flex min-h-screen">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-[220px] bg-on-background flex flex-col z-40">
-        {/* Logo */}
-        <div className="px-5 py-6 border-b border-white/8">
-          <Link to="/cliente/inicio" className="flex items-center gap-2.5">
+      <aside className={`fixed top-0 left-0 h-full w-[220px] bg-on-background flex flex-col z-30
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+
+        {/* Logo + close button (mobile) */}
+        <div className="px-5 py-6 border-b border-white/8 flex items-center justify-between">
+          <Link to="/cliente/inicio" className="flex items-center gap-2.5" onClick={closeSidebar}>
             <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />
             <span className="text-white font-bold tracking-tight text-[15px]">Quick Emigrate</span>
           </Link>
+          <button
+            onClick={closeSidebar}
+            className="lg:hidden text-white/40 hover:text-white transition-colors p-1"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Nav principal */}
@@ -59,6 +79,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Link
                 key={path}
                 to={path}
+                onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-colors
                   ${active
                     ? 'bg-white/12 text-white border-l-2 border-[#25D366] pl-[10px]'
@@ -81,9 +102,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
         {/* Parte inferior: plan badge + settings + logout */}
         <div className="px-3 py-4 border-t border-white/8">
-          {/* Settings (Mi Perfil) con badge del plan */}
           <Link
             to="/cliente/perfil"
+            onClick={closeSidebar}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-colors mb-1
               ${location.pathname === '/cliente/perfil'
                 ? 'bg-white/12 text-white border-l-2 border-[#25D366] pl-[10px]'
@@ -111,9 +132,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       </aside>
 
       {/* Main content */}
-      <main className="ml-[220px] flex-1 min-h-screen bg-surface-container-low">
-        {children}
-      </main>
+      <div className="lg:ml-[220px] flex-1 flex flex-col min-h-screen">
+        {/* Mobile header */}
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-on-background sticky top-0 z-10">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-white/60 hover:text-white transition-colors p-1"
+          >
+            <Menu size={22} />
+          </button>
+          <Link to="/cliente/inicio" className="flex items-center gap-2">
+            <img src="/logo-dark.png" alt="Quick Emigrate" className="h-7 w-auto" />
+            <span className="text-white font-bold tracking-tight text-[14px]">Quick Emigrate</span>
+          </Link>
+        </header>
+
+        <main className="flex-1 bg-surface-container-low">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
