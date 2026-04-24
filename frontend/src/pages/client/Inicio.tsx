@@ -247,10 +247,10 @@ export default function Inicio() {
               </div>
             ) : diagnosticoEstado === 'completado' ? (
               /* ── COMPLETADO: flex-row 1/3 + 2/3 ── */
-              <div className="w-full flex flex-col md:flex-row gap-6">
+              <div className="w-full flex flex-col md:flex-row gap-6" style={{ height: 'calc(100vh - 120px)' }}>
 
                 {/* Columna izquierda — 1/3 */}
-                <div className="w-full md:w-1/3 flex flex-col gap-4">
+                <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
 
                   {/* Card resumen */}
                   <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
@@ -318,7 +318,7 @@ export default function Inicio() {
                 </div>
 
                 {/* Columna derecha — 2/3 */}
-                <div className="w-full md:w-2/3">
+                <div className="w-full md:w-1/2">
 
                   {/* Visualizador PDF — solo md+ */}
                   <div
