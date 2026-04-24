@@ -246,14 +246,14 @@ export default function Inicio() {
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
             ) : diagnosticoEstado === 'completado' ? (
-              /* ── COMPLETADO: flex-row 1/3 + 2/3 ── */
+              /* ── COMPLETADO: flex-row 50% + 50% ── */
               <div className="w-full flex flex-col md:flex-row gap-6" style={{ height: 'calc(100vh - 120px)' }}>
 
-                {/* Columna izquierda — 1/3 */}
+                {/* COLUMNA IZQUIERDA — 50% — cards una debajo de otra */}
                 <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
 
-                  {/* Card resumen */}
-                  <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+                  {/* Card 1: resumen diagnóstico */}
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
                     <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 mb-3">
                       Diagnóstico completado ✓
                     </span>
@@ -290,8 +290,8 @@ export default function Inicio() {
                     </button>
                   </div>
 
-                  {/* Card upgrade */}
-                  <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col">
+                  {/* Card 2: upgrade */}
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col">
                     <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
                     <ul className="text-[13px] text-white/50 space-y-2">
                       <li className="flex items-start gap-2">
@@ -317,80 +317,57 @@ export default function Inicio() {
 
                 </div>
 
-                {/* Columna derecha — 2/3 */}
-                <div className="w-full md:w-1/2">
-
-                  {/* Visualizador PDF — solo md+ */}
-                  <div
-                    className="hidden md:flex flex-col bg-gray-900 rounded-xl border border-gray-800 overflow-hidden"
-                    style={{ height: 'calc(100vh - 140px)' }}
-                  >
-                    {loadingPdf && (
-                      <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
-                        <Loader2 size={16} className="animate-spin" />
-                        <span className="text-[13px]">Cargando vista previa...</span>
-                      </div>
-                    )}
-                    {pdfUrl && (
-                      <>
-                        <div
-                          className="flex-1 overflow-auto"
-                          ref={pdfContainerRef}
+                {/* COLUMNA DERECHA — 50% — solo el PDF */}
+                <div className="hidden md:flex w-1/2 flex-col bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+                  {loadingPdf && (
+                    <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
+                      <Loader2 size={16} className="animate-spin" />
+                      <span className="text-[13px]">Cargando vista previa...</span>
+                    </div>
+                  )}
+                  {pdfUrl && (
+                    <>
+                      <div className="flex-1 overflow-auto" ref={pdfContainerRef}>
+                        <Document
+                          file={pdfUrl}
+                          onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+                          loading={null}
                         >
-                          <Document
-                            file={pdfUrl}
-                            onLoadSuccess={({ numPages: n }) => setNumPages(n)}
-                            loading={null}
+                          <Page
+                            pageNumber={pageNumber}
+                            width={pdfContainerWidth || undefined}
+                            renderAnnotationLayer
+                            renderTextLayer
+                          />
+                        </Document>
+                      </div>
+                      {numPages > 1 && (
+                        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800 shrink-0">
+                          <button
+                            onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
+                            disabled={pageNumber === 1}
+                            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
+                                       hover:text-white transition disabled:opacity-20"
                           >
-                            <Page
-                              pageNumber={pageNumber}
-                              width={pdfContainerWidth || undefined}
-                              renderAnnotationLayer
-                              renderTextLayer
-                            />
-                          </Document>
+                            <ChevronLeft size={15} /> Anterior
+                          </button>
+                          <span className="text-[13px] text-white/30">
+                            {pageNumber} / {numPages}
+                          </span>
+                          <button
+                            onClick={() => setPageNumber(p => Math.min(p + 1, numPages))}
+                            disabled={pageNumber === numPages}
+                            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
+                                       hover:text-white transition disabled:opacity-20"
+                          >
+                            Siguiente <ChevronRight size={15} />
+                          </button>
                         </div>
-                        {numPages > 1 && (
-                          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800 shrink-0">
-                            <button
-                              onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
-                              disabled={pageNumber === 1}
-                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
-                                         hover:text-white transition disabled:opacity-20"
-                            >
-                              <ChevronLeft size={15} /> Anterior
-                            </button>
-                            <span className="text-[13px] text-white/30">
-                              {pageNumber} / {numPages}
-                            </span>
-                            <button
-                              onClick={() => setPageNumber(p => Math.min(p + 1, numPages))}
-                              disabled={pageNumber === numPages}
-                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
-                                         hover:text-white transition disabled:opacity-20"
-                            >
-                              Siguiente <ChevronRight size={15} />
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  {/* Botón descarga — solo móvil */}
-                  <div className="md:hidden">
-                    <button
-                      onClick={handleDownload}
-                      disabled={downloading}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-on-background text-white font-semibold
-                                 px-4 py-3 rounded-xl text-[14px] hover:opacity-90 transition disabled:opacity-50"
-                    >
-                      {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                      Descargar PDF
-                    </button>
-                  </div>
-
+                      )}
+                    </>
+                  )}
                 </div>
+
               </div>
 
             ) : (
