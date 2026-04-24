@@ -14,54 +14,73 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' })
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 // POST /api/diagnostico/checkout
-// Recibe las respuestas del formulario, las guarda en Firestore y crea una sesión de pago en Stripe
+// Lee los datos del perfil del usuario autenticado y crea una sesión de pago en Stripe
 router.post('/checkout', async (req: Request, res: Response) => {
-  const { nombre, email, pais, edad, estudios, objetivo, situacion, plazo, medios, sector } = req.body;
-
-  if (!nombre || !email || !pais || !objetivo) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
-  }
-
   try {
-    // Guardar respuestas del formulario en Firestore con estado pendiente_pago
+    let datos: Record<string, any> = {};
+    let userEmail = '';
+
+    // Leer perfil desde Firestore via token de Firebase
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split('Bearer ')[1];
+      try {
+        const { getAuth } = await import('firebase-admin/auth');
+        const decoded = await getAuth().verifyIdToken(token);
+        userEmail = decoded.email!;
+
+        const userDoc = await db.collection('usuarios').doc(userEmail).get();
+        if (userDoc.exists) {
+          const ud = userDoc.data()!;
+          datos = {
+            ...ud.perfil,
+            nombre: ud.nombre,
+            email: userEmail,
+          };
+        }
+      } catch {
+        // Si falla verificación, usar body como fallback
+      }
+    }
+
+    // Fallback: usar body si no hay token o falló
+    if (!datos.email) {
+      datos = { ...req.body };
+      userEmail = req.body.email || '';
+    }
+
+    if (!datos.nombre || !datos.email || !datos.pais || !datos.objetivo) {
+      return res.status(400).json({
+        success: false,
+        error: 'Completa tu perfil antes de continuar (nombre, país y objetivo son obligatorios)',
+      });
+    }
+
     const docRef = await db.collection('diagnosticos').add({
-      nombre,
-      email,
-      pais,
-      edad,
-      estudios,
-      objetivo,
-      situacion,
-      plazo,
-      medios,
-      sector,
+      ...datos,
       estado: 'pendiente_pago',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      creadoEn: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
-    // Crear sesión de pago en Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{
-        price: process.env.STRIPE_PRICE_ID,
-        quantity: 1,
-      }],
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       mode: 'payment',
       success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/diagnostico/exito?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/diagnostico?cancelado=true`,
-      customer_email: email,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/diagnostico`,
+      customer_email: userEmail || undefined,
       metadata: {
-        diagnostico_id: docRef.id,
-        nombre,
-        email
-      }
+        diagnosticoId: docRef.id,
+        email: datos.email,
+        nombre: datos.nombre,
+      },
     });
 
-    res.json({ url: session.url, diagnostico_id: docRef.id });
+    res.json({ success: true, url: session.url });
   } catch (error) {
     console.error('Error creando checkout:', error);
-    res.status(500).json({ error: 'Error al procesar el pago' });
+    res.status(500).json({ success: false, error: 'Error al procesar el pago' });
   }
 });
 
@@ -85,7 +104,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
-    const diagnosticoId = session.metadata?.diagnostico_id;
+    const diagnosticoId = session.metadata?.diagnosticoId;
     const email = session.metadata?.email;
     const nombre = session.metadata?.nombre;
 
@@ -155,24 +174,46 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Procesa el informe en segundo plano tras confirmar pago a Stripe
 async function procesarDiagnostico(diagnosticoId: string, email: string, nombre: string) {
   console.log('Iniciando procesamiento diagnóstico:', diagnosticoId, email);
+
+  // Marcar como procesando
+  await db.collection('diagnosticos').doc(diagnosticoId).update({
+    estado: 'procesando',
+    updatedAt: new Date().toISOString(),
+  });
+
   const doc = await db.collection('diagnosticos').doc(diagnosticoId).get();
   const data = doc.data();
   console.log('Datos obtenidos de Firestore:', data?.nombre, data?.email);
 
   if (!data) throw new Error('Diagnóstico no encontrado');
 
-  await db.collection('usuarios').doc(email).set({
-    email,
-    nombre: data.nombre || nombre,
-    plan: 'starter',
-    diagnosticoId,
-    mensajesUsados: 0,
-    consentimientoDiagnostico: false,
-    creadoEn: new Date().toISOString(),
-    actualizadoEn: new Date().toISOString(),
-  }, { merge: true });
+  // Actualizar usuario: vincular diagnosticoId sin sobreescribir plan ni mensajes
+  const userDoc = await db.collection('usuarios').doc(email).get();
+  if (userDoc.exists) {
+    await db.collection('usuarios').doc(email).update({
+      diagnosticoId,
+      nombre: data.nombre || userDoc.data()?.nombre || nombre,
+      actualizadoEn: new Date().toISOString(),
+    });
+  } else {
+    await db.collection('usuarios').doc(email).set({
+      email,
+      nombre: data.nombre || nombre,
+      plan: 'starter',
+      diagnosticoId,
+      mensajesUsados: 0,
+      consentimientoDiagnostico: false,
+      perfilCompleto: false,
+      creadoEn: new Date().toISOString(),
+      actualizadoEn: new Date().toISOString(),
+    });
+  }
 
   const contextoLegal = await obtenerContextoLegal(data.pais || '', data.objetivo || '').catch(() => '');
+
+  const idiomasStr = data.otrosIdiomas === 'Sí'
+    ? (data.cualesIdiomas ? `Sí (${data.cualesIdiomas})` : 'Sí')
+    : (data.otrosIdiomas || 'Solo español');
 
   const promptBase = `Eres un experto en inmigración española. Genera un informe de diagnóstico migratorio para el siguiente perfil.
 
@@ -188,13 +229,16 @@ IMPORTANTE: No uses markdown (sin ##, sin **, sin tablas, sin guiones como lista
 PERFIL DEL USUARIO:
 - Nombre: ${data.nombre}
 - País de origen: ${data.pais}
-- Edad: ${data.edad}
-- Nivel de estudios: ${data.estudios}
+- Edad: ${data.edad || 'No especificada'}
+- Sector laboral: ${data.sector || 'No especificado'}
+- Nivel de estudios: ${data.estudios || 'No especificado'}
+- Experiencia laboral: ${data.experiencia || 'No especificada'}
+- Situación actual: ${data.situacion || 'No especificada'}
+- Medios económicos disponibles: ${data.medios || 'No especificados'}
 - Objetivo en España: ${data.objetivo}
-- Situación actual: ${data.situacion}
-- Plazo para emigrar: ${data.plazo}
-- Medios económicos disponibles: ${data.medios}
-- Sector de interés: ${data.sector}
+- Plazo para emigrar: ${data.plazo || 'No especificado'}
+- Familiares en España: ${data.familiaresEnEspana || 'No especificado'}
+- Otros idiomas: ${idiomasStr}
 
 Genera el informe con estas secciones en orden:
 
