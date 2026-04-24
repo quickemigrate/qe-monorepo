@@ -411,30 +411,28 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
     let itemCounter = 0;
     let enSeccion = false;
 
+    const addPageHeader = () => {
+      doc.rect(0, 0, pageWidth, 45).fill('#1A1C1C');
+      try {
+        doc.image(logoPath, margin, 10, { height: 28 });
+      } catch {
+        doc.fill('#25D366').font('Helvetica-Bold').fontSize(9).text('Quick Emigrate', margin, 16);
+      }
+      doc.fill('rgba(255,255,255,0.4)').font('Helvetica').fontSize(8)
+        .text(`Diagnóstico de ${nombre}`, pageWidth - margin - 100, 18, { width: 100, align: 'right' });
+    };
+
     const checkPageBreak = (needed = 60) => {
-      if (doc.y > pageHeight - needed) {
+      const remainingSpace = pageHeight - margin - doc.y;
+      if (remainingSpace < needed + 80) {
         doc.addPage();
-        doc.rect(0, 0, pageWidth, 45).fill('#1A1C1C');
-        try {
-          doc.image(logoPath, margin, 10, { height: 28 });
-        } catch {
-          doc.fill('#25D366').font('Helvetica-Bold').fontSize(9).text('Quick Emigrate', margin, 16);
-        }
-        doc.fill('rgba(255,255,255,0.4)').font('Helvetica').fontSize(8)
-          .text(`Diagnóstico de ${nombre}`, pageWidth - margin - 100, 18, { width: 100, align: 'right' });
+        addPageHeader();
         doc.y = 65;
       }
     };
 
     // Header primera página de contenido
-    doc.rect(0, 0, pageWidth, 45).fill('#1A1C1C');
-    try {
-      doc.image(logoPath, margin, 10, { height: 28 });
-    } catch {
-      doc.fill('#25D366').font('Helvetica-Bold').fontSize(9).text('Quick Emigrate', margin, 16);
-    }
-    doc.fill('rgba(255,255,255,0.4)').font('Helvetica').fontSize(8)
-      .text(`Diagnóstico de ${nombre}`, pageWidth - margin - 100, 18, { width: 100, align: 'right' });
+    addPageHeader();
     doc.y = 65;
 
     const lineas = informe.split('\n');
@@ -469,14 +467,15 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
       } else if (trimmed.startsWith('[ITEM]')) {
         const item = trimmed.replace('[ITEM]', '').trim();
         doc.font('Helvetica').fontSize(10);
-        const itemHeight = doc.heightOfString(item, { width: contentWidth - 22 });
-        checkPageBreak(itemHeight + 12);
+        const itemLines = doc.heightOfString(item, { width: contentWidth - 22 });
+        const itemHeight = itemLines + 16;
+        checkPageBreak(itemHeight + 40);
 
         const currentY = doc.y;
         doc.circle(margin + 8, currentY + 5, 3).fill('#25D366');
         doc.fill('#374151').font('Helvetica').fontSize(10)
           .text(item, margin + 22, currentY, { width: contentWidth - 22, lineGap: 2 });
-        doc.moveDown(0.3);
+        doc.moveDown(0.4);
 
       } else if (trimmed.startsWith('[TEXTO]')) {
         const texto = trimmed.replace('[TEXTO]', '').trim();
@@ -506,13 +505,19 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
 
       } else if (trimmed.startsWith('[DESTACADO]')) {
         const dest = trimmed.replace('[DESTACADO]', '').trim();
-        checkPageBreak(55);
+        const destFontSize = 26;
+        doc.fontSize(destFontSize).font('Helvetica-Bold');
+        const textWidth = contentWidth - 32;
+        const textHeight = doc.heightOfString(dest, { width: textWidth });
+        const boxHeight = Math.max(52, textHeight + 24);
+        checkPageBreak(boxHeight + 16);
         const destY = doc.y;
-        doc.roundedRect(margin, destY, contentWidth, 44, 4).fill('#E8F8EE');
-        doc.rect(margin, destY, 4, 44).fill('#25D366');
-        doc.fill('#25D366').font('Helvetica-Bold').fontSize(26)
-          .text(dest, margin + 16, destY + 8, { width: contentWidth - 20 });
-        doc.y = destY + 52;
+        doc.roundedRect(margin, destY, contentWidth, boxHeight, 4).fill('#E8F8EE');
+        doc.rect(margin, destY, 4, boxHeight).fill('#25D366');
+        doc.fill('#25D366').font('Helvetica-Bold').fontSize(destFontSize)
+          .text(dest, margin + 16, destY + 12, { width: textWidth, lineGap: 4 });
+        doc.y = destY + boxHeight + 8;
+        doc.moveDown(0.3);
 
       } else if (trimmed && !trimmed.startsWith('[')) {
         checkPageBreak(30);

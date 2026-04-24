@@ -43,11 +43,10 @@ export default function DiagnosticoExitoPage() {
           className="text-center mb-8"
         >
           <h1 className="text-[30px] md:text-[36px] font-bold tracking-[-0.025em] text-on-background mb-4">
-            ¡Tu diagnóstico está en camino!
+            ¡Tu diagnóstico está siendo procesado!
           </h1>
           <p className="text-[15.5px] text-on-background/55 leading-[1.6]">
-            Hemos recibido tu pago y estamos generando tu informe personalizado.
-            Lo recibirás en tu email en menos de 5 minutos.
+            En unos minutos recibirás tu informe por email y podrás descargarlo desde tu área personal.
           </p>
           {email && (
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-surface-container-low
@@ -100,12 +99,12 @@ export default function DiagnosticoExitoPage() {
             Volver al inicio
           </Link>
           <Link
-            to="/cliente/login"
+            to="/cliente/inicio"
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-full font-bold py-3.5 text-[14.5px]
                        hover:scale-[1.02] active:scale-[0.98] transition-transform"
             style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
           >
-            Acceder a mi expediente
+            Ver mi diagnóstico
             <ArrowRight size={15} />
           </Link>
         </motion.div>

@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, FolderOpen, FileText, User, ArrowRight, Loader2, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageCircle, FolderOpen, FileText, User, ArrowRight, Loader2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getAuth } from 'firebase/auth';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -63,8 +68,15 @@ export default function Inicio() {
   const [userData, setUserData] = useState<any>(null);
   const [diagnostico, setDiagnostico] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [showResumen, setShowResumen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+
+  // PDF viewer state
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
+  const [pdfContainerWidth, setPdfContainerWidth] = useState(560);
 
   const isPro = plan === 'pro' || plan === 'premium';
   const isPremium = plan === 'premium';
@@ -98,6 +110,37 @@ export default function Inicio() {
     };
     load();
   }, []);
+
+  // Load PDF blob when diagnostico is completado
+  useEffect(() => {
+    if (diagnostico?.estado !== 'completado' || !userData?.diagnosticoId) return;
+    const loadPdf = async () => {
+      setLoadingPdf(true);
+      try {
+        const token = await getAuth().currentUser?.getIdToken();
+        const res = await fetch(`${API}/api/diagnostico/${userData.diagnosticoId}/pdf`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error();
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } catch {
+        // silently ignore — user can still download
+      } finally {
+        setLoadingPdf(false);
+      }
+    };
+    loadPdf();
+    return () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); };
+  }, [diagnostico?.estado, userData?.diagnosticoId]);
+
+  // Measure container width once PDF is ready
+  useEffect(() => {
+    if (pdfUrl && pdfContainerRef.current) {
+      setPdfContainerWidth(pdfContainerRef.current.clientWidth);
+    }
+  }, [pdfUrl]);
 
   const handleDownload = async () => {
     if (!userData?.diagnosticoId) return;
@@ -190,6 +233,7 @@ export default function Inicio() {
               </div>
             ) : diagnostico?.estado === 'completado' ? (
               <div className="bg-white rounded-2xl border border-black/5 p-6 space-y-4">
+                {/* Header: badge + meta + botón descargar */}
                 <div className="flex items-start justify-between flex-wrap gap-3">
                   <div>
                     <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-emerald-100 text-emerald-700 mb-2">
@@ -198,8 +242,8 @@ export default function Inicio() {
                     <div className="flex flex-wrap gap-2 text-[13px] text-on-background/50">
                       {diagnostico.pais && <span>{diagnostico.pais}</span>}
                       {diagnostico.objetivo && <span>· {diagnostico.objetivo}</span>}
-                      {diagnostico.createdAt && (
-                        <span>· {new Date(diagnostico.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      {diagnostico.creadoEn && (
+                        <span>· {new Date(diagnostico.creadoEn).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       )}
                     </div>
                   </div>
@@ -214,23 +258,54 @@ export default function Inicio() {
                   </button>
                 </div>
 
-                {diagnostico.informe && (
-                  <>
-                    <button
-                      onClick={() => setShowResumen(s => !s)}
-                      className="flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50 hover:text-on-background transition"
-                    >
-                      {showResumen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                      {showResumen ? 'Ocultar resumen' : 'Ver resumen del informe'}
-                    </button>
-                    {showResumen && (
-                      <div className="bg-surface-container-low rounded-xl p-4 text-[13px] text-on-background/70 leading-[1.7] max-h-64 overflow-y-auto whitespace-pre-line">
-                        {diagnostico.informe.substring(0, 1500)}
-                        {diagnostico.informe.length > 1500 && '...'}
-                      </div>
-                    )}
-                  </>
-                )}
+                {/* PDF viewer — solo desktop */}
+                <div className="hidden sm:block" ref={pdfContainerRef}>
+                  {loadingPdf && (
+                    <div className="flex items-center justify-center py-8 text-on-background/40 gap-2">
+                      <Loader2 size={16} className="animate-spin" />
+                      <span className="text-[13px]">Cargando vista previa...</span>
+                    </div>
+                  )}
+                  {pdfUrl && (
+                    <div className="overflow-auto border border-black/5 rounded-xl bg-surface-container-lowest" style={{ maxHeight: '620px' }}>
+                      <Document
+                        file={pdfUrl}
+                        onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+                        loading={null}
+                      >
+                        <Page
+                          pageNumber={pageNumber}
+                          width={pdfContainerWidth || 560}
+                          renderAnnotationLayer
+                          renderTextLayer
+                        />
+                      </Document>
+                    </div>
+                  )}
+                  {numPages > 1 && (
+                    <div className="flex items-center justify-between mt-3 px-1">
+                      <button
+                        onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
+                        disabled={pageNumber === 1}
+                        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50
+                                   hover:text-on-background transition disabled:opacity-30"
+                      >
+                        <ChevronLeft size={15} /> Página anterior
+                      </button>
+                      <span className="text-[13px] text-on-background/40">
+                        Página {pageNumber} de {numPages}
+                      </span>
+                      <button
+                        onClick={() => setPageNumber(p => Math.min(p + 1, numPages))}
+                        disabled={pageNumber === numPages}
+                        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50
+                                   hover:text-on-background transition disabled:opacity-30"
+                      >
+                        Página siguiente <ChevronRight size={15} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : null}
 
