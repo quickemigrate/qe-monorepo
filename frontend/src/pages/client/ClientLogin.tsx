@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 
@@ -12,6 +12,8 @@ const labelCls = 'block text-[12px] font-semibold uppercase tracking-[0.1em] tex
 
 export default function ClientLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const mensaje = (location.state as any)?.mensaje as string | undefined;
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [transitioning, setTransitioning] = useState(false);
 
@@ -101,6 +103,12 @@ export default function ClientLogin() {
             <img src="/logo-light.png" alt="Quick Emigrate" className="h-10 w-auto" />
             <span className="text-lg font-bold tracking-tight text-on-background">Quick Emigrate</span>
           </div>
+
+          {mensaje && (
+            <div className="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13.5px] text-emerald-700 font-medium text-center">
+              {mensaje}
+            </div>
+          )}
 
           {mode === 'login' ? (
             <>
