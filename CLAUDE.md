@@ -136,14 +136,32 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 - **Emails:** SVG placeholder con Q verde (pendiente SVG real)
 - **Web:** `/public/logo-light.png` y `/public/logo-dark.png`
 
+## FLUJO DE REGISTRO Y ONBOARDING
+1. `/cliente/login` — toggle login/registro (mismo componente)
+2. Registro: `createUserWithEmailAndPassword` → POST `/api/usuarios/registro` (público) → `/cliente/onboarding`
+3. Login: verifica `perfilCompleto` en Firestore → si false → `/cliente/onboarding`, si true → `/cliente/inicio`
+4. Onboarding: wizard 3 pasos → PUT `/api/usuarios/perfil` (verifyClientToken) → `perfilCompleto: true` → `/cliente/inicio`
+5. `OnboardingGuard` envuelve todas las rutas `/cliente/*` excepto login y onboarding
+
+## ENDPOINTS CLIENTE (verifyClientToken)
+- `GET /api/usuarios/perfil` — devuelve doc completo del usuario en Firestore
+- `PUT /api/usuarios/perfil` — guarda onboarding, setea perfilCompleto: true
+- `POST /api/usuarios/registro` — público, crea doc Firestore tras Firebase Auth signup
+- `GET /api/diagnostico/:id/pdf` — descarga PDF del diagnóstico (solo propietario)
+
+## DIAGNÓSTICO PDF
+- El PDF se guarda como base64 en `diagnosticos/{id}.pdfBase64` tras generarlo
+- Limite: documentos Firestore 1MB — para PDFs grandes puede fallar (futuro: Firebase Storage)
+- El campo `completadoEn` se guarda junto con `estado: 'completado'`
+
 ## PENDIENTES
 - [ ] SVG real del logo en emails
 - [ ] Bug PDF: "Semana 2-3:" se corta en próximos pasos
-- [ ] Chat IA para clientes en `/cliente/chat`
 - [ ] Scraper BOE automático (cron job Railway)
 - [ ] Stripe modo live (cuando haya clientes reales)
 - [ ] Google Search Console — verificar dominio
 - [ ] BD scraping de Manu → conector a Pinecone (futuro)
+- [ ] Migrar PDFs a Firebase Storage (evitar límite 1MB de Firestore)
 
 ## NOTAS TÉCNICAS IMPORTANTES
 - CORS configurado para: localhost:3000, localhost:5173, quickemigrate.com, www.quickemigrate.com, *.vercel.app

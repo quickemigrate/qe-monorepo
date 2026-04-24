@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth';
+import { verifyClientToken } from '../middleware/clientAuth';
 import { db } from '../firebase';
 
 const router = Router();
 
+// Admin: list all users
 router.get('/', verifyToken, async (_req: Request, res: Response) => {
   try {
     const snapshot = await db.collection('usuarios')
@@ -17,6 +19,21 @@ router.get('/', verifyToken, async (_req: Request, res: Response) => {
   }
 });
 
+// Client: get own profile
+router.get('/perfil', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email;
+    const doc = await db.collection('usuarios').doc(userEmail).get();
+    if (!doc.exists) {
+      return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+    }
+    res.json({ success: true, data: doc.data() });
+  } catch {
+    res.status(500).json({ success: false, error: 'Error al obtener perfil' });
+  }
+});
+
+// Admin: sync Firebase Auth users to Firestore
 router.post('/sincronizar', verifyToken, async (_req: Request, res: Response) => {
   try {
     const { getAuth } = await import('firebase-admin/auth');
@@ -41,6 +58,7 @@ router.post('/sincronizar', verifyToken, async (_req: Request, res: Response) =>
           mensajesUsados: 0,
           consentimientoDiagnostico: false,
           diagnosticoId: null,
+          perfilCompleto: false,
           creadoEn: userRecord.metadata.creationTime || new Date().toISOString(),
           actualizadoEn: new Date().toISOString(),
         });
@@ -54,6 +72,35 @@ router.post('/sincronizar', verifyToken, async (_req: Request, res: Response) =>
   }
 });
 
+// Public: create Firestore doc after Firebase Auth signup
+router.post('/registro', async (req: Request, res: Response) => {
+  try {
+    const { email, nombre } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email requerido' });
+    }
+
+    await db.collection('usuarios').doc(email).set({
+      email,
+      nombre: nombre || email.split('@')[0],
+      plan: 'starter',
+      mensajesUsados: 0,
+      consentimientoDiagnostico: false,
+      diagnosticoId: null,
+      perfilCompleto: false,
+      creadoEn: new Date().toISOString(),
+      actualizadoEn: new Date().toISOString(),
+    }, { merge: true });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error en registro:', error);
+    res.status(500).json({ success: false, error: 'Error al registrar usuario' });
+  }
+});
+
+// Admin: create user manually
 router.post('/', verifyToken, async (req: Request, res: Response) => {
   try {
     const { email, nombre, plan, password } = req.body;
@@ -83,6 +130,7 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
       mensajesUsados: 0,
       consentimientoDiagnostico: false,
       diagnosticoId: null,
+      perfilCompleto: false,
       creadoEn: new Date().toISOString(),
       actualizadoEn: new Date().toISOString(),
     });
@@ -97,6 +145,37 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
   }
 });
 
+// Client: save onboarding profile
+router.put('/perfil', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email;
+    const {
+      nombre, pais, edad, sector,
+      estudios, experiencia, situacion, medios,
+      objetivo, plazo, familiaresEnEspana,
+      otrosIdiomas, cualesIdiomas,
+    } = req.body;
+
+    await db.collection('usuarios').doc(userEmail).update({
+      nombre,
+      perfil: {
+        pais, edad, sector,
+        estudios, experiencia, situacion, medios,
+        objetivo, plazo, familiaresEnEspana,
+        otrosIdiomas, cualesIdiomas,
+      },
+      perfilCompleto: true,
+      actualizadoEn: new Date().toISOString(),
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al guardar perfil:', error);
+    res.status(500).json({ success: false, error: 'Error al guardar perfil' });
+  }
+});
+
+// Admin: update plan
 router.patch('/:id', verifyToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

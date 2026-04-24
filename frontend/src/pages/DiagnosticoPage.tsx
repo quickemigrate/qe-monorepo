@@ -1,7 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Clock, Mail, ArrowLeft, Loader2 } from 'lucide-react';
+import { getAuth } from 'firebase/auth';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -42,6 +43,40 @@ export default function DiagnosticoPage() {
   const [form, setForm] = useState<FormData>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const loadPerfil = async () => {
+      const user = getAuth().currentUser;
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API}/api/usuarios/perfil`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const perfil = data.data;
+        setForm(f => ({
+          ...f,
+          nombre: perfil?.nombre || user.displayName || '',
+          email: user.email || '',
+          pais: perfil?.perfil?.pais || '',
+          edad: perfil?.perfil?.edad || '',
+          estudios: perfil?.perfil?.estudios || '',
+          objetivo: perfil?.perfil?.objetivo || '',
+          plazo: perfil?.perfil?.plazo || '',
+          sector: perfil?.perfil?.sector || '',
+          medios: perfil?.perfil?.medios || '',
+          situacion: perfil?.perfil?.situacion || '',
+        }));
+        setIsAuthenticated(true);
+      } catch {
+        // Anónimo — mostrar el formulario completo
+      }
+    };
+    loadPerfil();
+  }, []);
 
   const set = (field: keyof FormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -155,32 +190,42 @@ export default function DiagnosticoPage() {
             </div>
           )}
 
-          {/* 1 */}
-          <div>
-            <label className={labelCls}>1. Nombre completo *</label>
-            <input
-              type="text"
-              required
-              value={form.nombre}
-              onChange={set('nombre')}
-              className={inputCls}
-              placeholder="María García"
-            />
-          </div>
+          {/* 1 — oculto si autenticado */}
+          {!isAuthenticated && (
+            <div>
+              <label className={labelCls}>1. Nombre completo *</label>
+              <input
+                type="text"
+                required
+                value={form.nombre}
+                onChange={set('nombre')}
+                className={inputCls}
+                placeholder="María García"
+              />
+            </div>
+          )}
 
-          {/* 2 */}
-          <div>
-            <label className={labelCls}>2. Email *</label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={set('email')}
-              className={inputCls}
-              placeholder="maria@email.com"
-            />
-            <p className="text-[11.5px] text-on-background/35 mt-1">Aquí recibirás tu informe PDF.</p>
-          </div>
+          {/* 2 — oculto si autenticado */}
+          {!isAuthenticated && (
+            <div>
+              <label className={labelCls}>2. Email *</label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={set('email')}
+                className={inputCls}
+                placeholder="maria@email.com"
+              />
+              <p className="text-[11.5px] text-on-background/35 mt-1">Aquí recibirás tu informe PDF.</p>
+            </div>
+          )}
+
+          {isAuthenticated && (
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13px] text-emerald-700 font-medium">
+              Diagnóstico vinculado a tu cuenta: <strong>{form.email}</strong>
+            </div>
+          )}
 
           {/* 3 */}
           <div>

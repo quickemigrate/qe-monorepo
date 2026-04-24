@@ -6,6 +6,7 @@ import { Resend } from 'resend';
 import PDFDocument from 'pdfkit';
 import path from 'path';
 import { obtenerContextoLegal } from '../services/rag';
+import { verifyClientToken } from '../middleware/clientAuth';
 
 const router = Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -103,6 +104,36 @@ router.post('/webhook', async (req: Request, res: Response) => {
     return;
   } else {
     res.json({ received: true });
+  }
+});
+
+// GET /api/diagnostico/:id/pdf — descarga el PDF del diagnóstico (cliente autenticado)
+router.get('/:id/pdf', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userEmail = (req as any).user.email;
+
+    const diagDoc = await db.collection('diagnosticos').doc(id).get();
+    if (!diagDoc.exists) {
+      return res.status(404).json({ success: false, error: 'Diagnóstico no encontrado' });
+    }
+
+    const diagData = diagDoc.data()!;
+    if (diagData.email !== userEmail) {
+      return res.status(403).json({ success: false, error: 'No autorizado' });
+    }
+
+    if (!diagData.pdfBase64) {
+      return res.status(404).json({ success: false, error: 'PDF no disponible aún' });
+    }
+
+    const pdfBuffer = Buffer.from(diagData.pdfBase64, 'base64');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="diagnostico-quickemigrate.pdf"');
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error al descargar PDF:', error);
+    res.status(500).json({ success: false, error: 'Error al descargar PDF' });
   }
 });
 
@@ -220,6 +251,8 @@ Sé específico, útil y directo. Máximo 1500 palabras en total.`;
   const pdfBuffer = await generarPDF(data.nombre, informeTexto, data);
   console.log('PDF generado, tamaño:', pdfBuffer.length);
 
+  const pdfBase64 = pdfBuffer.toString('base64');
+
   await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL || 'Quick Emigrate <hola@quickemigrate.com>',
     to: email,
@@ -266,7 +299,9 @@ Sé específico, útil y directo. Máximo 1500 palabras en total.`;
   await db.collection('diagnosticos').doc(diagnosticoId).update({
     estado: 'completado',
     informe: informeTexto,
-    updatedAt: new Date().toISOString()
+    pdfBase64,
+    completadoEn: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   console.log(`Diagnóstico completado para ${email}`);

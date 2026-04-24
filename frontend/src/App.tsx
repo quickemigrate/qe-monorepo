@@ -31,6 +31,8 @@ import Plan from './pages/client/Plan';
 import Documentos from './pages/client/Documentos';
 import Expediente from './pages/client/Expediente';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
+import OnboardingGuard from './components/OnboardingGuard';
+import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 
@@ -73,13 +75,14 @@ function AppShell() {
         <Route path="/diagnostico" element={<DiagnosticoPage />} />
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
-        <Route path="/cliente" element={<ClientProtectedRoute><Inicio /></ClientProtectedRoute>} />
-        <Route path="/cliente/inicio" element={<ClientProtectedRoute><Inicio /></ClientProtectedRoute>} />
-        <Route path="/cliente/perfil" element={<ClientProtectedRoute><Perfil /></ClientProtectedRoute>} />
-        <Route path="/cliente/plan" element={<ClientProtectedRoute><Plan /></ClientProtectedRoute>} />
-        <Route path="/cliente/documentos" element={<ClientProtectedRoute><Documentos /></ClientProtectedRoute>} />
-        <Route path="/cliente/expediente" element={<ClientProtectedRoute><Expediente /></ClientProtectedRoute>} />
-        <Route path="/cliente/chat" element={<ClientProtectedRoute><Chat /></ClientProtectedRoute>} />
+        <Route path="/cliente/onboarding" element={<ClientProtectedRoute><Onboarding /></ClientProtectedRoute>} />
+        <Route path="/cliente" element={<ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/inicio" element={<ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/perfil" element={<ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/plan" element={<ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/documentos" element={<ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/expediente" element={<ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente/chat" element={<ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute>} />
       </Routes>
       {!isAdmin && !isClient && <Footer />}
     </div>

@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, FolderOpen, FileText, User, ArrowRight } from 'lucide-react';
+import { MessageCircle, FolderOpen, FileText, User, ArrowRight, Loader2, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { getAuth } from 'firebase/auth';
 import ClientLayout from '../../components/client/ClientLayout';
-import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
+
+const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PLAN_BADGE: Record<string, string> = {
   starter: 'bg-gray-100 text-gray-600',
@@ -55,12 +58,71 @@ function QuickCard({ icon: Icon, title, description, to, accent }: CardProps) {
 }
 
 export default function Inicio() {
-  const { user } = useAuth();
   const { plan, mensajesUsados, mensajesLimit, loading } = useClientePlan();
 
-  const nombre = user?.displayName || user?.email?.split('@')[0] || 'Cliente';
+  const [userData, setUserData] = useState<any>(null);
+  const [diagnostico, setDiagnostico] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [showResumen, setShowResumen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
   const isPro = plan === 'pro' || plan === 'premium';
   const isPremium = plan === 'premium';
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const token = await getAuth().currentUser?.getIdToken();
+        if (!token) return;
+
+        const res = await fetch(`${API}/api/usuarios/perfil`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserData(data.data);
+
+          if (data.data?.diagnosticoId) {
+            const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`);
+            if (diagRes.ok) {
+              const diagData = await diagRes.json();
+              setDiagnostico(diagData);
+            }
+          }
+        }
+      } catch {
+        // silently ignore
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleDownload = async () => {
+    if (!userData?.diagnosticoId) return;
+    setDownloading(true);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      const res = await fetch(`${API}/api/diagnostico/${userData.diagnosticoId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'diagnostico-quickemigrate.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('No se pudo descargar el PDF. Inténtalo de nuevo.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const nombre = userData?.nombre || userData?.email?.split('@')[0] || 'Cliente';
 
   return (
     <ClientLayout>
@@ -68,10 +130,12 @@ export default function Inicio() {
         {/* Saludo */}
         <div className="mb-8">
           <h1 className="text-[32px] font-semibold tracking-[-0.03em] text-on-background">
-            Bienvenido, {nombre}
+            Bienvenido/a, {nombre}
           </h1>
           <div className="flex items-center gap-3 mt-2">
-            <p className="text-[14px] text-on-background/50">Tu área privada de Quick Emigrate</p>
+            <p className="text-[14px] text-on-background/50">
+              {plan === 'starter' ? 'Tu ruta hacia España empieza aquí' : 'Tu área privada de Quick Emigrate'}
+            </p>
             {!loading && plan && (
               <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${PLAN_BADGE[plan]}`}>
                 {PLAN_LABEL[plan]}
@@ -80,7 +144,115 @@ export default function Inicio() {
           </div>
         </div>
 
-        {/* Barra mensajes (solo pro/premium) */}
+        {/* ── STARTER: sección diagnóstico ── */}
+        {!loading && plan === 'starter' && (
+          <div className="mb-6 space-y-4">
+            {loadingUser ? (
+              <div className="bg-white rounded-2xl border border-black/5 p-6 flex items-center gap-3 text-on-background/40">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-[14px]">Cargando tu diagnóstico...</span>
+              </div>
+            ) : !userData?.diagnosticoId ? (
+              /* Sin diagnóstico — CTA */
+              <div className="bg-on-background rounded-2xl p-6 text-white">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
+                  Paso 1 recomendado
+                </div>
+                <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
+                <p className="text-[14px] text-white/60 mb-1 leading-[1.6]">
+                  Análisis personalizado de tu caso con recomendaciones legales, checklist de documentos y plazos estimados.
+                </p>
+                <p className="text-[13px] text-white/40 mb-5">59€ — pago único</p>
+                <Link
+                  to="/diagnostico"
+                  className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
+                             px-6 py-3 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95"
+                >
+                  Comenzar mi diagnóstico <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : diagnostico?.estado === 'pendiente_pago' ? (
+              <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
+                <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
+                  Pago pendiente
+                </span>
+                <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
+              </div>
+            ) : diagnostico?.estado === 'procesando' ? (
+              <div className="bg-white rounded-2xl border border-black/5 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Loader2 size={18} className="animate-spin text-[#25D366]" />
+                  <span className="text-[15px] font-semibold text-on-background">Generando tu informe...</span>
+                </div>
+                <p className="text-[13px] text-on-background/50">
+                  Estamos analizando tu perfil con IA. Este proceso puede tardar unos minutos.
+                </p>
+              </div>
+            ) : diagnostico?.estado === 'completado' ? (
+              <div className="bg-white rounded-2xl border border-black/5 p-6 space-y-4">
+                <div className="flex items-start justify-between flex-wrap gap-3">
+                  <div>
+                    <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-emerald-100 text-emerald-700 mb-2">
+                      Diagnóstico completado ✓
+                    </span>
+                    <div className="flex flex-wrap gap-2 text-[13px] text-on-background/50">
+                      {diagnostico.pais && <span>{diagnostico.pais}</span>}
+                      {diagnostico.objetivo && <span>· {diagnostico.objetivo}</span>}
+                      {diagnostico.createdAt && (
+                        <span>· {new Date(diagnostico.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleDownload}
+                    disabled={downloading}
+                    className="inline-flex items-center gap-2 bg-on-background text-white font-semibold
+                               px-4 py-2.5 rounded-xl text-[13px] hover:opacity-90 transition disabled:opacity-50"
+                  >
+                    {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                    Descargar PDF
+                  </button>
+                </div>
+
+                {diagnostico.informe && (
+                  <>
+                    <button
+                      onClick={() => setShowResumen(s => !s)}
+                      className="flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50 hover:text-on-background transition"
+                    >
+                      {showResumen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                      {showResumen ? 'Ocultar resumen' : 'Ver resumen del informe'}
+                    </button>
+                    {showResumen && (
+                      <div className="bg-surface-container-low rounded-xl p-4 text-[13px] text-on-background/70 leading-[1.7] max-h-64 overflow-y-auto whitespace-pre-line">
+                        {diagnostico.informe.substring(0, 1500)}
+                        {diagnostico.informe.length > 1500 && '...'}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : null}
+
+            {/* Upgrade CTA */}
+            <div className="bg-white rounded-2xl border border-black/5 p-5">
+              <h3 className="text-[15px] font-semibold text-on-background mb-2">¿Quieres más ayuda con tu proceso?</h3>
+              <ul className="text-[13.5px] text-on-background/60 space-y-1 mb-4">
+                <li>✅ Chat con IA especializada en inmigración</li>
+                <li>✅ Gestión y seguimiento de documentos</li>
+                <li>✅ Seguimiento personalizado de tu caso</li>
+              </ul>
+              <Link
+                to="/cliente/plan"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary-container hover:opacity-80 transition"
+              >
+                Ver planes <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── PRO / PREMIUM: barra de mensajes ── */}
         {!loading && isPro && mensajesLimit > 0 && (
           <div className="bg-white rounded-2xl border border-black/5 p-5 mb-6 flex items-center gap-4">
             <div className="flex-1">
@@ -99,7 +271,7 @@ export default function Inicio() {
           </div>
         )}
 
-        {/* Accesos rápidos */}
+        {/* ── Accesos rápidos (siempre) ── */}
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">
           Acceso rápido
         </h2>
@@ -107,7 +279,7 @@ export default function Inicio() {
           <QuickCard
             icon={User}
             title="Mi Perfil"
-            description="Gestiona tu cuenta y contraseña"
+            description="Gestiona tu cuenta y datos personales"
             to="/cliente/perfil"
           />
 
