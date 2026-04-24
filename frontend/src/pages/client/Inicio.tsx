@@ -190,6 +190,35 @@ export default function Inicio() {
 
   const nombre = userData?.nombre || userData?.email?.split('@')[0] || 'Cliente';
 
+  const quickCards = (
+    <div>
+      <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">
+        Acceso rápido
+      </h2>
+      <div className="grid grid-cols-2 gap-3">
+        <QuickCard icon={User} title="Mi Perfil" description="Gestiona tu cuenta y datos personales" to="/cliente/perfil" />
+        {isPro && <QuickCard icon={MessageCircle} title="Asistente IA" description="Resuelve tus dudas sobre el proceso" to="/cliente/chat" accent />}
+        {isPro && <QuickCard icon={FolderOpen} title="Mis Documentos" description="Sube y gestiona tu documentación" to="/cliente/documentos" />}
+        {isPremium && <QuickCard icon={FileText} title="Mi Expediente" description="Sigue el estado de tu proceso migratorio" to="/cliente/expediente" />}
+        {!loading && !isPro && (
+          <Link
+            to="/cliente/plan"
+            className="flex flex-col gap-3 p-5 rounded-2xl border border-dashed border-black/10
+                       bg-surface-container-low text-on-background/40 hover:border-black/20 transition-all"
+          >
+            <div className="text-[14px] font-semibold">Desbloquea más funciones</div>
+            <div className="text-[13px] leading-[1.5]">
+              Con el plan Pro obtienes el Asistente IA y gestión de documentos.
+            </div>
+            <div className="text-[12px] font-semibold text-primary-container flex items-center gap-1 mt-auto">
+              Ver planes <ArrowRight size={13} />
+            </div>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <ClientLayout>
       <style>{`
@@ -315,6 +344,8 @@ export default function Inicio() {
                     </Link>
                   </div>
 
+                  {quickCards}
+
                 </div>
 
                 {/* COLUMNA DERECHA — 50% — solo el PDF */}
@@ -374,35 +405,9 @@ export default function Inicio() {
               /* ── OTROS ESTADOS: grid 2 columnas ── */
               <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Columna izquierda: estado actual */}
-                {!diagnosticoId ? (
-                  <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
-                      Paso 1 recomendado
-                    </div>
-                    <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
-                    <p className="text-[14px] text-white/60 leading-[1.6] mb-1">
-                      Análisis personalizado con recomendaciones legales, checklist y plazos.
-                    </p>
-                    <p className="text-[13px] text-white/40 mb-6">59€ — pago único</p>
-                    <Link
-                      to="/diagnostico"
-                      className="mt-auto self-start inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
-                                 px-6 py-3 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95"
-                    >
-                      Comenzar mi diagnóstico <ArrowRight size={16} />
-                    </Link>
-                  </div>
-
-                ) : diagnosticoEstado === 'pendiente_pago' ? (
-                  <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
-                    <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
-                      Pago pendiente
-                    </span>
-                    <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
-                  </div>
-
-                ) : diagnosticoEstado === 'procesando' ? (
+                {/* Columna izquierda: estado actual + acceso rápido */}
+                {diagnosticoEstado === 'procesando' ? (
+                  /* Procesando ocupa 2 columnas en desktop */
                   <div className="md:col-span-2 bg-white rounded-2xl border border-black/5 p-8">
                     <div className="flex items-center gap-3 mb-3">
                       <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
@@ -420,10 +425,40 @@ export default function Inicio() {
                       />
                     </div>
                   </div>
+                ) : (
+                  /* Sin diagnóstico o pendiente pago — columna izquierda */
+                  <div className="flex flex-col gap-4">
+                    {!diagnosticoId ? (
+                      <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
+                          Paso 1 recomendado
+                        </div>
+                        <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
+                        <p className="text-[14px] text-white/60 leading-[1.6] mb-1">
+                          Análisis personalizado con recomendaciones legales, checklist y plazos.
+                        </p>
+                        <p className="text-[13px] text-white/40 mb-6">59€ — pago único</p>
+                        <Link
+                          to="/diagnostico"
+                          className="mt-auto self-start inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
+                                     px-6 py-3 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95"
+                        >
+                          Comenzar mi diagnóstico <ArrowRight size={16} />
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
+                        <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
+                          Pago pendiente
+                        </span>
+                        <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
+                      </div>
+                    )}
+                    {quickCards}
+                  </div>
+                )}
 
-                ) : null}
-
-                {/* Columna derecha: beneficios o upgrade */}
+                {/* Columna derecha: beneficios o upgrade (solo si no está procesando) */}
                 {diagnosticoEstado !== 'procesando' && (
                   !diagnosticoId ? (
                     <div className="bg-white rounded-2xl border border-black/5 p-6">
@@ -469,63 +504,17 @@ export default function Inicio() {
                     </div>
                   )
                 )}
+
+                {/* Acceso rápido cuando procesando — segunda fila, columna izquierda */}
+                {diagnosticoEstado === 'procesando' && (
+                  <div className="flex flex-col gap-4">
+                    {quickCards}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
-
-        {/* Acceso rápido */}
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">
-          Acceso rápido
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <QuickCard
-            icon={User}
-            title="Mi Perfil"
-            description="Gestiona tu cuenta y datos personales"
-            to="/cliente/perfil"
-          />
-          {isPro && (
-            <QuickCard
-              icon={MessageCircle}
-              title="Asistente IA"
-              description="Resuelve tus dudas sobre el proceso"
-              to="/cliente/chat"
-              accent
-            />
-          )}
-          {isPro && (
-            <QuickCard
-              icon={FolderOpen}
-              title="Mis Documentos"
-              description="Sube y gestiona tu documentación"
-              to="/cliente/documentos"
-            />
-          )}
-          {isPremium && (
-            <QuickCard
-              icon={FileText}
-              title="Mi Expediente"
-              description="Sigue el estado de tu proceso migratorio"
-              to="/cliente/expediente"
-            />
-          )}
-          {!loading && !isPro && (
-            <Link
-              to="/cliente/plan"
-              className="flex flex-col gap-3 p-5 rounded-2xl border border-dashed border-black/10
-                         bg-surface-container-low text-on-background/40 hover:border-black/20 transition-all"
-            >
-              <div className="text-[14px] font-semibold">Desbloquea más funciones</div>
-              <div className="text-[13px] leading-[1.5]">
-                Con el plan Pro obtienes el Asistente IA y gestión de documentos.
-              </div>
-              <div className="text-[12px] font-semibold text-primary-container flex items-center gap-1 mt-auto">
-                Ver planes <ArrowRight size={13} />
-              </div>
-            </Link>
-          )}
-        </div>
 
       </div>
     </ClientLayout>
