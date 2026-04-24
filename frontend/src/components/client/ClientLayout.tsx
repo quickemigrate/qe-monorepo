@@ -147,8 +147,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </Link>
         </header>
 
-        <main className="flex-1 bg-surface-container-low">
-          {children}
+        <main className="flex-1 overflow-auto bg-surface-container-low">
+          <div className="w-full h-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

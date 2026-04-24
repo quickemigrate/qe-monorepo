@@ -199,7 +199,7 @@ export default function Inicio() {
         }
       `}</style>
 
-      <div className="p-6 md:p-8 max-w-[940px]">
+      <div className="w-full h-full p-4 lg:p-6">
 
         {/* Saludo */}
         <div className="mb-8">
@@ -248,7 +248,7 @@ export default function Inicio() {
             ) : (
               <>
                 {/* Grid principal 2 columnas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
 
                   {/* ── Columna izquierda: estado del diagnóstico ── */}
                   {!diagnosticoId ? (
@@ -384,7 +384,7 @@ export default function Inicio() {
 
                 {/* PDF viewer — fuera del grid, ancho completo, solo md+ */}
                 {diagnosticoEstado === 'completado' && (
-                  <div className="mt-6 hidden md:block" ref={pdfContainerRef}>
+                  <div className="w-full mt-6 hidden md:block" ref={pdfContainerRef}>
                     {loadingPdf && (
                       <div className="flex items-center justify-center py-10 gap-2 bg-white rounded-2xl border border-black/5 text-on-background/40">
                         <Loader2 size={16} className="animate-spin" />
