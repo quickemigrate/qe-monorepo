@@ -158,12 +158,12 @@ export default function Inicio() {
     loadPdf();
   }, [diagnosticoEstado, diagnosticoId]);
 
-  // Measure PDF container once visible
+  // Measure PDF container once visible (right column)
   useEffect(() => {
-    if (pdfUrl && pdfContainerRef.current) {
-      setPdfContainerWidth(pdfContainerRef.current.clientWidth);
+    if (diagnosticoEstado === 'completado' && pdfContainerRef.current) {
+      setPdfContainerWidth(pdfContainerRef.current.offsetWidth);
     }
-  }, [pdfUrl]);
+  }, [diagnosticoEstado, pdfUrl]);
 
   const handleDownload = async () => {
     if (!diagnosticoId) return;
@@ -245,148 +245,88 @@ export default function Inicio() {
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
-            ) : (
-              <>
-                {/* Grid principal 2 columnas */}
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+            ) : diagnosticoEstado === 'completado' ? (
+              /* ── COMPLETADO: flex-row 1/3 + 2/3 ── */
+              <div className="w-full flex flex-col md:flex-row gap-6">
 
-                  {/* ── Columna izquierda: estado del diagnóstico ── */}
-                  {!diagnosticoId ? (
-                    // Sin diagnóstico — CTA
-                    <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
-                        Paso 1 recomendado
-                      </div>
-                      <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
-                      <p className="text-[14px] text-white/60 leading-[1.6] mb-1">
-                        Análisis personalizado con recomendaciones legales, checklist y plazos.
-                      </p>
-                      <p className="text-[13px] text-white/40 mb-6">59€ — pago único</p>
-                      <Link
-                        to="/diagnostico"
-                        className="mt-auto self-start inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
-                                   px-6 py-3 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95"
-                      >
-                        Comenzar mi diagnóstico <ArrowRight size={16} />
-                      </Link>
-                    </div>
+                {/* Columna izquierda — 1/3 */}
+                <div className="w-full md:w-1/3 flex flex-col gap-4">
 
-                  ) : diagnosticoEstado === 'pendiente_pago' ? (
-                    <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
-                      <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
-                        Pago pendiente
-                      </span>
-                      <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
-                    </div>
-
-                  ) : diagnosticoEstado === 'procesando' ? (
-                    // Procesando — ocupa las 2 columnas
-                    <div className="md:col-span-2 bg-white rounded-2xl border border-black/5 p-8">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
-                        <span className="text-[17px] font-semibold text-on-background">
-                          Generando tu informe personalizado...
-                        </span>
-                      </div>
-                      <p className="text-[14px] text-on-background/50 mb-6">
-                        Este proceso puede tardar 1-2 minutos. La página se actualizará automáticamente.
-                      </p>
-                      <div className="relative h-2 rounded-full bg-black/6 overflow-hidden">
-                        <div
-                          className="absolute top-0 left-0 h-full w-2/5 rounded-full bg-[#25D366]"
-                          style={{ animation: 'progress-slide 1.5s ease-in-out infinite' }}
-                        />
-                      </div>
-                    </div>
-
-                  ) : diagnosticoEstado === 'completado' ? (
-                    // Completado — resumen card izquierda
-                    <div className="bg-white rounded-2xl border border-black/5 p-6 flex flex-col gap-4">
-                      <div>
-                        <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-emerald-100 text-emerald-700 mb-2">
-                          Diagnóstico completado ✓
-                        </span>
-                        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[13px] text-on-background/50 mt-1">
-                          {diagnostico.pais && <span>{diagnostico.pais}</span>}
-                          {diagnostico.objetivo && <span>· {diagnostico.objetivo}</span>}
-                          {diagnostico.creadoEn && (
-                            <span>
-                              · {new Date(diagnostico.creadoEn).toLocaleDateString('es-ES', {
-                                year: 'numeric', month: 'long', day: 'numeric',
-                              })}
-                            </span>
-                          )}
+                  {/* Card resumen */}
+                  <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+                    <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 mb-3">
+                      Diagnóstico completado ✓
+                    </span>
+                    <div className="space-y-1 mb-4">
+                      {diagnostico.pais && (
+                        <div className="text-[13px] text-white/60">
+                          <span className="text-white/30 text-[11px] uppercase tracking-wide mr-1.5">País</span>
+                          {diagnostico.pais}
                         </div>
-                      </div>
-                      <button
-                        onClick={handleDownload}
-                        disabled={downloading}
-                        className="w-full inline-flex items-center justify-center gap-2 bg-on-background text-white font-semibold
-                                   px-4 py-2.5 rounded-xl text-[13px] hover:opacity-90 transition disabled:opacity-50"
-                      >
-                        {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-                        Descargar PDF
-                      </button>
-                    </div>
-
-                  ) : null}
-
-                  {/* ── Columna derecha: beneficios o upgrade ── */}
-                  {/* No se muestra mientras procesando (ya ocupa col-span-2) */}
-                  {diagnosticoEstado !== 'procesando' && (
-                    !diagnosticoId ? (
-                      // Beneficios del diagnóstico
-                      <div className="bg-white rounded-2xl border border-black/5 p-6">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-4">
-                          ¿Qué incluye tu diagnóstico?
+                      )}
+                      {diagnostico.objetivo && (
+                        <div className="text-[13px] text-white/60">
+                          <span className="text-white/30 text-[11px] uppercase tracking-wide mr-1.5">Objetivo</span>
+                          {diagnostico.objetivo}
                         </div>
-                        <ul className="space-y-3">
-                          {BENEFICIOS.map(({ icon: Icon, label }) => (
-                            <li key={label} className="flex items-center gap-3">
-                              <span className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-[#E8F8EE]">
-                                <Icon size={13} strokeWidth={2.5} className="text-[#25D366]" />
-                              </span>
-                              <span className="text-[14px] text-on-background/70">{label}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      // Upgrade CTA
-                      <div className="bg-white rounded-2xl border border-black/5 p-6 flex flex-col">
-                        <h3 className="text-[15px] font-semibold text-on-background mb-3">
-                          ¿Quieres más ayuda con tu proceso?
-                        </h3>
-                        <ul className="text-[13.5px] text-on-background/60 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#25D366] font-bold shrink-0">✓</span>
-                            Chat con IA especializada en inmigración
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#25D366] font-bold shrink-0">✓</span>
-                            Gestión y seguimiento de documentos
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#25D366] font-bold shrink-0">✓</span>
-                            Seguimiento personalizado de tu caso
-                          </li>
-                        </ul>
-                        <Link
-                          to="/cliente/plan"
-                          className="mt-auto pt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary-container hover:opacity-80 transition"
-                        >
-                          Ver planes <ArrowRight size={14} />
-                        </Link>
-                      </div>
-                    )
-                  )}
+                      )}
+                      {diagnostico.creadoEn && (
+                        <div className="text-[13px] text-white/60">
+                          <span className="text-white/30 text-[11px] uppercase tracking-wide mr-1.5">Fecha</span>
+                          {new Date(diagnostico.creadoEn).toLocaleDateString('es-ES', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleDownload}
+                      disabled={downloading}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold
+                                 px-4 py-2.5 rounded-lg text-[13px] hover:opacity-90 transition disabled:opacity-50"
+                    >
+                      {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                      Descargar PDF
+                    </button>
+                  </div>
+
+                  {/* Card upgrade */}
+                  <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col">
+                    <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
+                    <ul className="text-[13px] text-white/50 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                        Chat con IA especializada en inmigración
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                        Gestión y seguimiento de documentos
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                        Seguimiento personalizado de tu caso
+                      </li>
+                    </ul>
+                    <Link
+                      to="/cliente/plan"
+                      className="mt-auto pt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#25D366] hover:opacity-80 transition"
+                    >
+                      Ver planes <ArrowRight size={14} />
+                    </Link>
+                  </div>
+
                 </div>
 
-                {/* PDF viewer — fuera del grid, ancho completo, solo md+ */}
-                {diagnosticoEstado === 'completado' && (
-                  <div className="w-full mt-6 hidden md:block" ref={pdfContainerRef}>
+                {/* Columna derecha — 2/3 */}
+                <div className="w-full md:w-2/3">
+
+                  {/* Visualizador PDF — solo md+ */}
+                  <div
+                    className="hidden md:flex flex-col bg-gray-900 rounded-xl border border-gray-800 overflow-hidden"
+                    style={{ height: 'calc(100vh - 140px)' }}
+                  >
                     {loadingPdf && (
-                      <div className="flex items-center justify-center py-10 gap-2 bg-white rounded-2xl border border-black/5 text-on-background/40">
+                      <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
                         <Loader2 size={16} className="animate-spin" />
                         <span className="text-[13px]">Cargando vista previa...</span>
                       </div>
@@ -394,8 +334,8 @@ export default function Inicio() {
                     {pdfUrl && (
                       <>
                         <div
-                          className="overflow-auto border border-black/5 rounded-2xl bg-surface-container-lowest"
-                          style={{ maxHeight: '700px' }}
+                          className="flex-1 overflow-auto"
+                          ref={pdfContainerRef}
                         >
                           <Document
                             file={pdfUrl}
@@ -404,40 +344,155 @@ export default function Inicio() {
                           >
                             <Page
                               pageNumber={pageNumber}
-                              width={pdfContainerWidth || 800}
+                              width={pdfContainerWidth || undefined}
                               renderAnnotationLayer
                               renderTextLayer
                             />
                           </Document>
                         </div>
                         {numPages > 1 && (
-                          <div className="flex items-center justify-between mt-3 px-1">
+                          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800 shrink-0">
                             <button
                               onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
                               disabled={pageNumber === 1}
-                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50
-                                         hover:text-on-background transition disabled:opacity-30"
+                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
+                                         hover:text-white transition disabled:opacity-20"
                             >
-                              <ChevronLeft size={15} /> Página anterior
+                              <ChevronLeft size={15} /> Anterior
                             </button>
-                            <span className="text-[13px] text-on-background/40">
-                              Página {pageNumber} de {numPages}
+                            <span className="text-[13px] text-white/30">
+                              {pageNumber} / {numPages}
                             </span>
                             <button
                               onClick={() => setPageNumber(p => Math.min(p + 1, numPages))}
                               disabled={pageNumber === numPages}
-                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-background/50
-                                         hover:text-on-background transition disabled:opacity-30"
+                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/40
+                                         hover:text-white transition disabled:opacity-20"
                             >
-                              Página siguiente <ChevronRight size={15} />
+                              Siguiente <ChevronRight size={15} />
                             </button>
                           </div>
                         )}
                       </>
                     )}
                   </div>
+
+                  {/* Botón descarga — solo móvil */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={handleDownload}
+                      disabled={downloading}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-on-background text-white font-semibold
+                                 px-4 py-3 rounded-xl text-[14px] hover:opacity-90 transition disabled:opacity-50"
+                    >
+                      {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                      Descargar PDF
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+            ) : (
+              /* ── OTROS ESTADOS: grid 2 columnas ── */
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Columna izquierda: estado actual */}
+                {!diagnosticoId ? (
+                  <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
+                      Paso 1 recomendado
+                    </div>
+                    <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
+                    <p className="text-[14px] text-white/60 leading-[1.6] mb-1">
+                      Análisis personalizado con recomendaciones legales, checklist y plazos.
+                    </p>
+                    <p className="text-[13px] text-white/40 mb-6">59€ — pago único</p>
+                    <Link
+                      to="/diagnostico"
+                      className="mt-auto self-start inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
+                                 px-6 py-3 rounded-full text-[14px] hover:scale-105 transition-transform active:scale-95"
+                    >
+                      Comenzar mi diagnóstico <ArrowRight size={16} />
+                    </Link>
+                  </div>
+
+                ) : diagnosticoEstado === 'pendiente_pago' ? (
+                  <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
+                    <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
+                      Pago pendiente
+                    </span>
+                    <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
+                  </div>
+
+                ) : diagnosticoEstado === 'procesando' ? (
+                  <div className="md:col-span-2 bg-white rounded-2xl border border-black/5 p-8">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
+                      <span className="text-[17px] font-semibold text-on-background">
+                        Generando tu informe personalizado...
+                      </span>
+                    </div>
+                    <p className="text-[14px] text-on-background/50 mb-6">
+                      Este proceso puede tardar 1-2 minutos. La página se actualizará automáticamente.
+                    </p>
+                    <div className="relative h-2 rounded-full bg-black/6 overflow-hidden">
+                      <div
+                        className="absolute top-0 left-0 h-full w-2/5 rounded-full bg-[#25D366]"
+                        style={{ animation: 'progress-slide 1.5s ease-in-out infinite' }}
+                      />
+                    </div>
+                  </div>
+
+                ) : null}
+
+                {/* Columna derecha: beneficios o upgrade */}
+                {diagnosticoEstado !== 'procesando' && (
+                  !diagnosticoId ? (
+                    <div className="bg-white rounded-2xl border border-black/5 p-6">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-4">
+                        ¿Qué incluye tu diagnóstico?
+                      </div>
+                      <ul className="space-y-3">
+                        {BENEFICIOS.map(({ icon: Icon, label }) => (
+                          <li key={label} className="flex items-center gap-3">
+                            <span className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-[#E8F8EE]">
+                              <Icon size={13} strokeWidth={2.5} className="text-[#25D366]" />
+                            </span>
+                            <span className="text-[14px] text-on-background/70">{label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl border border-black/5 p-6 flex flex-col">
+                      <h3 className="text-[15px] font-semibold text-on-background mb-3">
+                        ¿Quieres más ayuda con tu proceso?
+                      </h3>
+                      <ul className="text-[13.5px] text-on-background/60 space-y-2">
+                        <li className="flex items-start gap-2">
+                          <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                          Chat con IA especializada en inmigración
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                          Gestión y seguimiento de documentos
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-[#25D366] font-bold shrink-0">✓</span>
+                          Seguimiento personalizado de tu caso
+                        </li>
+                      </ul>
+                      <Link
+                        to="/cliente/plan"
+                        className="mt-auto pt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary-container hover:opacity-80 transition"
+                      >
+                        Ver planes <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  )
                 )}
-              </>
+              </div>
             )}
           </div>
         )}
