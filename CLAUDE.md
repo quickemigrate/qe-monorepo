@@ -7,7 +7,7 @@ Quick Emigrate es una plataforma LegalTech SaaS para ayudar a latinoamericanos a
 
 ## STACK TÉCNICO
 - **Frontend:** React + TypeScript + Vite + Tailwind + motion/react + lucide-react + Firebase Auth
-- **Backend:** Node.js + Express + TypeScript + firebase-admin + Resend + Stripe + Anthropic Claude API + PDFKit + Pinecone + Voyage AI
+- **Backend:** Node.js + Express + TypeScript + firebase-admin + Resend + PayPal + Anthropic Claude API + PDFKit + Pinecone + Voyage AI
 - **DB:** Firestore (proyecto: `quick-emigrate`) + Pinecone (índice: `quickemigrate-legal`)
 - **Deploy:** Vercel (frontend) + Railway (backend)
 - **Dominio:** `quickemigrate.com`
@@ -33,6 +33,7 @@ qe-monorepo/
 ├── backend/src/
 │   ├── config/
 │   │   ├── firebase.ts
+│   │   ├── paypal.ts
 │   │   └── pinecone.ts
 │   ├── services/
 │   │   ├── embeddings.ts   ← Voyage AI
@@ -61,9 +62,9 @@ CONTACT_EMAIL=quickemigrate@gmail.com
 FIREBASE_SERVICE_ACCOUNT={...json compacto...}
 ADMIN_EMAIL_1=...
 ADMIN_EMAIL_2=...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_ID=price_...
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+PAYPAL_MODE=sandbox  # cambiar a 'live' cuando haya empresa
 ANTHROPIC_API_KEY=...
 PINECONE_API_KEY=...
 PINECONE_INDEX_NAME=quickemigrate-legal
@@ -80,7 +81,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=463770642277
 VITE_FIREBASE_APP_ID=...
 VITE_ADMIN_EMAIL_1=...
 VITE_ADMIN_EMAIL_2=...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+VITE_PAYPAL_CLIENT_ID=...
 
 ## LO QUE ESTÁ CONSTRUIDO ✅
 
@@ -100,8 +101,8 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 - `/api/expedientes` (GET/POST/PATCH) — protegido
 - `/api/client/expediente` (GET) — token Firebase cliente
 - `/api/articles` — CMS público y admin
-- `/api/diagnostico/checkout` → Firestore + Stripe checkout
-- `/api/diagnostico/webhook` → verifica Stripe → RAG contexto → Claude API → PDFKit → Resend
+- `/api/diagnostico/create-order` → Firestore + PayPal orden
+- `/api/diagnostico/capture-order` → captura PayPal → RAG contexto → Claude API → PDFKit → Resend
 - `/api/diagnostico/:id` → estado del diagnóstico
 - `/api/conocimiento` (GET/POST/DELETE/search) — protegido
 
@@ -158,7 +159,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 - [ ] SVG real del logo en emails
 - [ ] Bug PDF: "Semana 2-3:" se corta en próximos pasos
 - [ ] Scraper BOE automático (cron job Railway)
-- [ ] Stripe modo live (cuando haya clientes reales)
+- [ ] PayPal modo live (cuando haya empresa constituida — cambiar PAYPAL_MODE=live)
 - [ ] Google Search Console — verificar dominio
 - [ ] BD scraping de Manu → conector a Pinecone (futuro)
 - [ ] Migrar PDFs a Firebase Storage (evitar límite 1MB de Firestore)
@@ -166,7 +167,8 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ## NOTAS TÉCNICAS IMPORTANTES
 - CORS configurado para: localhost:3000, localhost:5173, quickemigrate.com, www.quickemigrate.com, *.vercel.app
 - Railway puerto: 3001 (configurado en Settings → Public Networking)
-- Webhook Stripe producción: `https://qe-production.up.railway.app/api/diagnostico/webhook`
+- PayPal: flujo client-side capture (no webhook) — create-order → PayPal popup → capture-order
+- PayPal sandbox: configurar en developer.paypal.com → Apps & Credentials
 - Voyage AI SDK: `voyageai` (NO anthropic.embeddings — no disponible en v0.90.0)
 - El logo para PDFKit está en `backend/src/assets/` (no en raíz del monorepo)
 Cópialo y reemplaza el CLAUDE.md en la raíz del monorepo.
