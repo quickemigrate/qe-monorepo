@@ -12,7 +12,7 @@ interface Documento {
   id: string;
   titulo: string;
   contenido: string;
-  fuente: 'BOE' | 'manual' | any | 'ine_statics';
+  fuente: 'BOE' | 'manual' | any | 'ine_statistics';
   categoria: string;
   pais: string;
   url?: string;
