@@ -282,7 +282,7 @@ export default function Inicio() {
                 <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
 
                   {/* Card 1: resumen diagnóstico */}
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                  <div className="bg-on-background border border-white/8 rounded-xl p-5">
                     <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 mb-3">
                       Diagnóstico completado ✓
                     </span>
@@ -320,7 +320,7 @@ export default function Inicio() {
                   </div>
 
                   {/* Card 2: upgrade */}
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col">
+                  <div className="bg-on-background border border-white/8 rounded-xl p-5 flex flex-col">
                     <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
                     <ul className="text-[13px] text-white/50 space-y-2">
                       <li className="flex items-start gap-2">
@@ -349,7 +349,7 @@ export default function Inicio() {
                 </div>
 
                 {/* COLUMNA DERECHA — 50% — solo el PDF */}
-                <div className="hidden md:flex w-1/2 flex-col bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+                <div className="hidden md:flex w-1/2 flex-col bg-on-background border border-white/8 rounded-xl overflow-hidden">
                   {loadingPdf && (
                     <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
                       <Loader2 size={16} className="animate-spin" />
@@ -373,7 +373,7 @@ export default function Inicio() {
                         </Document>
                       </div>
                       {numPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800 shrink-0">
+                        <div className="flex items-center justify-between px-4 py-3 border-t border-white/8 shrink-0">
                           <button
                             onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
                             disabled={pageNumber === 1}
