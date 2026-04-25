@@ -6,7 +6,7 @@ export interface DocumentoLegal {
   id?: string;
   titulo: string;
   contenido: string;
-  fuente: 'BOE' | 'manual';
+  fuente: 'BOE' | 'manual' | any;
   categoria: string;
   pais: string;
   url?: string;

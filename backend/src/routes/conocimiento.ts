@@ -33,7 +33,7 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
     const id = await ingestarDocumento({
       titulo,
       contenido,
-      fuente: 'manual',
+      fuente: 'ine_statics' ,
       categoria,
       pais,
       url,
