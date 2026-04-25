@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import Stripe from 'stripe';
+import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../firebase';
 import { Resend } from 'resend';
@@ -7,122 +7,131 @@ import PDFDocument from 'pdfkit';
 import path from 'path';
 import { obtenerContextoLegal } from '../services/rag';
 import { verifyClientToken } from '../middleware/clientAuth';
+import { paypalClient } from '../config/paypal';
 
 const router = Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 
-// POST /api/diagnostico/checkout
-// Lee los datos del perfil del usuario autenticado y crea una sesión de pago en Stripe
-router.post('/checkout', async (req: Request, res: Response) => {
+// POST /api/diagnostico/create-order
+// Lee el perfil del usuario autenticado, guarda diagnóstico pendiente y crea orden en PayPal
+router.post('/create-order', async (req: Request, res: Response) => {
   try {
-    let datos: Record<string, any> = {};
-    let userEmail = '';
-
-    // Leer perfil desde Firestore via token de Firebase
     const authHeader = req.headers.authorization;
+    let email = '';
+    let datosFormulario: any = {};
+
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.split('Bearer ')[1];
       try {
         const { getAuth } = await import('firebase-admin/auth');
         const decoded = await getAuth().verifyIdToken(token);
-        userEmail = decoded.email!;
+        email = decoded.email!;
 
-        const userDoc = await db.collection('usuarios').doc(userEmail).get();
+        const userDoc = await db.collection('usuarios').doc(email).get();
         if (userDoc.exists) {
-          const ud = userDoc.data()!;
-          datos = {
-            ...ud.perfil,
-            nombre: ud.nombre,
-            email: userEmail,
+          const userData = userDoc.data()!;
+          datosFormulario = {
+            ...userData.perfil,
+            nombre: userData.nombre,
+            email,
           };
         }
-      } catch {
-        // Si falla verificación, usar body como fallback
+      } catch (e) {
+        console.error('Error verificando token:', e);
       }
     }
 
-    // Fallback: usar body si no hay token o falló
-    if (!datos.email) {
-      datos = { ...req.body };
-      userEmail = req.body.email || '';
-    }
-
-    if (!datos.nombre || !datos.email || !datos.pais || !datos.objetivo) {
+    if (!datosFormulario.nombre || !datosFormulario.email || !datosFormulario.pais || !datosFormulario.objetivo) {
       return res.status(400).json({
         success: false,
         error: 'Completa tu perfil antes de continuar (nombre, país y objetivo son obligatorios)',
       });
     }
 
-    const docRef = await db.collection('diagnosticos').add({
-      ...datos,
+    const diagnosticoRef = await db.collection('diagnosticos').add({
+      ...datosFormulario,
+      email,
       estado: 'pendiente_pago',
       creadoEn: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
-      mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/diagnostico/exito?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/diagnostico`,
-      customer_email: userEmail || undefined,
-      metadata: {
-        diagnosticoId: docRef.id,
-        email: datos.email,
-        nombre: datos.nombre,
+    const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
+    request.prefer('return=representation');
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: 'EUR',
+          value: '59.00',
+        },
+        description: 'Diagnóstico Migratorio IA — Quick Emigrate',
+        custom_id: diagnosticoRef.id,
+      }],
+      application_context: {
+        brand_name: 'Quick Emigrate',
+        landing_page: 'NO_PREFERENCE',
+        user_action: 'PAY_NOW',
       },
+    } as any);
+
+    const order = await paypalClient.execute(request);
+
+    await diagnosticoRef.update({
+      paypalOrderId: order.result.id,
     });
 
-    res.json({ success: true, url: session.url });
+    res.json({
+      success: true,
+      orderId: order.result.id,
+      diagnosticoId: diagnosticoRef.id,
+    });
   } catch (error) {
-    console.error('Error creando checkout:', error);
-    res.status(500).json({ success: false, error: 'Error al procesar el pago' });
+    console.error('Error creando orden PayPal:', error);
+    res.status(500).json({ success: false, error: 'Error al crear orden' });
   }
 });
 
-// POST /api/diagnostico/webhook
-// Stripe llama a este endpoint cuando el pago se completa
-// Genera el informe con IA y lo envía por email
-router.post('/webhook', async (req: Request, res: Response) => {
-  const sig = req.headers['stripe-signature'] as string;
-  let event: ReturnType<typeof stripe.webhooks.constructEvent>;
-
+// POST /api/diagnostico/capture-order
+// Captura el pago en PayPal y dispara el procesamiento del diagnóstico
+router.post('/capture-order', async (req: Request, res: Response) => {
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
-    );
-  } catch (err) {
-    console.error('Webhook signature failed:', err);
-    return res.status(400).send('Webhook Error');
-  }
+    const { orderId, diagnosticoId } = req.body;
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any;
-    const diagnosticoId = session.metadata?.diagnosticoId;
-    const email = session.metadata?.email;
-    const nombre = session.metadata?.nombre;
+    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderId);
+    const capture = await paypalClient.execute(request);
 
-    if (!diagnosticoId || !email) {
-      return res.status(400).json({ error: 'Metadata incompleta' });
+    if (capture.result.status !== 'COMPLETED') {
+      return res.status(400).json({
+        success: false,
+        error: 'Pago no completado',
+      });
     }
 
-    // Responder a Stripe inmediatamente para evitar timeout
-    res.json({ ok: true });
-
-    // Procesar el informe en segundo plano (sin await)
-    procesarDiagnostico(diagnosticoId, email, nombre || '').catch(err => {
-      console.error('Error en procesamiento asíncrono:', err);
+    await db.collection('diagnosticos').doc(diagnosticoId).update({
+      estado: 'procesando',
+      paypalCaptureId: capture.result.id,
+      pagadoEn: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
-    return;
-  } else {
-    res.json({ received: true });
+    const diagDoc = await db.collection('diagnosticos').doc(diagnosticoId).get();
+    const diagData = diagDoc.data()!;
+
+    if (diagData.email) {
+      await db.collection('usuarios').doc(diagData.email).update({
+        diagnosticoId,
+        actualizadoEn: new Date().toISOString(),
+      });
+    }
+
+    procesarDiagnostico(diagnosticoId, diagData).catch(console.error);
+
+    res.json({ success: true, diagnosticoId });
+  } catch (error) {
+    console.error('Error capturando orden PayPal:', error);
+    res.status(500).json({ success: false, error: 'Error al capturar pago' });
   }
 });
 
@@ -171,43 +180,13 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Procesa el informe en segundo plano tras confirmar pago a Stripe
-async function procesarDiagnostico(diagnosticoId: string, email: string, nombre: string) {
+// Procesa el informe en segundo plano tras confirmar pago
+async function procesarDiagnostico(diagnosticoId: string, data: any) {
+  const email = data.email || '';
+  const nombre = data.nombre || '';
   console.log('Iniciando procesamiento diagnóstico:', diagnosticoId, email);
 
-  // Marcar como procesando
-  await db.collection('diagnosticos').doc(diagnosticoId).update({
-    estado: 'procesando',
-    updatedAt: new Date().toISOString(),
-  });
-
-  const doc = await db.collection('diagnosticos').doc(diagnosticoId).get();
-  const data = doc.data();
-  console.log('Datos obtenidos de Firestore:', data?.nombre, data?.email);
-
   if (!data) throw new Error('Diagnóstico no encontrado');
-
-  // Actualizar usuario: vincular diagnosticoId sin sobreescribir plan ni mensajes
-  const userDoc = await db.collection('usuarios').doc(email).get();
-  if (userDoc.exists) {
-    await db.collection('usuarios').doc(email).update({
-      diagnosticoId,
-      nombre: data.nombre || userDoc.data()?.nombre || nombre,
-      actualizadoEn: new Date().toISOString(),
-    });
-  } else {
-    await db.collection('usuarios').doc(email).set({
-      email,
-      nombre: data.nombre || nombre,
-      plan: 'starter',
-      diagnosticoId,
-      mensajesUsados: 0,
-      consentimientoDiagnostico: false,
-      perfilCompleto: false,
-      creadoEn: new Date().toISOString(),
-      actualizadoEn: new Date().toISOString(),
-    });
-  }
 
   const contextoLegal = await obtenerContextoLegal(data.pais || '', data.objetivo || '').catch(() => '');
 
@@ -292,7 +271,7 @@ Sé específico, útil y directo. Máximo 1500 palabras en total.`;
   const informeTexto = (message.content[0] as { type: string; text: string }).text;
   console.log('Informe generado, longitud:', informeTexto.length);
 
-  const pdfBuffer = await generarPDF(data.nombre, informeTexto, data);
+  const pdfBuffer = await generarPDF(nombre, informeTexto, data);
   console.log('PDF generado, tamaño:', pdfBuffer.length);
 
   const pdfBase64 = pdfBuffer.toString('base64');
@@ -408,9 +387,6 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
     // ── PÁGINAS DE CONTENIDO ─────────────────────────────────
     doc.addPage();
 
-    let itemCounter = 0;
-    let enSeccion = false;
-
     const addPageHeader = () => {
       doc.rect(0, 0, pageWidth, 45).fill('#1A1C1C');
       try {
@@ -431,7 +407,6 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
       }
     };
 
-    // Header primera página de contenido
     addPageHeader();
     doc.y = 65;
 
@@ -443,10 +418,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
 
       if (trimmed.startsWith('[SECCION]')) {
         const titulo = trimmed.replace('[SECCION]', '').trim();
-        if (enSeccion) doc.moveDown(0.8);
         checkPageBreak(100);
-        enSeccion = true;
-        itemCounter = 0;
 
         doc.rect(margin, doc.y, 4, 22).fill('#25D366');
         doc.fill('#1A1C1C').font('Helvetica-Bold').fontSize(13)
@@ -544,7 +516,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
     doc.fill('rgba(255,255,255,0.7)').font('Helvetica').fontSize(11)
       .text('¿Tienes dudas sobre tu diagnóstico?', margin, 275, { width: contentWidth, align: 'center' });
     doc.fill('#25D366').font('Helvetica-Bold').fontSize(14)
-      .text('hola@quickemigrate.com', margin, 298, { width: contentWidth, align: 'center' });
+      .text('quickemigrate@gmail.com', margin, 298, { width: contentWidth, align: 'center' });
     doc.fill('rgba(255,255,255,0.6)').font('Helvetica').fontSize(11)
       .text('quickemigrate.com', margin, 322, { width: contentWidth, align: 'center' });
 

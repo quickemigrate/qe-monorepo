@@ -210,8 +210,8 @@ export default function Conocimiento() {
                   No hay documentos en el índice aún.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[13.5px]">
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full min-w-[600px] text-[13.5px]">
                     <thead>
                       <tr className="border-b border-black/5">
                         {['Título', 'Categoría', 'País', 'Fuente', 'Fecha', ''].map(h => (

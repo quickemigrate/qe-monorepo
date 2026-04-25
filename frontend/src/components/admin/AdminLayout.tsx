@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen w-screen overflow-hidden bg-surface-container-low">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -99,9 +99,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-[220px] flex-1 flex flex-col min-h-screen">
+      <div className="lg:ml-[220px] flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile header */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-on-background sticky top-0 z-10">
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-on-background sticky top-0 z-10 shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-white/60 hover:text-white transition-colors p-1"
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Link>
         </header>
 
-        <main className="flex-1 bg-surface-container-low">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface-container-low">
           {children}
         </main>
       </div>

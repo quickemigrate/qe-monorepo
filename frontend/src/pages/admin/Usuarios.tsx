@@ -208,8 +208,8 @@ export default function Usuarios() {
               No hay usuarios registrados aún.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-[13.5px]">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[600px] text-[13.5px]">
                 <thead>
                   <tr className="border-b border-black/5">
                     {['Email', 'Nombre', 'Plan', 'Mensajes usados', 'Registro', 'Acciones'].map(h => (

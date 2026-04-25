@@ -160,8 +160,8 @@ export default function AdminLeads() {
           ) : leads.length === 0 ? (
             <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">Sin leads aún.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-[13.5px]">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[600px] text-[13.5px]">
                 <thead>
                   <tr className="border-b border-black/5">
                     {['Nombre', 'Email', 'País', 'Interés', 'Mensaje', 'Estado', 'Fecha', ''].map(h => (

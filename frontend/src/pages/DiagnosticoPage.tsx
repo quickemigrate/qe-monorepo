@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
+import { Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-type Estado = 'loading' | 'confirmacion' | 'editar' | 'pagando';
+type Estado = 'loading' | 'confirmacion' | 'editar';
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
@@ -21,9 +22,7 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
 }
 
 export default function DiagnosticoPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const cancelado = searchParams.get('cancelado') === 'true';
 
   const [estado, setEstado] = useState<Estado>('loading');
   const [userEmail, setUserEmail] = useState('');
@@ -74,28 +73,6 @@ export default function DiagnosticoPage() {
     return () => unsubscribe();
   }, []);
 
-  const handlePagar = async () => {
-    setError('');
-    setEstado('pagando');
-    try {
-      const token = await getAuth().currentUser?.getIdToken();
-      const res = await fetch(`${API}/api/diagnostico/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al procesar');
-      if (data.url) window.location.href = data.url;
-    } catch (err: any) {
-      setError(err.message || 'Error al procesar el pago. Inténtalo de nuevo.');
-      setEstado('confirmacion');
-    }
-  };
-
   const p = perfilData;
 
   // ── Cargando ────────────────────────────────────────────────
@@ -103,16 +80,6 @@ export default function DiagnosticoPage() {
     return (
       <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center pt-[72px]">
         <Loader2 size={24} className="animate-spin text-on-background/30" />
-      </div>
-    );
-  }
-
-  // ── Pagando ─────────────────────────────────────────────────
-  if (estado === 'pagando') {
-    return (
-      <div className="min-h-screen bg-surface-container-lowest flex flex-col items-center justify-center gap-4 pt-[72px]">
-        <Loader2 size={32} className="animate-spin text-on-background/30" />
-        <p className="text-[15px] text-on-background/50">Redirigiendo al pago seguro...</p>
       </div>
     );
   }
@@ -195,12 +162,6 @@ export default function DiagnosticoPage() {
       {/* Contenido */}
       <section className="mx-auto max-w-[600px] px-6 py-10 space-y-4">
 
-        {cancelado && (
-          <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-3 text-[13.5px] text-orange-700 font-medium">
-            El pago fue cancelado. No se realizó ningún cargo. Revisa tus datos y vuelve a intentarlo.
-          </div>
-        )}
-
         {error && (
           <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
             {error}
@@ -210,7 +171,7 @@ export default function DiagnosticoPage() {
         {/* Card: Sobre ti */}
         <div className="bg-on-background rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
-            👤 Sobre ti
+            Sobre ti
           </div>
           <InfoRow label="Nombre" value={p?.nombre} />
           <InfoRow label="País" value={p?.pais} />
@@ -221,7 +182,7 @@ export default function DiagnosticoPage() {
         {/* Card: Tu situación */}
         <div className="bg-on-background rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
-            📚 Tu situación
+            Tu situación
           </div>
           <InfoRow label="Estudios" value={p?.estudios} />
           <InfoRow label="Experiencia" value={p?.experiencia} />
@@ -232,7 +193,7 @@ export default function DiagnosticoPage() {
         {/* Card: Tu objetivo */}
         <div className="bg-on-background rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
-            🎯 Tu objetivo
+            Tu objetivo
           </div>
           <InfoRow label="Objetivo" value={p?.objetivo} />
           <InfoRow label="Plazo" value={p?.plazo} />
@@ -257,30 +218,87 @@ export default function DiagnosticoPage() {
           <div className="text-[13px] text-white/40 mt-1">pago único</div>
         </div>
 
-        {/* Botones */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setEstado('editar')}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full border border-black/10
-                       text-[15px] font-semibold text-on-background/70 bg-white hover:bg-black/3 transition shadow-sm"
-          >
-            <Edit2 size={15} />
-            Editar mis datos
-          </button>
-          <button
-            onClick={handlePagar}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-[15px]
-                       hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-sm"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
-          >
-            Confirmar y pagar <ArrowRight size={17} />
-          </button>
-        </div>
+        {/* Botón editar */}
+        <button
+          onClick={() => setEstado('editar')}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-black/10
+                     text-[15px] font-semibold text-on-background/70 bg-white hover:bg-black/3 transition shadow-sm"
+        >
+          <Edit2 size={15} />
+          Editar mis datos
+        </button>
+
+        {/* PayPal */}
+        <PayPalScriptProvider options={{
+          clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
+          currency: 'EUR',
+        }}>
+          <PayPalButtons
+            style={{
+              layout: 'vertical',
+              color: 'black',
+              shape: 'rect',
+              label: 'pay',
+            }}
+            createOrder={async () => {
+              setError('');
+              const auth = getAuth();
+              const token = await auth.currentUser?.getIdToken();
+
+              const res = await fetch(
+                `${API}/api/diagnostico/create-order`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                  },
+                }
+              );
+              const data = await res.json();
+              if (!data.success) throw new Error(data.error);
+
+              sessionStorage.setItem('diagnosticoId', data.diagnosticoId);
+              return data.orderId;
+            }}
+            onApprove={async (data) => {
+              const auth = getAuth();
+              const token = await auth.currentUser?.getIdToken();
+              const diagnosticoId = sessionStorage.getItem('diagnosticoId');
+
+              const res = await fetch(
+                `${API}/api/diagnostico/capture-order`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    orderId: data.orderID,
+                    diagnosticoId,
+                  }),
+                }
+              );
+              const result = await res.json();
+              if (result.success) {
+                sessionStorage.removeItem('diagnosticoId');
+                navigate('/diagnostico/exito');
+              } else {
+                setError('Error al procesar el pago. Por favor contacta con soporte.');
+              }
+            }}
+            onError={(err) => {
+              console.error('Error PayPal:', err);
+              setError('Error al procesar el pago. Por favor inténtalo de nuevo.');
+            }}
+          />
+        </PayPalScriptProvider>
 
         {/* Garantías */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
           {[
-            { icon: ShieldCheck, label: 'Pago seguro con Stripe' },
+            { icon: ShieldCheck, label: 'Pago seguro con PayPal' },
             { icon: Clock,       label: 'Informe en menos de 5 minutos' },
             { icon: Mail,        label: `Enviado a ${userEmail || 'tu email'}` },
           ].map(({ icon: Icon, label }) => (
