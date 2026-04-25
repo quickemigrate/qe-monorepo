@@ -11,6 +11,7 @@ import conocimientoRouter from './routes/conocimiento';
 import usuariosRouter from './routes/usuarios';
 import chatRouter from './routes/chat';
 import configRouter from './routes/config';
+import metricasRouter from './routes/metricas';
 import { db } from './firebase';
 
 dotenv.config();
@@ -57,6 +58,7 @@ app.use('/api/conocimiento', conocimientoRouter);
 app.use('/api/usuarios', usuariosRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/config', configRouter);
+app.use('/api/metricas', metricasRouter);
 
 async function initConfig() {
   const configRef = db.collection('config').doc('chat');
