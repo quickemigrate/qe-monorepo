@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Trash2, Search, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { X, Trash2, Search, Plus, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -70,6 +70,10 @@ export default function Conocimiento() {
   const [ingesting, setIngesting] = useState(false);
   const [ingestResult, setIngestResult] = useState<'success' | 'error' | null>(null);
 
+  // Sincronizar
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+
   // Buscador
   const [query, setQuery] = useState('');
   const [filtroPais, setFiltroPais] = useState('');
@@ -82,8 +86,9 @@ export default function Conocimiento() {
     setLoadingDocs(true);
     const token = await getToken();
     if (!token) return;
-    const res = await fetch(`${API}/api/conocimiento`, {
+    const res = await fetch(`${API}/api/conocimiento?_t=${Date.now()}`, {
       headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
     if (res.ok) {
       const data = await res.json();
@@ -93,6 +98,28 @@ export default function Conocimiento() {
   };
 
   useEffect(() => { fetchDocs(); }, []);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API}/api/conocimiento/sincronizar-pinecone`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSyncResult(`${data.sincronizados} documentos sincronizados, ${data.errores} errores`);
+      } else {
+        setSyncResult('Error en sincronización');
+      }
+    } catch {
+      setSyncResult('Error en sincronización');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este documento del índice?')) return;
@@ -186,18 +213,36 @@ export default function Conocimiento() {
         {/* ── TAB 1: DOCUMENTOS ── */}
         {tab === 'documentos' && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[14px] text-on-background/50">
-                {docs.length} documento{docs.length !== 1 ? 's' : ''} en el índice
-              </p>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="flex items-center gap-2 bg-on-background text-white px-4 py-2.5 rounded-xl
-                           text-[13.5px] font-semibold hover:opacity-90 active:scale-[0.98] transition"
-              >
-                <Plus size={15} />
-                Añadir Documento
-              </button>
+            <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-[14px] text-on-background/50">
+                  {docs.length} documento{docs.length !== 1 ? 's' : ''} en el índice
+                </p>
+                {syncResult && (
+                  <span className="text-[13px] text-on-background/60 bg-surface-container-low px-3 py-1 rounded-lg">
+                    {syncResult}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSync}
+                  disabled={syncing}
+                  className="flex items-center gap-2 border border-black/10 text-on-background/70 px-4 py-2.5 rounded-xl
+                             text-[13.5px] font-semibold hover:bg-surface-container-low active:scale-[0.98] transition disabled:opacity-50"
+                >
+                  <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} />
+                  {syncing ? 'Sincronizando...' : 'Sincronizar con Pinecone'}
+                </button>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="flex items-center gap-2 bg-on-background text-white px-4 py-2.5 rounded-xl
+                             text-[13.5px] font-semibold hover:opacity-90 active:scale-[0.98] transition"
+                >
+                  <Plus size={15} />
+                  Añadir Documento
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-black/5 overflow-hidden">
