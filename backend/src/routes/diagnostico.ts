@@ -57,6 +57,16 @@ router.post('/create-order', async (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
     });
 
+    let precioStarter = 59;
+    try {
+      const configDoc = await db.collection('config').doc('planes').get();
+      const configData = configDoc.data();
+      if (configData?.planes) {
+        const starterPlan = configData.planes.find((p: any) => p.id === 'starter');
+        if (starterPlan?.precio != null) precioStarter = starterPlan.precio;
+      }
+    } catch { /* fallback */ }
+
     const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
     request.prefer('return=representation');
     request.requestBody({
@@ -64,7 +74,7 @@ router.post('/create-order', async (req: Request, res: Response) => {
       purchase_units: [{
         amount: {
           currency_code: 'EUR',
-          value: '59.00',
+          value: precioStarter.toFixed(2),
         },
         description: 'Diagnóstico Migratorio IA — Quick Emigrate',
         custom_id: diagnosticoRef.id,

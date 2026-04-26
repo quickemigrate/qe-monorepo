@@ -1,0 +1,61 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+**/dist/
+build/
+**/build/
+.next/
+
+# Logs
+*.log
+**/logs/
+npm-debug.log*
+
+# Variables de entorno
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Cache
+.cache/
+**/.cache/
+.parcel-cache/
+.vite/
+
+# Sistema
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Assets pesados
+assets/logos/*.png
+**/public/*.png
+**/public/*.jpg
+**/public/*.ico
+**/public/*.svg
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# TypeScript cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Coverage
+coverage/
+**/coverage/
+
+# Misc
+*.map
+**/*.map
+.vercel/
+.railway/

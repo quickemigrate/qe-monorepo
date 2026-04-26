@@ -2,8 +2,41 @@ import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PLANS } from '../data';
+import { usePlanes } from '../hooks/usePlanes';
 
-const ServicesSection = () => (
+const PERIOD_MAP: Record<string, string> = {
+  unico: 'pago único',
+  mensual: 'al mes',
+  custom: 'servicio completo',
+  free: '',
+};
+
+const ServicesSection = () => {
+  const { planes, loading } = usePlanes();
+
+  const displayPlans = loading || planes.length === 0
+    ? PLANS
+    : planes
+        .filter(p => p.activo)
+        .sort((a, b) => a.orden - b.orden)
+        .map(p => {
+          const stat = PLANS.find(s => s.id === p.id);
+          return {
+            ...(stat ?? {}),
+            id: p.id,
+            name: p.nombre,
+            price: p.precioTexto,
+            period: PERIOD_MAP[p.tipo] ?? '',
+            description: p.descripcion || stat?.description || '',
+            features: p.features.length > 0 ? p.features : stat?.features ?? [],
+            cta: stat?.cta ?? '',
+            ctaLink: stat?.ctaLink ?? '#contacto',
+            isPopular: stat?.isPopular,
+            isFree: stat?.isFree,
+          };
+        });
+
+  return (
   <section id="servicios" className="py-24 px-6 bg-on-background text-white">
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -24,7 +57,7 @@ const ServicesSection = () => (
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {PLANS.map((plan, i) => (
+        {displayPlans.map((plan, i) => (
           <motion.div
             key={plan.id}
             initial={{ opacity: 0, y: 28 }}
@@ -117,6 +150,7 @@ const ServicesSection = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default ServicesSection;

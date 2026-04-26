@@ -40,7 +40,7 @@ const HeroSection = () => (
             Reservar diagnóstico
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <a href="#soluciones" className="bg-on-background text-surface-container-lowest px-8 py-4 rounded-full font-bold text-center hover:opacity-90 transition-opacity">
+          <a href="#servicios" className="bg-on-background text-surface-container-lowest px-8 py-4 rounded-full font-bold text-center hover:opacity-90 transition-opacity">
             Ver servicios
           </a>
         </div>

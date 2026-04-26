@@ -1,174 +1,154 @@
-# CLAUDE.md — Quick Emigrate (Q_E)
+# CLAUDE.md — Quick Emigrate (QE)
 
-## CONTEXTO DEL PROYECTO
-Quick Emigrate es una plataforma LegalTech SaaS para ayudar a latinoamericanos a emigrar legalmente a España. 
-- **Pablo** = CTO (técnico)
-- **Manu** = CEO (negocio/estrategia)
+## REGLAS PARA CLAUDE CODE
 
-## STACK TÉCNICO
-- **Frontend:** React + TypeScript + Vite + Tailwind + motion/react + lucide-react + Firebase Auth
-- **Backend:** Node.js + Express + TypeScript + firebase-admin + Resend + PayPal + Anthropic Claude API + PDFKit + Pinecone + Voyage AI
-- **DB:** Firestore (proyecto: `quick-emigrate`) + Pinecone (índice: `quickemigrate-legal`)
-- **Deploy:** Vercel (frontend) + Railway (backend)
-- **Dominio:** `quickemigrate.com`
-- **Repo:** `github.com/quickemigrate/qe-monorepo` (monorepo)
+# 1. No programar sin contexto
+- ANTES de escribir codigo: lee los archivos relevantes, revisa git log, entiende la arquitectura.
+- Si no tienes contexto suficiente, pregunta. No asumas.
+
+# 2. Respuestas cortas
+- Responde en 1-3 oraciones. Sin preambulos, sin resumen final.
+- No repitas lo que el usuario dijo. No expliques lo obvio.
+- Codigo habla por si mismo: no narres cada linea que escribes.
+
+# 3. No reescribir archivos completos
+- Usa Edit (reemplazo parcial), NUNCA Write para archivos existentes salvo que el cambio sea >80% del archivo.
+- Cambia solo lo necesario. No "limpies" codigo alrededor del cambio.
+
+# 4. No releer archivos ya leidos
+- Si ya leiste un archivo en esta conversacion, no lo vuelvas a leer salvo que haya cambiado.
+- Toma notas mentales de lo importante en tu primera lectura.
+
+# 5. Validar antes de declarar hecho
+- Despues de un cambio: compila, corre tests, o verifica que funciona.
+- Nunca digas "listo" sin evidencia de que funciona.
+
+# 6. Cero charla aduladora
+- No digas "Excelente pregunta", "Gran idea", "Perfecto", etc.
+- No halagues al usuario. Ve directo al trabajo.
+
+# 7. Soluciones simples
+- Implementa lo minimo que resuelve el problema. Nada mas.
+- No agregues abstracciones, helpers, tipos, validaciones, ni features que no se pidieron.
+- 3 lineas repetidas > 1 abstraccion prematura.
+
+# 8. No pelear con el usuario
+- Si el usuario dice "hazlo asi", hazlo asi. No debatas salvo riesgo real de seguridad o perdida de datos.
+- Si discrepas, menciona tu concern en 1 oracion y procede con lo que pidio.
+
+# 9. Leer solo lo necesario
+- No leas archivos completos si solo necesitas una seccion. Usa offset y limit.
+- Si sabes la ruta exacta, usa Read directo. No hagas Glob + Grep + Read cuando Read basta.
+
+# 10. No narrar el plan antes de ejecutar
+- No digas "Voy a leer el archivo, luego modificar la funcion, luego compilar...". Solo hazlo.
+- El usuario ve tus tool calls. No necesita un preview en texto.
+
+# 11. Paralelizar tool calls
+- Si necesitas leer 3 archivos independientes, lee los 3 en un solo mensaje, no uno por uno.
+- Menos roundtrips = menos tokens de contexto acumulado.
+
+# 12. No duplicar codigo en la respuesta
+- Si ya editaste un archivo, no copies el resultado en tu respuesta. El usuario lo ve en el diff.
+- Si creaste un archivo, no lo muestres entero en texto tambien.
+
+# 13. No usar Agent cuando Grep/Read basta
+- Agent duplica todo el contexto en un subproceso. Solo usalo para busquedas amplias o tareas complejas.
+- Para buscar una funcion o archivo especifico, usa Grep o Glob directo
+
+## CONTEXTO
+LegalTech SaaS: latinoamericanos→España. Pablo=CTO · Manu=CEO
+
+## STACK
+FE: React+TS+Vite+Tailwind+motion/react+lucide+Firebase Auth
+BE: Node+Express+TS+firebase-admin+Resend+PayPal+Anthropic+PDFKit+Pinecone+VoyageAI
+DB: Firestore(quick-emigrate) + Pinecone(quickemigrate-legal)
+Deploy: Vercel(FE)+Railway(BE) · dominio: quickemigrate.com · repo: github.com/quickemigrate/qe-monorepo
 
 ## URLS
-- Frontend: https://quickemigrate.com
-- Backend: https://qe-production.up.railway.app
-- Admin: `/admin/login`
-- Cliente: `/cliente/login`
-- Diagnóstico: `/diagnostico`
-- Conocimiento: `/admin/conocimiento`
+FE: https://quickemigrate.com · BE: https://qe-production.up.railway.app
+Paths: /admin/login · /cliente/login · /diagnostico · /admin/conocimiento
 
-## ESTRUCTURA DEL MONOREPO
-qe-monorepo/
-├── frontend/src/
-│   ├── components/
-│   │   ├── admin/AdminLayout.tsx
-│   │   └── client/ClientLayout.tsx
-│   └── pages/
-│       ├── admin/ (Dashboard, Leads, Expedientes, Blog, Conocimiento)
-│       └── client/ (Login, Dashboard)
-├── backend/src/
-│   ├── config/
-│   │   ├── firebase.ts
-│   │   ├── paypal.ts
-│   │   └── pinecone.ts
-│   ├── services/
-│   │   ├── embeddings.ts   ← Voyage AI
-│   │   └── rag.ts          ← ingestar, buscar, obtenerContextoLegal
-│   └── routes/
-│       ├── contact.ts
-│       ├── diagnostico.ts
-│       ├── expedientes.ts
-│       ├── leads.ts
-│       ├── articles.ts
-│       └── conocimiento.ts
-└── assets/logos/
-├── logo-dark-iso.png       ← PDF cabeceras (ruta: backend/src/assets/)
-├── logo-light-iso.png
-├── logo-dark-bg-iso.png
-└── logo-light-bg-iso.png
+## ESTRUCTURA
+FE components: frontend/src/components/{admin/AdminLayout,client/ClientLayout}.tsx
+FE landing: Navbar,Hero,Problem,Solution,HowItWorks,Services,Trust,FAQ,Contact,Footer
+FE pages admin: frontend/src/pages/admin/{Dashboard,Leads,Expedientes,Blog,Conocimiento}
+FE pages client: frontend/src/pages/client/{Login,Dashboard} · auth: ProtectedRoute+ClientProtectedRoute
+FE pages extra: /sobre-nosotros · /blog/:slug · /diagnostico/exito · Vercel Analytics+SpeedInsights
+BE config: backend/src/config/{firebase,paypal,pinecone}.ts
+BE services: backend/src/services/{embeddings←VoyageAI, rag←ingestar/buscar/contexto}.ts
+BE routes: backend/src/routes/{contact,diagnostico,expedientes,leads,articles,conocimiento}.ts
 
-## VARIABLES DE ENTORNO
+## ENV BACKEND (Railway)
+PORT=3001 · FRONTEND_URL · RESEND_{API_KEY,FROM_EMAIL} · CONTACT_EMAIL
+FIREBASE_SERVICE_ACCOUNT · ADMIN_EMAIL_{1,2}
+PAYPAL_{CLIENT_ID,CLIENT_SECRET} · PAYPAL_MODE=sandbox→live cuando empresa
+ANTHROPIC_API_KEY · PINECONE_{API_KEY,INDEX_NAME=quickemigrate-legal,INDEX_HOST=quickemigrate-legal-crf2ocj.svc.aped-4627-b74a.pinecone.io}
+VOYAGE_API_KEY
 
-### Backend (Railway)
-PORT=3001
-FRONTEND_URL=https://quickemigrate.com
-RESEND_API_KEY=...
-RESEND_FROM_EMAIL=Quick Emigrate hola@quickemigrate.com
-CONTACT_EMAIL=quickemigrate@gmail.com
-FIREBASE_SERVICE_ACCOUNT={...json compacto...}
-ADMIN_EMAIL_1=...
-ADMIN_EMAIL_2=...
-PAYPAL_CLIENT_ID=...
-PAYPAL_CLIENT_SECRET=...
-PAYPAL_MODE=sandbox  # cambiar a 'live' cuando haya empresa
-ANTHROPIC_API_KEY=...
-PINECONE_API_KEY=...
-PINECONE_INDEX_NAME=quickemigrate-legal
-PINECONE_INDEX_HOST=quickemigrate-legal-crf2ocj.svc.aped-4627-b74a.pinecone.io
-VOYAGE_API_KEY=...
+## ENV FRONTEND (Vercel)
+VITE_BACKEND_URL · VITE_FIREBASE_{API_KEY,AUTH_DOMAIN,PROJECT_ID,STORAGE_BUCKET,MESSAGING_SENDER_ID,APP_ID}
+VITE_ADMIN_EMAIL_{1,2} · VITE_PAYPAL_CLIENT_ID
 
-### Frontend (Vercel)
-VITE_BACKEND_URL=https://qe-production.up.railway.app
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=quick-emigrate.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=quick-emigrate
-VITE_FIREBASE_STORAGE_BUCKET=quick-emigrate.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=463770642277
-VITE_FIREBASE_APP_ID=...
-VITE_ADMIN_EMAIL_1=...
-VITE_ADMIN_EMAIL_2=...
-VITE_PAYPAL_CLIENT_ID=...
+## RUTAS BACKEND
+| Método | Ruta | Auth | Acción |
+|--------|------|------|--------|
+| POST | /api/contact | — | Resend+lead Firestore |
+| GET/PATCH | /api/leads | admin | CRUD leads |
+| GET/POST/PATCH | /api/expedientes | admin | CRUD expedientes |
+| GET | /api/client/expediente | cliente | timeline cliente |
+| GET/POST/PATCH | /api/articles | mixto | CMS blog |
+| POST | /api/diagnostico/create-order | — | Firestore+PayPal orden |
+| POST | /api/diagnostico/capture-order | — | PayPal→RAG→Claude→PDF→Resend |
+| GET | /api/diagnostico/:id | — | estado |
+| GET | /api/diagnostico/:id/pdf | cliente | descarga PDF (solo propietario) |
+| GET/POST/DELETE | /api/conocimiento | admin | CRUD KB |
+| GET | /api/conocimiento/search | admin | búsqueda semántica |
+| POST | /api/conocimiento/sincronizar-pinecone | admin | sync Firestore→Pinecone |
+| POST | /api/usuarios/registro | — | crea doc Firestore |
+| GET/PUT | /api/usuarios/perfil | cliente | onboarding+perfil |
 
-## LO QUE ESTÁ CONSTRUIDO ✅
+## FIRESTORE
+- leads: nombre,email,pais,interes,mensaje,estado
+- expedientes: nombre,email,pais,tipoVisado,estado,notas
+- articles: title,slug,excerpt,content,country,status,metaDescription · índice: status ASC+publishedAt DESC
+- diagnosticos: respuestas,estado,informe,pdfBase64,completadoEn
+- conocimiento: titulo,contenido,fuente,categoria,pais,url,fechaPublicacion,fechaIngesta
 
-### Frontend
-- Landing completa: Navbar, Hero, Problem, Solution, HowItWorks, 
-  ServicesSection (planes Free/Starter/Pro/Premium), Trust, FAQ, Contact, Footer
-- Páginas: `/sobre-nosotros`, `/blog`, `/blog/:slug`, `/diagnostico`, `/diagnostico/exito`
-- Admin panel: Dashboard, Leads, Expedientes, Blog CMS (TipTap), Conocimiento
-- Área cliente: login + dashboard con timeline
-- Firebase Auth con ProtectedRoute y ClientProtectedRoute
-- Vercel Analytics + Speed Insights
-- Logos integrados en: Navbar, Footer, AdminLayout, ClientLayout, LoginPages
-
-### Backend
-- `/api/contact` → Resend email + lead en Firestore
-- `/api/leads` (GET/PATCH) — protegido verifyToken
-- `/api/expedientes` (GET/POST/PATCH) — protegido
-- `/api/client/expediente` (GET) — token Firebase cliente
-- `/api/articles` — CMS público y admin
-- `/api/diagnostico/create-order` → Firestore + PayPal orden
-- `/api/diagnostico/capture-order` → captura PayPal → RAG contexto → Claude API → PDFKit → Resend
-- `/api/diagnostico/:id` → estado del diagnóstico
-- `/api/conocimiento` (GET/POST/DELETE/search) — protegido
-
-### RAG (Retrieval Augmented Generation)
-- **Pinecone** como vector DB (índice: `quickemigrate-legal`, 1024 dims, cosine, us-east-1)
-- **Voyage AI** (`voyage-3`) para embeddings vía SDK `voyageai`
-- **Firestore** colección `conocimiento` para texto completo
-- Flujo: documento → embedding → Pinecone + Firestore
-- En diagnóstico: búsqueda semántica → contexto legal → prompt de Claude
-- Admin `/admin/conocimiento`: CRUD de documentos + buscador semántico
-- 5 documentos base ingresados: visados, estudios, residencia, arraigo, nacionalidades
-
-## FIRESTORE — COLECCIONES
-- `leads`: nombre, email, pais, interes, mensaje, estado
-- `expedientes`: nombre, email, pais, tipoVisado, estado, notas
-- `articles`: title, slug, excerpt, content, country, status, metaDescription
-- `diagnosticos`: respuestas formulario + estado + informe generado
-- `conocimiento`: titulo, contenido, fuente, categoria, pais, url, fechaPublicacion, fechaIngesta
-- Índice compuesto: `articles` → status ASC + publishedAt DESC
+## RAG
+Pinecone(quickemigrate-legal, 1024d, cosine, us-east-1) + voyageai SDK voyage-3 + Firestore(conocimiento)
+Ingest: texto→generateEmbedding→Pinecone+Firestore
+Query: búsqueda semántica→contexto legal→Claude prompt
 
 ## MODELO DE NEGOCIO (en revisión)
-- **Starter 59€** — Diagnóstico IA único + PDF + email
-- **Pro 39€/mes** — Área cliente + seguimiento + chat IA (límite mensajes)
-- **Premium** — Todo Pro + asesor humano
+Starter 59€: diagnóstico IA+PDF · Pro 39€/mes: área cliente+chat IA · Premium: Pro+asesor humano
 
 ## LOGOS
-- **PDF cabeceras:** `backend/src/assets/logo-dark-iso.png`
-```typescript
-  const logoPath = path.join(__dirname, '../assets/logo-dark-iso.png');
-```
-- **PDF portada y página final:** mismo path
-- **Emails:** SVG placeholder con Q verde (pendiente SVG real)
-- **Web:** `/public/logo-light.png` y `/public/logo-dark.png`
+PDF: `path.join(__dirname, '../assets/logo-dark-iso.png')` (cabeceras, portada, final)
+Web: /public/logo-{light,dark}.png · Email: SVG placeholder (pendiente)
 
-## FLUJO DE REGISTRO Y ONBOARDING
-1. `/cliente/login` — toggle login/registro (mismo componente)
-2. Registro: `createUserWithEmailAndPassword` → POST `/api/usuarios/registro` (público) → `/cliente/onboarding`
-3. Login: verifica `perfilCompleto` en Firestore → si false → `/cliente/onboarding`, si true → `/cliente/inicio`
-4. Onboarding: wizard 3 pasos → PUT `/api/usuarios/perfil` (verifyClientToken) → `perfilCompleto: true` → `/cliente/inicio`
-5. `OnboardingGuard` envuelve todas las rutas `/cliente/*` excepto login y onboarding
-
-## ENDPOINTS CLIENTE (verifyClientToken)
-- `GET /api/usuarios/perfil` — devuelve doc completo del usuario en Firestore
-- `PUT /api/usuarios/perfil` — guarda onboarding, setea perfilCompleto: true
-- `POST /api/usuarios/registro` — público, crea doc Firestore tras Firebase Auth signup
-- `GET /api/diagnostico/:id/pdf` — descarga PDF del diagnóstico (solo propietario)
+## FLUJO CLIENTE
+1. /cliente/login — toggle login/registro
+2. Registro: createUserWithEmailAndPassword → POST /api/usuarios/registro → /cliente/onboarding
+3. Login: perfilCompleto? → /cliente/inicio : /cliente/onboarding
+4. Onboarding: wizard 3 pasos → PUT /api/usuarios/perfil → perfilCompleto:true → /cliente/inicio
+5. OnboardingGuard protege /cliente/* (excepto login+onboarding)
 
 ## DIAGNÓSTICO PDF
-- El PDF se guarda como base64 en `diagnosticos/{id}.pdfBase64` tras generarlo
-- Limite: documentos Firestore 1MB — para PDFs grandes puede fallar (futuro: Firebase Storage)
-- El campo `completadoEn` se guarda junto con `estado: 'completado'`
+pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Storage) · campo completadoEn
+
+## NOTAS TÉCNICAS
+- CORS: localhost:3000,5173 · quickemigrate.com · www.quickemigrate.com · *.vercel.app
+- Railway: port 3001
+- PayPal: client-side (create-order→popup→capture-order, no webhook) · sandbox: developer.paypal.com
+- Voyage AI: SDK `voyageai` (NO anthropic.embeddings — no disponible en v0.90.0)
+- Logo PDFKit: backend/src/assets/ (no raíz monorepo)
 
 ## PENDIENTES
-- [ ] SVG real del logo en emails
+- [ ] SVG logo real en emails
 - [ ] Bug PDF: "Semana 2-3:" se corta en próximos pasos
-- [ ] Scraper BOE automático (cron job Railway)
-- [ ] PayPal modo live (cuando haya empresa constituida — cambiar PAYPAL_MODE=live)
-- [ ] Google Search Console — verificar dominio
-- [ ] BD scraping de Manu → conector a Pinecone (futuro)
-- [ ] Migrar PDFs a Firebase Storage (evitar límite 1MB de Firestore)
-
-## NOTAS TÉCNICAS IMPORTANTES
-- CORS configurado para: localhost:3000, localhost:5173, quickemigrate.com, www.quickemigrate.com, *.vercel.app
-- Railway puerto: 3001 (configurado en Settings → Public Networking)
-- PayPal: flujo client-side capture (no webhook) — create-order → PayPal popup → capture-order
-- PayPal sandbox: configurar en developer.paypal.com → Apps & Credentials
-- Voyage AI SDK: `voyageai` (NO anthropic.embeddings — no disponible en v0.90.0)
-- El logo para PDFKit está en `backend/src/assets/` (no en raíz del monorepo)
-Cópialo y reemplaza el CLAUDE.md en la raíz del monorepo.
+- [ ] Scraper BOE automático (cron Railway)
+- [ ] PayPal live (PAYPAL_MODE=live)
+- [ ] Google Search Console: verificar dominio
+- [ ] BD scraping Manu → Pinecone
+- [ ] Migrar PDFs a Firebase Storage
