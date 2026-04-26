@@ -217,7 +217,7 @@ export default function DiagnosticoPage() {
             <div>+ Checklist de documentos</div>
             <div>+ Plazos estimados</div>
           </div>
-          <div className="text-[56px] font-bold leading-none" style={{ color: '#25D366' }}>59€</div>
+          <div className="text-[56px] font-bold leading-none" style={{ color: '#25D366' }}>{starterPrecioTexto}</div>
           <div className="text-[13px] text-white/40 mt-1">pago único</div>
         </div>
 
