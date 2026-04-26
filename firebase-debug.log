@@ -1,0 +1,61 @@
+[debug] [2026-04-26T18:17:38.277Z] ----------------------------------------------------------------------
+[debug] [2026-04-26T18:17:38.280Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy --only firestore:indexes
+[debug] [2026-04-26T18:17:38.280Z] CLI Version:   15.15.0
+[debug] [2026-04-26T18:17:38.280Z] Platform:      darwin
+[debug] [2026-04-26T18:17:38.281Z] Node Version:  v24.12.0
+[debug] [2026-04-26T18:17:38.281Z] Time:          Sun Apr 26 2026 20:17:38 GMT+0200 (Central European Summer Time)
+[debug] [2026-04-26T18:17:38.281Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-26T18:17:39.319Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-26T18:17:39.319Z] > authorizing via signed-in user (quickemigrate@gmail.com)
+[debug] [2026-04-26T18:17:39.319Z] [iam] checking project quick-emigrate for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-04-26T18:17:39.320Z] Checked if tokens are valid: false, expires at: 1777223610645
+[debug] [2026-04-26T18:17:39.320Z] Checked if tokens are valid: false, expires at: 1777223610645
+[debug] [2026-04-26T18:17:39.320Z] > refreshing access token with scopes: []
+[debug] [2026-04-26T18:17:39.321Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-04-26T18:17:39.321Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-26T18:17:39.540Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-04-26T18:17:39.540Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-26T18:17:39.566Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/quick-emigrate:testIamPermissions [none]
+[debug] [2026-04-26T18:17:39.566Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/quick-emigrate:testIamPermissions  x-goog-user-project=quick-emigrate
+[debug] [2026-04-26T18:17:39.567Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/quick-emigrate:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-04-26T18:17:40.283Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/quick-emigrate:testIamPermissions 200
+[debug] [2026-04-26T18:17:40.283Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/quick-emigrate:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'quick-emigrate'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-04-26T18:17:40.287Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:40.287Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:40.287Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) [none]
+[debug] [2026-04-26T18:17:40.622Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) 200
+[debug] [2026-04-26T18:17:40.622Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) {"name":"projects/quick-emigrate/databases/(default)","uid":"daa627ce-3a20-49f1-b820-698586e3ce19","createTime":"2026-04-21T17:56:58.740875Z","updateTime":"2026-04-21T17:56:58.740875Z","locationId":"eur3","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-04-26T17:17:40.616170Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"e","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"ILe75puQjJQDMPye0dTH/5MD"}
+[info] i  firestore: reading indexes from firestore.indexes.json... 
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-04-26T18:17:40.624Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:40.624Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:40.624Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/quick-emigrate:test [none]
+[debug] [2026-04-26T18:17:40.624Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/quick-emigrate:test [omitted]
+[debug] [2026-04-26T18:17:41.486Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/quick-emigrate:test 200
+[debug] [2026-04-26T18:17:41.486Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/quick-emigrate:test {}
+[info] ✔  cloud.firestore: rules file firestore.rules compiled successfully 
+[info] i  firestore: deploying indexes... 
+[debug] [2026-04-26T18:17:41.489Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.489Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.489Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/indexes [none]
+[debug] [2026-04-26T18:17:41.567Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/indexes 200
+[debug] [2026-04-26T18:17:41.567Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/indexes {"indexes":[{"name":"projects/quick-emigrate/databases/(default)/collectionGroups/articles/indexes/CICAgOjXh4EK","queryScope":"COLLECTION","fields":[{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"publishedAt","order":"DESCENDING"},{"fieldPath":"__name__","order":"DESCENDING"}],"state":"READY","density":"SPARSE_ALL"}]}
+[debug] [2026-04-26T18:17:41.567Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.567Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.567Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* [none]
+[debug] [2026-04-26T18:17:41.643Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* 200
+[debug] [2026-04-26T18:17:41.643Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* {"fields":[{"name":"projects/quick-emigrate/databases/(default)/collectionGroups/__default__/fields/*","indexConfig":{"indexes":[{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"ASCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"DESCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","arrayConfig":"CONTAINS"}],"state":"READY"}]}}]}
+[debug] [2026-04-26T18:17:41.643Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.643Z] Checked if tokens are valid: true, expires at: 1777231058541
+[debug] [2026-04-26T18:17:41.644Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) [none]
+[debug] [2026-04-26T18:17:41.725Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) 200
+[debug] [2026-04-26T18:17:41.725Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/quick-emigrate/databases/(default) {"name":"projects/quick-emigrate/databases/(default)","uid":"daa627ce-3a20-49f1-b820-698586e3ce19","createTime":"2026-04-21T17:56:58.740875Z","updateTime":"2026-04-21T17:56:58.740875Z","locationId":"eur3","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-04-26T17:17:41.718886Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"e","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IKnhqZyQjJQDMPye0dTH/5MD"}
+[info] i  firestore: The following indexes are defined in your project but are not present in your firestore indexes file:
+	(articles) -- (status,ASCENDING) (publishedAt,DESCENDING)  -- Density:SPARSE_ALL  

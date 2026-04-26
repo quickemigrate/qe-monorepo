@@ -139,6 +139,7 @@ Responde siempre en español, de forma clara, empática y profesional.
 Solo responde preguntas relacionadas con el proceso migratorio a España.
 Si te preguntan algo fuera de este ámbito, redirige amablemente la conversación.
 Toda la información legal y económica que manejas está actualizada a 2026. No menciones fechas de actualización anteriores.
+Sé conciso. Máximo 400 palabras por respuesta salvo que el usuario pida explícitamente una ruta completa o plan detallado.
 
 Usa formato Markdown en tus respuestas para mejorar la legibilidad:
 - Usa **negrita** para términos importantes
@@ -164,7 +165,7 @@ Situación económica: ${diagData.medios || 'No especificado'}
 Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible'}`;
 
         if (diagData.informe) {
-          sistemaPrompt += `\n\nRESUMEN DEL INFORME PREVIO:\n${diagData.informe.substring(0, 1000)}...`;
+          sistemaPrompt += `\n\nINFORME PREVIO COMPLETO:\n${diagData.informe.substring(0, 3500)}`;
         }
       }
     }
