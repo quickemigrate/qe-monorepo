@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quick Emigrate — Diagnóstico Migratorio IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0A0A;
+    --surface:#111111;
+    --surface-2:#161616;
+    --border:rgba(255,255,255,0.07);
+    --border-strong:rgba(255,255,255,0.12);
+    --green:#25D366;
+    --green-dim:rgba(37,211,102,0.12);
+    --green-glow:rgba(37,211,102,0.15);
+    --text:#FFFFFF;
+    --text-muted:rgba(255,255,255,0.45);
+    --text-soft:rgba(255,255,255,0.65);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  html{scroll-behavior:smooth}
+  body{overflow-x:hidden;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;border:0;background:0;color:inherit;cursor:pointer}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;
+    transition:background .25s ease, border-color .25s ease, backdrop-filter .25s ease, padding .25s ease;
+    border-bottom:1px solid transparent;
+  }
+  .nav.scrolled{
+    background:rgba(10,10,10,0.72);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    border-bottom-color:var(--border);
+    padding:14px 32px;
+  }
+  .logo{
+    font-weight:800;font-size:18px;letter-spacing:-0.02em;
+    color:var(--green);
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green-glow)}
+  .nav-cta{
+    padding:10px 18px;border-radius:100px;
+    border:1px solid rgba(37,211,102,0.45);
+    background:transparent;color:var(--green);
+    font-weight:500;font-size:14px;letter-spacing:-0.005em;
+    transition:background .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .nav-cta:hover{background:rgba(37,211,102,0.08);border-color:var(--green);transform:translateY(-1px)}
+
+  /* ---------- LAYOUT ---------- */
+  section{padding:120px 32px;position:relative}
+  .wrap{max-width:1120px;margin:0 auto}
+  .center{text-align:center}
+
+  /* ambient grid bg in hero */
+  .hero{
+    padding-top:180px;padding-bottom:140px;
+    position:relative;overflow:hidden;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:-20% -20% auto -20%;height:80vh;
+    background:
+      radial-gradient(60% 50% at 50% 30%, rgba(37,211,102,0.10), transparent 70%);
+    pointer-events:none;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 50% at 50% 30%, black 30%, transparent 75%);
+            mask-image:radial-gradient(ellipse 70% 50% at 50% 30%, black 30%, transparent 75%);
+  }
+  .hero-inner{position:relative;z-index:1;max-width:760px;margin:0 auto;text-align:center}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 16px 8px 12px;border-radius:100px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--border);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    font-size:13px;color:var(--text-soft);font-weight:500;
+    opacity:0;
+  }
+  .badge .pulse{
+    width:7px;height:7px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 10px var(--green-glow);
+    will-change:transform,opacity;
+  }
+  .badge .sep{color:var(--text-muted);margin:0 2px}
+
+  h1.hero-title{
+    margin-top:28px;
+    font-size:clamp(40px, 7vw, 72px);
+    line-height:1.05;letter-spacing:-0.035em;
+    font-weight:800;
+  }
+  h1.hero-title .word{display:inline-block;will-change:transform,opacity}
+  h1.hero-title .accent{color:var(--green)}
+
+  .subtitle{
+    margin:24px auto 0;max-width:540px;
+    font-size:18px;line-height:1.55;color:var(--text-muted);
+    font-weight:400;opacity:0;
+  }
+
+  .cta-wrap{margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0}
+  .btn-primary{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:18px 40px;border-radius:100px;
+    background:var(--green);color:#062810;
+    font-weight:600;font-size:16px;letter-spacing:-0.005em;
+    transition:transform .25s ease, box-shadow .25s ease, background .2s ease;
+    box-shadow:0 0 0 0 rgba(37,211,102,0);
+    will-change:transform;
+  }
+  .btn-primary:hover{
+    transform:scale(1.03);
+    background:#2adc6c;
+    box-shadow:0 8px 40px rgba(37,211,102,0.35), 0 0 0 6px rgba(37,211,102,0.08);
+  }
+  .btn-primary .arrow{transition:transform .25s ease}
+  .btn-primary:hover .arrow{transform:translateX(4px)}
+  .cta-note{font-size:12px;color:var(--text-muted);letter-spacing:.01em}
+  .cta-note span{margin:0 6px;opacity:.5}
+
+  /* ---------- SECTION HEAD ---------- */
+  .sec-head{max-width:680px;margin:0 auto 64px;text-align:center}
+  .sec-head h2{
+    font-size:clamp(32px, 4.5vw, 48px);
+    line-height:1.1;letter-spacing:-0.03em;font-weight:800;
+  }
+  .sec-head p{margin-top:14px;color:var(--text-muted);font-size:17px;line-height:1.5}
+
+  /* ---------- INCLUDES CARDS ---------- */
+  .cards{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:32px;
+    opacity:0;transform:translateY(40px);
+    transition:border-color .3s ease, transform .3s ease;
+    position:relative;overflow:hidden;
+  }
+  .card:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+  .card .icon{
+    width:48px;height:48px;border-radius:50%;
+    background:var(--green-dim);
+    color:var(--green);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:20px;font-weight:600;
+    margin-bottom:24px;
+    border:1px solid rgba(37,211,102,0.18);
+  }
+  .card h3{font-size:18px;font-weight:600;letter-spacing:-0.015em;margin-bottom:10px}
+  .card p{font-size:15px;line-height:1.55;color:var(--text-muted)}
+
+  /* ---------- HOW IT WORKS / TIMELINE ---------- */
+  .timeline{
+    max-width:720px;margin:0 auto;
+    position:relative;
+    padding-left:48px;
+  }
+  .timeline::before{
+    content:"";position:absolute;left:15px;top:8px;bottom:8px;width:2px;
+    background:linear-gradient(to bottom, var(--green), rgba(37,211,102,0.06));
+    border-radius:2px;
+  }
+  .step{
+    position:relative;
+    padding:6px 0 56px;
+    opacity:0;transform:translateX(-30px);
+  }
+  .step:last-child{padding-bottom:0}
+  .step .dot{
+    position:absolute;left:-40px;top:6px;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--green);
+    box-shadow:0 0 0 4px rgba(37,211,102,0.12);
+  }
+  .step .num{
+    font-size:12px;font-weight:600;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--green);
+    margin-bottom:8px;
+  }
+  .step h3{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px}
+  .step p{color:var(--text-muted);font-size:16px;line-height:1.55;max-width:520px}
+
+  /* ---------- PRICE / FINAL CTA ---------- */
+  .price-card{
+    max-width:640px;margin:0 auto;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:28px;
+    padding:56px 40px;
+    text-align:center;
+    opacity:0;transform:scale(.97);
+    position:relative;overflow:hidden;
+  }
+  .price-card::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(80% 60% at 50% 0%, rgba(37,211,102,0.07), transparent 60%);
+    pointer-events:none;
+  }
+  .price-card > *{position:relative}
+  .price-label{
+    display:inline-block;font-size:12px;font-weight:600;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--green);
+    padding:6px 12px;border-radius:100px;
+    background:var(--green-dim);
+    border:1px solid rgba(37,211,102,0.2);
+  }
+  .price-old{
+    margin-top:24px;font-size:16px;color:var(--text-muted);text-decoration:line-through;
+    text-decoration-thickness:1px;
+  }
+  .price-now{
+    font-size:80px;font-weight:800;color:var(--green);
+    letter-spacing:-0.04em;line-height:1;
+    margin-top:6px;
+  }
+  .price-desc{margin-top:14px;color:var(--text-soft);font-size:15px}
+  .price-list{
+    list-style:none;
+    margin:36px auto 36px;
+    max-width:380px;
+    text-align:left;
+    display:grid;gap:14px;
+  }
+  .price-list li{
+    display:flex;align-items:center;gap:12px;
+    font-size:15px;color:var(--text-soft);
+  }
+  .price-list .check{
+    flex-shrink:0;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--green-dim);
+    color:var(--green);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;
+    border:1px solid rgba(37,211,102,0.25);
+  }
+  .btn-full{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    width:100%;
+    padding:20px 32px;border-radius:100px;
+    background:var(--green);color:#062810;
+    font-weight:600;font-size:16px;
+    transition:transform .25s ease, box-shadow .25s ease, background .2s ease;
+  }
+  .btn-full:hover{
+    transform:translateY(-2px);
+    background:#2adc6c;
+    box-shadow:0 12px 48px rgba(37,211,102,0.35), 0 0 0 6px rgba(37,211,102,0.08);
+  }
+  .price-foot{margin-top:18px;font-size:13px;color:var(--text-muted)}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:48px 32px 64px;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:13px;
+    border-top:1px solid var(--border);
+  }
+  footer .sep{margin:0 10px;opacity:.5}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:880px){
+    .cards{grid-template-columns:1fr}
+    section{padding:88px 22px}
+    .hero{padding-top:140px;padding-bottom:96px}
+    .nav{padding:14px 20px}
+    .nav.scrolled{padding:12px 20px}
+    .price-card{padding:44px 24px}
+    .price-now{font-size:64px}
+    .timeline{padding-left:36px}
+    .step .dot{left:-32px}
+  }
+  @media (max-width:480px){
+    .nav-cta{padding:9px 14px;font-size:13px}
+    .badge{font-size:12px}
+    .btn-primary{padding:16px 28px;font-size:15px;width:100%;justify-content:center}
+    .cta-note{font-size:11px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .badge,.subtitle,.cta-wrap,.card,.step,.price-card{opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <a href="#" class="logo" aria-label="Quick Emigrate">
+    <span class="logo-dot"></span>QE
+  </a>
+  <a href="https://quickemigrate.com/diagnostico" class="nav-cta">Obtener diagnóstico</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge" id="badge">
+      <span class="pulse" id="pulse"></span>
+      <span>Early Access<span class="sep"> · </span>Solo 19€<span class="sep"> · </span>Plazas limitadas</span>
+    </div>
+
+    <h1 class="hero-title" id="heroTitle"></h1>
+
+    <p class="subtitle" id="subtitle">
+      Diagnóstico migratorio con IA. Sabrás exactamente qué visado pedir, qué documentos preparar y cuál es tu probabilidad real de éxito. En minutos.
+    </p>
+
+    <div class="cta-wrap" id="ctaWrap">
+      <a href="https://quickemigrate.com/diagnostico" class="btn-primary">
+        Obtener mi diagnóstico — 19€
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <div class="cta-note">
+        Pago único<span>·</span>Sin suscripción<span>·</span>Acceso inmediato
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INCLUDES -->
+<section id="incluye">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Todo lo que necesitas saber antes de salir.</h2>
+      <p>Sin información genérica. Solo lo que aplica a ti.</p>
+    </div>
+    <div class="cards" id="cards">
+      <article class="card">
+        <div class="icon" aria-hidden="true">→</div>
+        <h3>Vía migratoria exacta</h3>
+        <p>El visado exacto para tu perfil. No una lista de 10 opciones, una recomendación concreta basada en tu situación.</p>
+      </article>
+      <article class="card">
+        <div class="icon" aria-hidden="true">✓</div>
+        <h3>Checklist de documentos</h3>
+        <p>Qué documentos necesitas, en qué orden conseguirlos y cuánto tiempo lleva cada uno. Sin sorpresas de última hora.</p>
+      </article>
+      <article class="card">
+        <div class="icon" aria-hidden="true">%</div>
+        <h3>Probabilidad de éxito</h3>
+        <p>Un porcentaje real basado en tu perfil. Con los factores que suman y los que restan, para que puedas mejorarlos.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="como">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Tres pasos. Menos de 10 minutos.</h2>
+    </div>
+    <ol class="timeline" id="timeline">
+      <li class="step">
+        <span class="dot"></span>
+        <div class="num">Paso 1</div>
+        <h3>Cuéntanos tu situación</h3>
+        <p>Completas un perfil rápido: país de origen, objetivo, situación económica y plazo.</p>
+      </li>
+      <li class="step">
+        <span class="dot"></span>
+        <div class="num">Paso 2</div>
+        <h3>La IA analiza tu caso</h3>
+        <p>Nuestro sistema cruza tu perfil con la normativa vigente de extranjería española actualizada a 2026.</p>
+      </li>
+      <li class="step">
+        <span class="dot"></span>
+        <div class="num">Paso 3</div>
+        <h3>Recibes tu diagnóstico</h3>
+        <p>Un informe PDF personalizado en tu email con tu ruta migratoria, checklist y próximos pasos.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- PRICE / FINAL CTA -->
+<section id="precio">
+  <div class="wrap">
+    <div class="price-card" id="priceCard">
+      <span class="price-label">Early Access</span>
+      <div class="price-old"><s>59€</s></div>
+      <div class="price-now">19€</div>
+      <div class="price-desc">Pago único. Sin renovaciones. Sin sorpresas.</div>
+
+      <ul class="price-list">
+        <li><span class="check">✓</span>Informe PDF personalizado</li>
+        <li><span class="check">✓</span>Vía migratoria recomendada</li>
+        <li><span class="check">✓</span>Checklist de documentos</li>
+        <li><span class="check">✓</span>Probabilidad de éxito estimada</li>
+        <li><span class="check">✓</span>Próximos pasos inmediatos</li>
+        <li><span class="check">✓</span>Acceso al área de cliente</li>
+      </ul>
+
+      <a href="https://quickemigrate.com/diagnostico" class="btn-full">
+        Obtener mi diagnóstico ahora
+        <span aria-hidden="true">→</span>
+      </a>
+      <div class="price-foot">Recibirás tu diagnóstico en menos de 5 minutos tras el pago.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 Quick Emigrate<span class="sep">·</span>quickemigrate.com<span class="sep">·</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="197176757859686c707a727c74707e6b786d7c377a7674">[email&#160;protected]</a>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/4.0.0/anime.iife.min.js"></script>
+<script>
+(function(){
+  // Anime.js v4 IIFE exposes a global `anime` namespace with named functions.
+  const { animate, stagger, createTimeline } = anime;
+
+  /* ---- split hero title into words ---- */
+  const heroTitle = document.getElementById('heroTitle');
+  const fullTitle = 'Tu ruta para emigrar a España, clara desde el primer día.';
+  // Build with "clara" highlighted
+  const words = fullTitle.split(' ');
+  heroTitle.innerHTML = words.map(w => {
+    const clean = w.replace(/[.,]/g,'');
+    const isAccent = clean.toLowerCase() === 'clara';
+    const cls = 'word' + (isAccent ? ' accent' : '');
+    return `<span class="${cls}">${w}</span>`;
+  }).join(' ');
+
+  /* ---- HERO TIMELINE ---- */
+  const tl = createTimeline({ defaults: { ease: 'outExpo' } });
+
+  tl.add('#badge', {
+    opacity: [0, 1],
+    translateY: [-10, 0],
+    duration: 700,
+  }, 0)
+  .add('#heroTitle .word', {
+    opacity: [0, 1],
+    translateY: [30, 0],
+    duration: 800,
+    delay: stagger(60),
+  }, 100)
+  .add('#subtitle', {
+    opacity: [0, 1],
+    translateY: [10, 0],
+    duration: 700,
+  }, 400)
+  .add('#ctaWrap', {
+    opacity: [0, 1],
+    scale: [0.95, 1],
+    duration: 700,
+  }, 600);
+
+  /* ---- pulse dot loop ---- */
+  animate('#pulse', {
+    scale: [
+      { to: 1.4, duration: 800, ease: 'inOutSine' },
+      { to: 1,   duration: 800, ease: 'inOutSine' }
+    ],
+    opacity: [
+      { to: 0.4, duration: 800, ease: 'inOutSine' },
+      { to: 1,   duration: 800, ease: 'inOutSine' }
+    ],
+    loop: true,
+  });
+
+  /* ---- NAV scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 50) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---- IO helper ---- */
+  function observe(els, fn, opts={threshold:0.18}) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          fn(e.target);
+          io.unobserve(e.target);
+        }
+      });
+    }, opts);
+    els.forEach(el => io.observe(el));
+  }
+
+  /* ---- CARDS reveal ---- */
+  const cards = document.querySelectorAll('#cards .card');
+  observe([document.getElementById('cards')], () => {
+    animate('#cards .card', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+      duration: 800,
+      ease: 'outExpo',
+      delay: stagger(120),
+    });
+  });
+
+  /* ---- TIMELINE STEPS reveal ---- */
+  observe([document.getElementById('timeline')], () => {
+    animate('#timeline .step', {
+      opacity: [0, 1],
+      translateX: [-30, 0],
+      duration: 800,
+      ease: 'outExpo',
+      delay: stagger(140),
+    });
+  });
+
+  /* ---- PRICE CARD reveal ---- */
+  observe([document.getElementById('priceCard')], (el) => {
+    animate(el, {
+      opacity: [0, 1],
+      scale: [0.97, 1],
+      duration: 900,
+      ease: 'outExpo',
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

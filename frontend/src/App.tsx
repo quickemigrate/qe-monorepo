@@ -2,14 +2,7 @@ import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import HeroSection from './components/HeroSection';
-import ProblemSection from './components/ProblemSection';
-import SolutionSection from './components/SolutionSection';
-import HowItWorksSection from './components/HowItWorksSection';
-import ServicesSection from './components/ServicesSection';
-import TrustSection from './components/TrustSection';
-import FaqSection from './components/FaqSection';
-import ContactSection from './components/ContactSection';
+import EarlyAccessLanding from './pages/EarlyAccessLanding';
 import AboutPage from './pages/AboutPage';
 import { BlogListPage } from './pages/BlogPage';
 import ArticlePage from './pages/ArticlePage';
@@ -36,31 +29,17 @@ import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 
-const HomePage = () => (
-  <div className="bg-surface-container-lowest min-h-screen font-sans selection:bg-primary-container/30">
-    <main>
-      <HeroSection />
-      <ProblemSection />
-      <SolutionSection />
-      <HowItWorksSection />
-      <ServicesSection />
-      <TrustSection />
-      <FaqSection />
-      <ContactSection />
-    </main>
-  </div>
-);
-
 function AppShell() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
   const isClient = location.pathname.startsWith('/cliente');
+  const isHome = location.pathname === '/';
 
   return (
     <div className="font-sans selection:bg-primary-container/30">
-      {!isAdmin && !isClient && <Navbar />}
+      {!isAdmin && !isClient && !isHome && <Navbar />}
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<EarlyAccessLanding />} />
         <Route path="/nosotros" element={<AboutPage />} />
         <Route path="/blog" element={<BlogListPage />} />
         <Route path="/blog/:slug" element={<ArticlePage />} />
@@ -84,7 +63,7 @@ function AppShell() {
         <Route path="/cliente/expediente" element={<ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute>} />
         <Route path="/cliente/chat" element={<ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute>} />
       </Routes>
-      {!isAdmin && !isClient && <Footer />}
+      {!isAdmin && !isClient && !isHome && <Footer />}
     </div>
   );
 }

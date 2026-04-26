@@ -102,7 +102,9 @@ export default function Inicio() {
           const data = await res.json();
           setUserData(data.data);
           if (data.data?.diagnosticoId) {
-            const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`);
+            const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
             if (diagRes.ok) setDiagnostico(await diagRes.json());
           }
         }

@@ -124,7 +124,7 @@ router.post('/', async (req: Request, res: Response) => {
           <!-- FOOTER -->
           <tr>
             <td style="background-color:#1A1C1C;padding:24px 40px;text-align:center;">
-              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.3);">© 2025 Quick Emigrate — Mensaje generado automáticamente</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.3);">© 2026 Quick Emigrate — Mensaje generado automáticamente</p>
               <p style="margin:8px 0 0 0;font-size:12px;color:rgba(255,255,255,0.2);">Tu ruta hacia España, clara y guiada.</p>
             </td>
           </tr>

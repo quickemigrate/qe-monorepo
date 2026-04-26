@@ -97,9 +97,7 @@ router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) =
       return res.status(403).json({ success: false, error: 'Acceso no autorizado' });
     }
 
-    const userData = userDoc.data()!;
-
-    if (!['pro', 'premium'].includes(userData.plan)) {
+    if (!['pro', 'premium'].includes(userDoc.data()!.plan)) {
       return res.status(403).json({
         success: false,
         error: 'El chat IA está disponible solo para planes Pro y Premium',
@@ -109,15 +107,32 @@ router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) =
     const configDoc = await db.collection('config').doc('chat').get();
     const config = configDoc.data() || { limiteMensajesPro: 50, limiteMensajesPremium: 200 };
 
-    const limite = userData.plan === 'premium'
-      ? config.limiteMensajesPremium
-      : config.limiteMensajesPro;
+    const userRef = db.collection('usuarios').doc(userEmail);
+    let userData: FirebaseFirestore.DocumentData;
 
-    if ((userData.mensajesUsados || 0) >= limite) {
-      return res.status(429).json({
-        success: false,
-        error: `Has alcanzado el límite de ${limite} mensajes de tu plan`,
+    try {
+      userData = await db.runTransaction(async (t) => {
+        const snap = await t.get(userRef);
+        const u = snap.data()!;
+        const lim = u.plan === 'premium' ? config.limiteMensajesPremium : config.limiteMensajesPro;
+        if ((u.mensajesUsados || 0) >= lim) throw new Error('LIMITE_ALCANZADO');
+        t.update(userRef, {
+          mensajesUsados: (u.mensajesUsados || 0) + 1,
+          actualizadoEn: new Date().toISOString(),
+        });
+        return u;
       });
+    } catch (err: any) {
+      if (err.message === 'LIMITE_ALCANZADO') {
+        const lim = userDoc.data()!.plan === 'premium'
+          ? config.limiteMensajesPremium
+          : config.limiteMensajesPro;
+        return res.status(429).json({
+          success: false,
+          error: `Has alcanzado el límite de ${lim} mensajes de tu plan`,
+        });
+      }
+      throw err;
     }
 
     const historialSnapshot = await db.collection('usuarios').doc(userEmail)
@@ -179,7 +194,7 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
     }
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: sistemaPrompt,
       messages: [
@@ -197,11 +212,6 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
 
     await chatRef.add({ role: 'user', contenido: mensaje, timestamp });
     await chatRef.add({ role: 'assistant', contenido: respuesta, timestamp: new Date().toISOString() });
-
-    await db.collection('usuarios').doc(userEmail).update({
-      mensajesUsados: (userData.mensajesUsados || 0) + 1,
-      actualizadoEn: new Date().toISOString(),
-    });
 
     res.json({ success: true, data: { respuesta } });
   } catch (error) {

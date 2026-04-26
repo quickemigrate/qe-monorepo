@@ -6,11 +6,16 @@ const router = Router();
 
 router.get('/', verifyToken, async (_req, res) => {
   try {
-    const [diagnosticosSnap, usuariosSnap, leadsSnap] = await Promise.all([
+    const [diagnosticosSnap, usuariosSnap, leadsSnap, configDoc] = await Promise.all([
       db.collection('diagnosticos').get(),
       db.collection('usuarios').get(),
       db.collection('leads').get(),
+      db.collection('config').doc('planes').get(),
     ]);
+
+    const configData = configDoc.data();
+    const precioStarter: number = configData?.planes
+      ?.find((p: any) => p.id === 'starter')?.precio ?? 59;
 
     const diagnosticos = diagnosticosSnap.docs.map(d => d.data());
     const completados = diagnosticos.filter(d => d.estado === 'completado');
@@ -65,8 +70,8 @@ router.get('/', verifyToken, async (_req, res) => {
         diagnosticos: {
           total: completados.length,
           esteMes: esteMes.length,
-          ingresosTotales: completados.length * 59,
-          ingresosMes: esteMes.length * 59,
+          ingresosTotales: completados.reduce((sum: number, d: any) => sum + (d.precio ?? precioStarter), 0),
+          ingresosMes: esteMes.reduce((sum: number, d: any) => sum + (d.precio ?? precioStarter), 0),
         },
         usuarios: {
           total: usuarios.length,

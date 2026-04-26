@@ -1,3 +1,4 @@
+// PAUSADO — Pinecone/VoyageAI desactivado. Mantener para reactivar vector search.
 import { VoyageAIClient } from 'voyageai';
 
 const voyage = new VoyageAIClient({ apiKey: process.env.VOYAGE_API_KEY! });

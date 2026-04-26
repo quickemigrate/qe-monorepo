@@ -147,7 +147,7 @@ router.post('/capture-order', async (req: Request, res: Response) => {
       });
     }
 
-    procesarDiagnostico(diagnosticoId, diagData).catch(console.error);
+    procesarConRetry(diagnosticoId, diagData);
 
     res.json({ success: true, diagnosticoId });
   } catch (error) {
@@ -187,19 +187,46 @@ router.get('/:id/pdf', verifyClientToken, async (req: Request, res: Response) =>
 });
 
 // GET /api/diagnostico/:id
-// Obtiene el estado de un diagnóstico
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', verifyClientToken, async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userEmail = (req as any).user.email;
   try {
     const doc = await db.collection('diagnosticos').doc(id).get();
     if (!doc.exists) {
       return res.status(404).json({ error: 'Diagnóstico no encontrado' });
     }
-    res.json({ id: doc.id, ...doc.data() });
+    const data = doc.data()!;
+    if (data.email !== userEmail) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+    res.json({ id: doc.id, ...data });
   } catch (error) {
     res.status(500).json({ error: 'Error obteniendo diagnóstico' });
   }
 });
+
+async function procesarConRetry(id: string, data: any, intento = 1): Promise<void> {
+  try {
+    await procesarDiagnostico(id, data);
+  } catch (error) {
+    console.error(`Error diagnóstico ${id} — intento ${intento}/3:`, error);
+    if (intento < 3) {
+      await new Promise(r => setTimeout(r, 5000 * intento));
+      return procesarConRetry(id, data, intento + 1);
+    }
+    await db.collection('diagnosticos').doc(id).update({
+      estado: 'error',
+      errorMsg: String(error),
+      updatedAt: new Date().toISOString(),
+    });
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'Quick Emigrate <hola@quickemigrate.com>',
+      to: process.env.CONTACT_EMAIL || '',
+      subject: `⚠️ Error diagnóstico ${id}`,
+      html: `<p>El diagnóstico <b>${id}</b> falló 3 veces.<br>Email usuario: ${data.email}<br>Error: ${String(error)}</p>`,
+    }).catch(console.error);
+  }
+}
 
 // Procesa el informe en segundo plano tras confirmar pago
 async function procesarDiagnostico(diagnosticoId: string, data: any) {
@@ -288,7 +315,7 @@ Sé específico, útil y directo. Máximo 1500 palabras en total.`;
     : promptBase;
 
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }]
   });
