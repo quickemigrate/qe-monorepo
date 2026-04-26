@@ -54,7 +54,7 @@ const HeroSection = () => (
       >
         <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative">
           <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80"
+            src="https://st.depositphotos.com/1001877/61007/i/450/depositphotos_610074406-stock-photo-passport-spain-pile-passports-other.jpg"
             alt="Persona planificando mudanza a España con portátil y documentos"
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover"
