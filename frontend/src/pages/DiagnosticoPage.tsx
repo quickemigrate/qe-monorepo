@@ -5,6 +5,7 @@ import { Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
+import { usePlanes } from '../hooks/usePlanes';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -22,6 +23,8 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
 }
 
 export default function DiagnosticoPage() {
+  const { planes } = usePlanes();
+  const starterPrecioTexto = planes.find(p => p.id === 'starter')?.precioTexto ?? '59€';
   const navigate = useNavigate();
 
   const [estado, setEstado] = useState<Estado>('loading');
@@ -138,7 +141,7 @@ export default function DiagnosticoPage() {
             className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-5"
             style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
           >
-            59€ — pago único
+            {starterPrecioTexto} — pago único
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
