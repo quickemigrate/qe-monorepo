@@ -13,6 +13,17 @@ const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 
+function normalizarObjetivo(obj: string): string {
+  const map: Record<string, string> = {
+    estudios: 'estudios',
+    trabajo: 'trabajo',
+    residencia: 'residencia_no_lucrativa',
+    residencia_no_lucrativa: 'residencia_no_lucrativa',
+    arraigo: 'arraigo',
+  };
+  return map[obj?.toLowerCase()] || 'trabajo';
+}
+
 // POST /api/diagnostico/create-order
 // Lee el perfil del usuario autenticado, guarda diagnóstico pendiente y crea orden en PayPal
 router.post('/create-order', async (req: Request, res: Response) => {
@@ -198,7 +209,10 @@ async function procesarDiagnostico(diagnosticoId: string, data: any) {
 
   if (!data) throw new Error('Diagnóstico no encontrado');
 
-  const contextoLegal = await obtenerContextoLegal(data.pais || '', data.objetivo || '').catch(() => '');
+  const contextoLegal = await obtenerContextoLegal(
+    data.pais || 'general',
+    normalizarObjetivo(data.objetivo || '')
+  ).catch(() => '');
 
   const idiomasStr = data.otrosIdiomas === 'Sí'
     ? (data.cualesIdiomas ? `Sí (${data.cualesIdiomas})` : 'Sí')

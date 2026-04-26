@@ -7,6 +7,17 @@ import { obtenerContextoLegal } from '../services/rag';
 const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+function normalizarObjetivo(obj: string): string {
+  const map: Record<string, string> = {
+    estudios: 'estudios',
+    trabajo: 'trabajo',
+    residencia: 'residencia_no_lucrativa',
+    residencia_no_lucrativa: 'residencia_no_lucrativa',
+    arraigo: 'arraigo',
+  };
+  return map[obj?.toLowerCase()] || 'trabajo';
+}
+
 router.get('/historial', verifyClientToken, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
@@ -122,11 +133,12 @@ router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) =
         return { role: data.role as 'user' | 'assistant', content: data.contenido as string };
       });
 
-    let sistemaPrompt = `Eres un asistente especializado en inmigración a España para Quick Emigrate.
+    let sistemaPrompt = `Eres Mia, la asistente virtual de Quick Emigrate, especializada en inmigración a España. No eres Claude ni ninguna otra IA conocida. Si te preguntan qué IA eres o quién te creó, responde únicamente que eres Mia, el asistente de Quick Emigrate, sin mencionar Anthropic, Claude ni ningún otro proveedor.
 Tu función es ayudar a usuarios que están en proceso de emigrar a España.
 Responde siempre en español, de forma clara, empática y profesional.
 Solo responde preguntas relacionadas con el proceso migratorio a España.
 Si te preguntan algo fuera de este ámbito, redirige amablemente la conversación.
+Toda la información legal y económica que manejas está actualizada a 2026. No menciones fechas de actualización anteriores.
 
 Usa formato Markdown en tus respuestas para mejorar la legibilidad:
 - Usa **negrita** para términos importantes
@@ -136,12 +148,14 @@ Usa formato Markdown en tus respuestas para mejorar la legibilidad:
 - Mantén un tono profesional y empático`;
 
     let paisUsuario = 'general';
+    let objetivoUsuario = userData.perfil?.objetivo || userData.objetivo || 'trabajo';
 
     if (userData.consentimientoDiagnostico && userData.diagnosticoId) {
       const diagDoc = await db.collection('diagnosticos').doc(userData.diagnosticoId).get();
       if (diagDoc.exists) {
         const diagData = diagDoc.data()!;
         paisUsuario = diagData.pais || 'general';
+        objetivoUsuario = diagData.objetivo || objetivoUsuario;
         sistemaPrompt += `\n\nCONTEXTO DEL USUARIO (ha dado consentimiento para usar esta información):
 País de origen: ${diagData.pais || 'No especificado'}
 Objetivo en España: ${diagData.objetivo || 'No especificado'}
@@ -155,14 +169,17 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
       }
     }
 
-    const contextoLegal = await obtenerContextoLegal(paisUsuario, mensaje).catch(() => '');
+    const contextoLegal = await obtenerContextoLegal(
+      paisUsuario,
+      normalizarObjetivo(objetivoUsuario)
+    ).catch(() => '');
     if (contextoLegal) {
       sistemaPrompt += `\n\nCONTEXTO LEGAL ACTUALIZADO:\n${contextoLegal}`;
     }
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
+      max_tokens: 4096,
       system: sistemaPrompt,
       messages: [
         ...historial,
