@@ -32,7 +32,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/paypal__checkout-server-sdk": "^1.0.8",
     "@types/pdfkit": "^0.17.6",
-    "tsx": "^4.7.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.5"
   }
 }

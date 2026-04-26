@@ -1,0 +1,48 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "rutas_migratorias",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subcategoria", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "requisitos_legales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categoria", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" },
+        { "fieldPath": "fechaActualizacion", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "base_conocimiento",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categoria", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" },
+        { "fieldPath": "fechaActualizacion", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "casos_reales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ruta_migratoria", "order": "ASCENDING" },
+        { "fieldPath": "pais_origen", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "casos_reales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ruta_migratoria", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

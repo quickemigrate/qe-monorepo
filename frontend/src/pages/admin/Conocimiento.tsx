@@ -1,54 +1,75 @@
 import { useEffect, useState } from 'react';
-import { X, Trash2, Search, Plus, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { X, Trash2, Search, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-const CATEGORIAS = ['visados', 'permisos_trabajo', 'residencia', 'arraigo', 'nacionalidad', 'general'];
-const PAISES = ['Ecuador', 'Colombia', 'Argentina', 'Perú', 'Venezuela', 'México', 'Bolivia', 'general'];
+const COLECCIONES = [
+  { id: 'rutas_migratorias', label: 'Rutas Migratorias' },
+  { id: 'requisitos_legales', label: 'Requisitos Legales' },
+  { id: 'base_conocimiento', label: 'Base de Conocimiento' },
+  { id: 'simulaciones', label: 'Simulaciones' },
+  { id: 'casos_reales', label: 'Casos Reales' },
+];
+
+const CATEGORIAS_POR_COLECCION: Record<string, string[]> = {
+  rutas_migratorias: ['estudios', 'trabajo', 'residencia_no_lucrativa', 'arraigo'],
+  requisitos_legales: ['estudios', 'trabajo', 'residencia_no_lucrativa', 'otros'],
+  base_conocimiento: ['normativa', 'datos_economicos'],
+  simulaciones: ['coste_emigrar', 'probabilidad_exito', 'tiempo_estimado'],
+  casos_reales: ['estudios', 'trabajo', 'residencia_no_lucrativa', 'arraigo'],
+};
+
+const TODAS_CATEGORIAS = Array.from(
+  new Set(Object.values(CATEGORIAS_POR_COLECCION).flat())
+).sort();
+
+const PAISES = ['general', 'Ecuador', 'Colombia', 'Argentina', 'Perú', 'Venezuela', 'México', 'Bolivia', 'Chile', 'Uruguay'];
+
+const colLabel = (id: string) => COLECCIONES.find(c => c.id === id)?.label ?? id;
+
+const toDate = (ts: any): string => {
+  if (!ts) return '—';
+  const secs = ts.seconds ?? ts._seconds;
+  if (secs) return new Date(secs * 1000).toLocaleDateString('es-ES');
+  if (typeof ts === 'string') return new Date(ts).toLocaleDateString('es-ES');
+  return '—';
+};
 
 interface Documento {
   id: string;
+  _coleccion: string;
   titulo: string;
   contenido: string;
-  fuente: 'BOE' | 'manual' | any | 'ine_statistics';
-  categoria: string;
-  pais: string;
-  url?: string;
-  fechaPublicacion?: string;
-  fechaIngesta: string;
-}
-
-interface ResultadoBusqueda {
-  id: string;
-  score: number;
-  metadata: {
-    titulo: string;
-    fuente: string;
-    categoria: string;
-    pais: string;
-    url?: string;
-    fechaPublicacion?: string;
-  };
+  categoria?: string;
+  pais?: string;
+  fuente?: string;
+  activo?: boolean;
+  fechaActualizacion?: any;
+  [key: string]: any;
 }
 
 interface FormData {
+  coleccion: string;
   titulo: string;
   contenido: string;
   categoria: string;
+  subcategoria: string;
   pais: string;
-  url: string;
-  fechaPublicacion: string;
+  fuente: string;
+  activo: boolean;
 }
 
 const FORM_INICIAL: FormData = {
+  coleccion: 'rutas_migratorias',
   titulo: '',
   contenido: '',
-  categoria: 'general',
+  categoria: 'estudios',
+  subcategoria: '',
   pais: 'general',
-  url: '',
-  fechaPublicacion: '',
+  fuente: 'manual',
+  activo: true,
 };
 
 const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
@@ -63,6 +84,7 @@ export default function Conocimiento() {
   const [docs, setDocs] = useState<Documento[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [filtroColeccion, setFiltroColeccion] = useState('');
 
   // Modal añadir
   const [modalOpen, setModalOpen] = useState(false);
@@ -70,23 +92,22 @@ export default function Conocimiento() {
   const [ingesting, setIngesting] = useState(false);
   const [ingestResult, setIngestResult] = useState<'success' | 'error' | null>(null);
 
-  // Sincronizar
-  const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<string | null>(null);
-
   // Buscador
   const [query, setQuery] = useState('');
+  const [buscarColeccion, setBuscarColeccion] = useState('');
   const [filtroPais, setFiltroPais] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [searching, setSearching] = useState(false);
-  const [resultados, setResultados] = useState<ResultadoBusqueda[]>([]);
+  const [resultados, setResultados] = useState<Documento[]>([]);
   const [searchDone, setSearchDone] = useState(false);
 
-  const fetchDocs = async () => {
+  const fetchDocs = async (col = '') => {
     setLoadingDocs(true);
     const token = await getToken();
     if (!token) return;
-    const res = await fetch(`${API}/api/conocimiento?_t=${Date.now()}`, {
+    const params = new URLSearchParams();
+    if (col) params.set('coleccion', col);
+    const res = await fetch(`${API}/api/conocimiento?${params}&_t=${Date.now()}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
@@ -99,38 +120,21 @@ export default function Conocimiento() {
 
   useEffect(() => { fetchDocs(); }, []);
 
-  const handleSync = async () => {
-    setSyncing(true);
-    setSyncResult(null);
-    try {
-      const token = await getToken();
-      const res = await fetch(`${API}/api/conocimiento/sincronizar-pinecone`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSyncResult(`${data.sincronizados} documentos sincronizados, ${data.errores} errores`);
-      } else {
-        setSyncResult('Error en sincronización');
-      }
-    } catch {
-      setSyncResult('Error en sincronización');
-    } finally {
-      setSyncing(false);
-    }
+  const handleFilterColeccion = (col: string) => {
+    setFiltroColeccion(col);
+    fetchDocs(col);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este documento del índice?')) return;
-    setDeletingId(id);
+  const handleDelete = async (doc: Documento) => {
+    if (!confirm('¿Eliminar este documento?')) return;
+    setDeletingId(doc.id);
     const token = await getToken();
-    await fetch(`${API}/api/conocimiento/${id}`, {
+    await fetch(`${API}/api/conocimiento/${doc._coleccion}/${doc.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
     setDeletingId(null);
-    fetchDocs();
+    fetchDocs(filtroColeccion);
   };
 
   const handleIngest = async () => {
@@ -146,7 +150,7 @@ export default function Conocimiento() {
       });
       if (!res.ok) throw new Error();
       setIngestResult('success');
-      fetchDocs();
+      fetchDocs(filtroColeccion);
       setTimeout(() => {
         setModalOpen(false);
         setForm(FORM_INICIAL);
@@ -166,6 +170,7 @@ export default function Conocimiento() {
     setSearchDone(false);
     const token = await getToken();
     const params = new URLSearchParams({ q: query });
+    if (buscarColeccion) params.set('coleccion', buscarColeccion);
     if (filtroPais) params.set('pais', filtroPais);
     if (filtroCategoria) params.set('categoria', filtroCategoria);
     const res = await fetch(`${API}/api/conocimiento/search?${params}`, {
@@ -185,6 +190,11 @@ export default function Conocimiento() {
     setForm(FORM_INICIAL);
     setIngestResult(null);
   };
+
+  const categoriasModal = CATEGORIAS_POR_COLECCION[form.coleccion] ?? [];
+  const categoriasBuscador = buscarColeccion
+    ? (CATEGORIAS_POR_COLECCION[buscarColeccion] ?? [])
+    : TODAS_CATEGORIAS;
 
   return (
     <AdminLayout>
@@ -213,36 +223,45 @@ export default function Conocimiento() {
         {/* ── TAB 1: DOCUMENTOS ── */}
         {tab === 'documentos' && (
           <div>
+            {/* Filtro colecciones */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button
+                onClick={() => handleFilterColeccion('')}
+                className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold transition-colors
+                  ${filtroColeccion === ''
+                    ? 'bg-on-background text-white'
+                    : 'bg-white border border-black/10 text-on-background/60 hover:text-on-background'
+                  }`}
+              >
+                Todas
+              </button>
+              {COLECCIONES.map(col => (
+                <button
+                  key={col.id}
+                  onClick={() => handleFilterColeccion(col.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold transition-colors
+                    ${filtroColeccion === col.id
+                      ? 'bg-on-background text-white'
+                      : 'bg-white border border-black/10 text-on-background/60 hover:text-on-background'
+                    }`}
+                >
+                  {col.label}
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-              <div className="flex items-center gap-3 flex-wrap">
-                <p className="text-[14px] text-on-background/50">
-                  {docs.length} documento{docs.length !== 1 ? 's' : ''} en el índice
-                </p>
-                {syncResult && (
-                  <span className="text-[13px] text-on-background/60 bg-surface-container-low px-3 py-1 rounded-lg">
-                    {syncResult}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSync}
-                  disabled={syncing}
-                  className="flex items-center gap-2 border border-black/10 text-on-background/70 px-4 py-2.5 rounded-xl
-                             text-[13.5px] font-semibold hover:bg-surface-container-low active:scale-[0.98] transition disabled:opacity-50"
-                >
-                  <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} />
-                  {syncing ? 'Sincronizando...' : 'Sincronizar con Pinecone'}
-                </button>
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="flex items-center gap-2 bg-on-background text-white px-4 py-2.5 rounded-xl
-                             text-[13.5px] font-semibold hover:opacity-90 active:scale-[0.98] transition"
-                >
-                  <Plus size={15} />
-                  Añadir Documento
-                </button>
-              </div>
+              <p className="text-[14px] text-on-background/50">
+                {docs.length} documento{docs.length !== 1 ? 's' : ''}
+              </p>
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-2 bg-on-background text-white px-4 py-2.5 rounded-xl
+                           text-[13.5px] font-semibold hover:opacity-90 active:scale-[0.98] transition"
+              >
+                <Plus size={15} />
+                Añadir Documento
+              </button>
             </div>
 
             <div className="bg-white rounded-2xl border border-black/5 overflow-hidden">
@@ -252,14 +271,14 @@ export default function Conocimiento() {
                 </div>
               ) : docs.length === 0 ? (
                 <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">
-                  No hay documentos en el índice aún.
+                  No hay documentos en esta colección.
                 </div>
               ) : (
                 <div className="w-full overflow-x-auto">
-                  <table className="w-full min-w-[600px] text-[13.5px]">
+                  <table className="w-full min-w-[700px] text-[13.5px]">
                     <thead>
                       <tr className="border-b border-black/5">
-                        {['Título', 'Categoría', 'País', 'Fuente', 'Fecha', ''].map(h => (
+                        {['Título', 'Colección', 'Categoría', 'País', 'Fecha', ''].map(h => (
                           <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
                             {h}
                           </th>
@@ -272,28 +291,22 @@ export default function Conocimiento() {
                           key={doc.id}
                           className={`border-b border-black/4 ${i % 2 !== 0 ? 'bg-surface-container-lowest/40' : ''}`}
                         >
-                          <td className="px-5 py-3.5 font-medium text-on-background max-w-[260px] truncate">
+                          <td className="px-5 py-3.5 font-medium text-on-background max-w-[220px] truncate">
                             {doc.titulo}
                           </td>
-                          <td className="px-5 py-3.5 text-on-background/60">{doc.categoria}</td>
-                          <td className="px-5 py-3.5 text-on-background/60">{doc.pais}</td>
                           <td className="px-5 py-3.5">
-                            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold
-                              ${doc.fuente === 'BOE'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-emerald-100 text-emerald-700'
-                              }`}>
-                              {doc.fuente}
+                            <span className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container-low text-on-background/70">
+                              {colLabel(doc._coleccion)}
                             </span>
                           </td>
+                          <td className="px-5 py-3.5 text-on-background/60">{doc.categoria ?? '—'}</td>
+                          <td className="px-5 py-3.5 text-on-background/60">{doc.pais ?? '—'}</td>
                           <td className="px-5 py-3.5 text-on-background/40 whitespace-nowrap">
-                            {doc.fechaPublicacion
-                              ? new Date(doc.fechaPublicacion).toLocaleDateString('es-ES')
-                              : new Date(doc.fechaIngesta).toLocaleDateString('es-ES')}
+                            {toDate(doc.fechaActualizacion)}
                           </td>
                           <td className="px-5 py-3.5">
                             <button
-                              onClick={() => handleDelete(doc.id)}
+                              onClick={() => handleDelete(doc)}
                               disabled={deletingId === doc.id}
                               className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-red-500
                                          bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors
@@ -328,16 +341,16 @@ export default function Conocimiento() {
                     className={inputCls}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className={labelCls}>País (opcional)</label>
+                    <label className={labelCls}>Colección (opcional)</label>
                     <select
-                      value={filtroPais}
-                      onChange={e => setFiltroPais(e.target.value)}
+                      value={buscarColeccion}
+                      onChange={e => { setBuscarColeccion(e.target.value); setFiltroCategoria(''); }}
                       className={inputCls}
                     >
-                      <option value="">Todos los países</option>
-                      {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
+                      <option value="">Todas</option>
+                      {COLECCIONES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
                   <div>
@@ -347,8 +360,19 @@ export default function Conocimiento() {
                       onChange={e => setFiltroCategoria(e.target.value)}
                       className={inputCls}
                     >
-                      <option value="">Todas las categorías</option>
-                      {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                      <option value="">Todas</option>
+                      {categoriasBuscador.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>País (opcional)</label>
+                    <select
+                      value={filtroPais}
+                      onChange={e => setFiltroPais(e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="">Todos</option>
+                      {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                 </div>
@@ -373,52 +397,37 @@ export default function Conocimiento() {
                 ) : (
                   resultados.map((r, i) => (
                     <div key={r.id} className="bg-white rounded-2xl border border-black/5 p-5">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-bold text-on-background/30 w-5">{i + 1}</span>
-                          <h3 className="text-[15px] font-semibold text-on-background">
-                            {r.metadata.titulo}
-                          </h3>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className="h-1.5 rounded-full bg-primary-container"
-                              style={{ width: `${Math.round(r.score * 60)}px`, minWidth: '4px', maxWidth: '60px' }}
-                            />
-                            <span className="text-[12px] font-semibold text-primary-container">
-                              {Math.round(r.score * 100)}%
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex items-start gap-3 mb-3">
+                        <span className="text-[11px] font-bold text-on-background/30 w-5 shrink-0 pt-0.5">{i + 1}</span>
+                        <h3 className="text-[15px] font-semibold text-on-background">{r.titulo}</h3>
                       </div>
                       <div className="ml-8 flex flex-wrap gap-2 text-[12px]">
-                        <span className={`px-2 py-0.5 rounded-full font-semibold
-                          ${r.metadata.fuente === 'BOE' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                          {r.metadata.fuente}
+                        <span className="px-2 py-0.5 rounded-full bg-on-background/8 text-on-background/70 font-semibold">
+                          {colLabel(r._coleccion)}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/60 font-medium">
-                          {r.metadata.categoria}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/60 font-medium">
-                          {r.metadata.pais}
-                        </span>
-                        {r.metadata.fechaPublicacion && (
-                          <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/40 font-medium">
-                            {r.metadata.fechaPublicacion}
+                        {r.fuente && (
+                          <span className={`px-2 py-0.5 rounded-full font-semibold
+                            ${r.fuente === 'BOE' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                            {r.fuente}
                           </span>
                         )}
-                        {r.metadata.url && (
-                          <a
-                            href={r.metadata.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium hover:underline"
-                          >
-                            Ver fuente
-                          </a>
+                        {r.categoria && (
+                          <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/60 font-medium">
+                            {r.categoria}
+                          </span>
                         )}
+                        {r.pais && (
+                          <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/60 font-medium">
+                            {r.pais}
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-on-background/40 font-medium">
+                          {toDate(r.fechaActualizacion)}
+                        </span>
                       </div>
+                      {r.contenido && (
+                        <p className="ml-8 mt-2 text-[13px] text-on-background/50 line-clamp-2">{r.contenido}</p>
+                      )}
                     </div>
                   ))
                 )}
@@ -431,17 +440,11 @@ export default function Conocimiento() {
       {/* ── MODAL AÑADIR DOCUMENTO ── */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={closeModal}
-          />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
           <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-7 py-5 border-b border-black/5">
               <h2 className="text-[18px] font-semibold text-on-background">Añadir Documento</h2>
-              <button
-                onClick={closeModal}
-                className="text-on-background/40 hover:text-on-background transition-colors"
-              >
+              <button onClick={closeModal} className="text-on-background/40 hover:text-on-background transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -449,16 +452,29 @@ export default function Conocimiento() {
             <div className="px-7 py-6 space-y-4">
               {ingestResult === 'success' && (
                 <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13.5px] text-emerald-700 font-medium">
-                  <CheckCircle2 size={16} />
-                  Documento ingestado correctamente en el índice.
+                  <CheckCircle2 size={16} /> Documento guardado correctamente.
                 </div>
               )}
               {ingestResult === 'error' && (
                 <div className="flex items-center gap-2.5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
-                  <AlertCircle size={16} />
-                  Error al ingestar el documento. Inténtalo de nuevo.
+                  <AlertCircle size={16} /> Error al guardar el documento.
                 </div>
               )}
+
+              <div>
+                <label className={labelCls}>Colección *</label>
+                <select
+                  value={form.coleccion}
+                  onChange={e => {
+                    const col = e.target.value;
+                    const cats = CATEGORIAS_POR_COLECCION[col] ?? [];
+                    setForm(f => ({ ...f, coleccion: col, categoria: cats[0] ?? '' }));
+                  }}
+                  className={inputCls}
+                >
+                  {COLECCIONES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </div>
 
               <div>
                 <label className={labelCls}>Título *</label>
@@ -466,7 +482,7 @@ export default function Conocimiento() {
                   value={form.titulo}
                   onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   className={inputCls}
-                  placeholder="Ej: Real Decreto 557/2011 — Reglamento de Extranjería"
+                  placeholder="Ej: Requisitos Visado Estudios España 2024"
                 />
               </div>
 
@@ -475,9 +491,9 @@ export default function Conocimiento() {
                 <textarea
                   value={form.contenido}
                   onChange={e => setForm(f => ({ ...f, contenido: e.target.value }))}
-                  rows={8}
+                  rows={7}
                   className={`${inputCls} resize-y`}
-                  placeholder="Pega aquí el texto del documento legal..."
+                  placeholder="Pega aquí el contenido del documento..."
                 />
               </div>
 
@@ -489,44 +505,53 @@ export default function Conocimiento() {
                     onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}
                     className={inputCls}
                   >
-                    {CATEGORIAS.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
+                    {categoriasModal.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className={labelCls}>País *</label>
+                  <label className={labelCls}>País</label>
                   <select
                     value={form.pais}
                     onChange={e => setForm(f => ({ ...f, pais: e.target.value }))}
                     className={inputCls}
                   >
-                    {PAISES.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
+                    {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className={labelCls}>URL fuente (opcional)</label>
-                <input
-                  value={form.url}
-                  onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
-                  className={inputCls}
-                  placeholder="https://www.boe.es/..."
-                  type="url"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Subcategoría (opcional)</label>
+                  <input
+                    value={form.subcategoria}
+                    onChange={e => setForm(f => ({ ...f, subcategoria: e.target.value }))}
+                    className={inputCls}
+                    placeholder="Ej: visado_estudios"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Fuente</label>
+                  <input
+                    value={form.fuente}
+                    onChange={e => setForm(f => ({ ...f, fuente: e.target.value }))}
+                    className={inputCls}
+                    placeholder="BOE / manual / INE..."
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className={labelCls}>Fecha publicación (opcional)</label>
-                <input
-                  value={form.fechaPublicacion}
-                  onChange={e => setForm(f => ({ ...f, fechaPublicacion: e.target.value }))}
-                  className={inputCls}
-                  type="date"
-                />
+              <div className="flex items-center justify-between rounded-xl border border-black/10 px-4 py-3">
+                <span className="text-[14px] text-on-background/70 font-medium">Activo</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.activo}
+                    onChange={e => setForm(f => ({ ...f, activo: e.target.checked }))}
+                    className="w-4 h-4 accent-emerald-500"
+                  />
+                  <span className="text-[13px] text-on-background/50">{form.activo ? 'Sí' : 'No'}</span>
+                </label>
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -546,7 +571,7 @@ export default function Conocimiento() {
                   className="flex-1 rounded-xl bg-on-background text-white font-semibold py-3 text-[14.5px]
                              hover:opacity-90 transition disabled:opacity-50"
                 >
-                  {ingesting ? 'Ingestando...' : 'Ingestar Documento'}
+                  {ingesting ? 'Guardando...' : 'Guardar Documento'}
                 </button>
               </div>
             </div>
