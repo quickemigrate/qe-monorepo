@@ -33,11 +33,11 @@
   padding:14px 32px;
 }
 .ea-logo{
-  font-weight:800;font-size:18px;letter-spacing:-0.02em;
-  color:var(--green);
-  display:inline-flex;align-items:center;gap:8px;
+  font-weight:800;font-size:17px;letter-spacing:-0.02em;
+  color:#FFFFFF;
+  display:inline-flex;align-items:center;gap:9px;
 }
-.ea-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green-glow)}
+.ea-logo-img{height:26px;width:auto;display:block}
 .ea-nav-cta{
   padding:10px 18px;border-radius:100px;
   border:1px solid rgba(37,211,102,0.45);
@@ -95,6 +95,7 @@
   font-size:clamp(40px, 7vw, 72px);
   line-height:1.05;letter-spacing:-0.035em;
   font-weight:800;
+  text-wrap:balance;
 }
 .ea-hero-title .ea-word{display:inline-block;will-change:transform,opacity}
 .ea-hero-title .ea-accent{color:var(--green)}
@@ -103,6 +104,7 @@
   margin:24px auto 0;max-width:540px;
   font-size:18px;line-height:1.55;color:var(--text-muted);
   font-weight:400;opacity:0;
+  text-wrap:balance;
 }
 
 .ea-cta-wrap{margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0}
@@ -125,13 +127,18 @@
 .ea-cta-note{font-size:12px;color:var(--text-muted);letter-spacing:.01em}
 .ea-cta-note span{margin:0 6px;opacity:.5}
 
+/* ---------- SECTION CTA ---------- */
+.ea-sec-cta{margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.ea-sec-cta-note{font-size:12px;color:var(--text-muted)}
+
 /* ---------- SECTION HEAD ---------- */
 .ea-sec-head{max-width:680px;margin:0 auto 64px;text-align:center}
 .ea-sec-head h2{
   font-size:clamp(32px, 4.5vw, 48px);
   line-height:1.1;letter-spacing:-0.03em;font-weight:800;
+  text-wrap:balance;
 }
-.ea-sec-head p{margin-top:14px;color:var(--text-muted);font-size:17px;line-height:1.5}
+.ea-sec-head p{margin-top:14px;color:var(--text-muted);font-size:17px;line-height:1.5;text-wrap:balance}
 
 /* ---------- INCLUDES CARDS ---------- */
 .ea-cards{
@@ -157,7 +164,7 @@
   border:1px solid rgba(37,211,102,0.18);
 }
 .ea-card h3{font-size:18px;font-weight:600;letter-spacing:-0.015em;margin-bottom:10px}
-.ea-card p{font-size:15px;line-height:1.55;color:var(--text-muted)}
+.ea-card p{font-size:15px;line-height:1.55;color:var(--text-muted);orphans:3;widows:3}
 
 /* ---------- HOW IT WORKS / TIMELINE ---------- */
 .ea-timeline{
@@ -189,7 +196,7 @@
   margin-bottom:8px;
 }
 .ea-step h3{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px}
-.ea-step p{color:var(--text-muted);font-size:16px;line-height:1.55;max-width:520px}
+.ea-step p{color:var(--text-muted);font-size:16px;line-height:1.55;max-width:520px;orphans:3;widows:3}
 
 /* ---------- PRICE / FINAL CTA ---------- */
 .ea-price-card{

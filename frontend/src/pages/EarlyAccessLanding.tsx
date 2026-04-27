@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { animate, stagger, createTimeline } from 'animejs';
 import { usePlanes } from '../hooks/usePlanes';
 import '../styles/early-access.css';
@@ -9,7 +9,6 @@ const FULL_TITLE = 'Tu ruta para emigrar a España, clara desde el primer día.'
 export default function EarlyAccessLanding() {
   const { planes } = usePlanes();
   const navRef = useRef<HTMLElement>(null);
-  const navigate = useNavigate();
 
   const starter = planes.find(p => p.id === 'starter');
   const precioTexto = starter?.precioTexto ?? '19€';
@@ -130,9 +129,10 @@ export default function EarlyAccessLanding() {
     const clean = w.replace(/[.,]/g, '');
     const isAccent = clean.toLowerCase() === 'clara';
     return (
-      <span key={i} className={`ea-word${isAccent ? ' ea-accent' : ''}`}>
-        {w}{' '}
-      </span>
+      <Fragment key={i}>
+        <span className={`ea-word${isAccent ? ' ea-accent' : ''}`}>{w}</span>
+        {' '}
+      </Fragment>
     );
   });
 
@@ -140,7 +140,8 @@ export default function EarlyAccessLanding() {
     <div className="ea-root">
       <nav className="ea-nav" ref={navRef}>
         <Link to="/" className="ea-logo" aria-label="Quick Emigrate">
-          <span className="ea-logo-dot"></span>QE
+          <img src="/logo-dark.png" alt="" aria-hidden="true" className="ea-logo-img" />
+          Quick Emigrate
         </Link>
         <Link to="/diagnostico" className="ea-nav-cta">Obtener diagnóstico</Link>
       </nav>
@@ -158,7 +159,7 @@ export default function EarlyAccessLanding() {
           </h1>
 
           <p className="ea-subtitle" id="ea-subtitle">
-            Diagnóstico migratorio con IA. Sabrás exactamente qué visado pedir, qué documentos preparar y cuál es tu probabilidad real de éxito. En minutos.
+            Nuestros agentes analizan tu perfil y te dicen exactamente qué visado pedir, qué documentos preparar y cuál es tu probabilidad real de éxito.
           </p>
 
           <div className="ea-cta-wrap" id="ea-cta-wrap">
@@ -197,6 +198,13 @@ export default function EarlyAccessLanding() {
               <p>Un porcentaje real basado en tu perfil. Con los factores que suman y los que restan, para que puedas mejorarlos.</p>
             </article>
           </div>
+          <div className="ea-sec-cta">
+            <Link to="/diagnostico" className="ea-btn-primary">
+              Obtener mi diagnóstico — {precioTexto}
+              <span className="ea-arrow" aria-hidden="true">→</span>
+            </Link>
+            <div className="ea-sec-cta-note">Pago único · Acceso inmediato</div>
+          </div>
         </div>
       </section>
 
@@ -216,8 +224,8 @@ export default function EarlyAccessLanding() {
             <li className="ea-step">
               <span className="ea-dot"></span>
               <div className="ea-num">Paso 2</div>
-              <h3>La IA analiza tu caso</h3>
-              <p>Nuestro sistema cruza tu perfil con la normativa vigente de extranjería española actualizada a 2026.</p>
+              <h3>Nuestros agentes analizan tu caso</h3>
+              <p>Cruzamos tu perfil con la normativa vigente de extranjería española actualizada a 2026.</p>
             </li>
             <li className="ea-step">
               <span className="ea-dot"></span>
@@ -226,6 +234,13 @@ export default function EarlyAccessLanding() {
               <p>Un informe PDF personalizado en tu email con tu ruta migratoria, checklist y próximos pasos.</p>
             </li>
           </ol>
+          <div className="ea-sec-cta">
+            <Link to="/diagnostico" className="ea-btn-primary">
+              Obtener mi diagnóstico — {precioTexto}
+              <span className="ea-arrow" aria-hidden="true">→</span>
+            </Link>
+            <div className="ea-sec-cta-note">Pago único · Acceso inmediato</div>
+          </div>
         </div>
       </section>
 
@@ -257,7 +272,7 @@ export default function EarlyAccessLanding() {
       </section>
 
       <footer className="ea-footer">
-        © 2026 Quick Emigrate<span className="ea-sep">·</span>quickemigrate.com<span className="ea-sep">·</span>hola@quickemigrate.com
+        © 2026 Quick Emigrate<span className="ea-sep">·</span>quickemigrate.com<span className="ea-sep">·</span>quickemigrate@gmail.com
       </footer>
     </div>
   );
