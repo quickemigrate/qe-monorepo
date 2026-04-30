@@ -1,16 +1,76 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo-favicon.png" />
-    <link rel="apple-touch-icon" href="/logo-favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quick Emigrate — Diagnóstico Migratorio IA</title>
-    <meta name="description" content="Diagnóstico migratorio personalizado con IA para hispanoamericanos que quieren emigrar a España. Saber exactamente qué visado pedir, qué documentos preparar y tu probabilidad real de éxito. Solo 19€." />
-    <meta property="og:title" content="Quick Emigrate — Early Access" />
-    <meta property="og:description" content="Tu ruta para emigrar a España, clara desde el primer día. Diagnóstico IA por 19€." />
-    <meta property="og:url" content="https://quickemigrate.com" />
+
+    <!-- Favicons
+         Generar PNGs desde SVG:
+           npx sharp-cli --input public/favicon.svg --output public/favicon-48x48.png --width 48 --height 48
+           npx sharp-cli --input public/favicon.svg --output public/favicon-96x96.png --width 96 --height 96
+           npx sharp-cli --input public/favicon.svg --output public/apple-touch-icon.png --width 180 --height 180
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" href="/logo-favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Primary SEO -->
+    <title>Quick Emigrate — Diagnóstico Migratorio IA para España</title>
+    <meta name="description" content="Diagnóstico migratorio personalizado con IA para hispanoamericanos. Sabe exactamente qué visado pedir, qué documentos necesitas y tu probabilidad real de éxito. Solo 19€." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://quickemigrate.com" />
+    <meta name="language" content="es" />
+    <meta name="geo.region" content="ES" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://quickemigrate.com" />
+    <meta property="og:title" content="Quick Emigrate — Tu ruta para emigrar a España" />
+    <meta property="og:description" content="Diagnóstico migratorio con IA. Visado exacto, checklist de documentos y probabilidad de éxito. 19€." />
+    <meta property="og:image" content="https://quickemigrate.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="Quick Emigrate" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Quick Emigrate — Diagnóstico Migratorio IA" />
+    <meta name="twitter:description" content="Tu ruta para emigrar a España, clara desde el primer día. Solo 19€." />
+    <meta name="twitter:image" content="https://quickemigrate.com/og-image.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Quick Emigrate",
+      "url": "https://quickemigrate.com",
+      "description": "Diagnóstico migratorio personalizado con IA para hispanoamericanos que quieren emigrar a España.",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "19",
+        "priceCurrency": "EUR",
+        "description": "Diagnóstico migratorio IA personalizado"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "Quick Emigrate",
+        "url": "https://quickemigrate.com",
+        "email": "hola@quickemigrate.com",
+        "logo": "https://quickemigrate.com/favicon.svg"
+      },
+      "inLanguage": "es",
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Hispanoamericanos que emigran a España"
+      }
+    }
+    </script>
+
     <style>html,body,#root{overflow-x:hidden;width:100%;max-width:100vw}</style>
   </head>
   <body>
@@ -18,4 +78,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
