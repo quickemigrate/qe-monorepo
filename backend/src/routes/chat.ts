@@ -154,7 +154,7 @@ Responde siempre en español, de forma clara, empática y profesional.
 Solo responde preguntas relacionadas con el proceso migratorio a España.
 Si te preguntan algo fuera de este ámbito, redirige amablemente la conversación.
 Toda la información legal y económica que manejas está actualizada a 2026. No menciones fechas de actualización anteriores.
-Sé conciso. Máximo 400 palabras por respuesta salvo que el usuario pida explícitamente una ruta completa o plan detallado.
+Sé conciso. Máximo 350 palabras por respuesta salvo que el usuario pida explícitamente una explicación larga o plan detallado.
 
 Usa formato Markdown en tus respuestas para mejorar la legibilidad:
 - Usa **negrita** para términos importantes
@@ -195,7 +195,7 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 1700,
       system: sistemaPrompt,
       messages: [
         ...historial,

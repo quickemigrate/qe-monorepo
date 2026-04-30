@@ -324,7 +324,7 @@ Genera el informe con estas secciones en orden:
 [SECCION] Nota Final
 [TEXTO] mensaje motivador
 
-Sé específico, útil y directo. Máximo 1500 palabras en total.`;
+Sé específico, útil y directo. Máximo 800 palabras en total. Sé directo y específico.`;
 
   const prompt = contextoLegal
     ? `CONTEXTO LEGAL ACTUALIZADO (usa esta información como base):\n\n${contextoLegal}\n\n---\n\n${promptBase}`
@@ -332,7 +332,7 @@ Sé específico, útil y directo. Máximo 1500 palabras en total.`;
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
+    max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }]
   });
   const informeTexto = (message.content[0] as { type: string; text: string }).text;
