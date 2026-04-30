@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export type TemaId = 'default' | 'oceano' | 'bosque' | 'aurora' | 'atardecer' | 'minimal';
 export type Tono = 'formal' | 'neutro' | 'cercano';
 export type Detalle = 'breve' | 'estandar' | 'detallado';
@@ -32,10 +30,10 @@ export interface Tema {
 export const TEMAS: Record<TemaId, Tema> = {
   default: {
     id: 'default', name: 'Clásico', isDark: true,
-    sidebar: '#16213e', sidebarBorder: 'rgba(255,255,255,0.08)',
-    accent: '#25D366', activeItemBg: 'rgba(255,255,255,0.12)',
+    sidebar: '#0a0a0a', sidebarBorder: 'rgba(255,255,255,0.08)',
+    accent: '#25D366', activeItemBg: 'rgba(37,211,102,0.15)',
     main: '#f0f2f5',
-    preview: 'linear-gradient(135deg, #16213e 50%, #f0f2f5 50%)',
+    preview: 'linear-gradient(135deg, #0a0a0a 50%, #f0f2f5 50%)',
     logo: '/logo-dark.png',
   },
   oceano: {
@@ -80,33 +78,5 @@ export const TEMAS: Record<TemaId, Tema> = {
   },
 };
 
-const DEFAULT: Preferencias = {
-  tema: 'default',
-  ia: { tono: 'neutro', detalle: 'estandar', idioma: 'espanol' },
-};
-
-const KEY = 'qe_preferencias';
-
-export function usePreferencias() {
-  const [prefs, setPrefs] = useState<Preferencias>(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return DEFAULT;
-      return { ...DEFAULT, ...JSON.parse(raw) };
-    } catch {
-      return DEFAULT;
-    }
-  });
-
-  const save = (next: Preferencias) => {
-    setPrefs(next);
-    localStorage.setItem(KEY, JSON.stringify(next));
-  };
-
-  return {
-    prefs,
-    tema: TEMAS[prefs.tema],
-    setTema: (id: TemaId) => save({ ...prefs, tema: id }),
-    setIA: (ia: Partial<PreferenciasIA>) => save({ ...prefs, ia: { ...prefs.ia, ...ia } }),
-  };
-}
+// Re-export context hook as usePreferencias for convenience
+export { usePreferenciasCtx as usePreferencias } from '../context/PreferenciasContext';

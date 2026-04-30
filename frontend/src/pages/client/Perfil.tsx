@@ -11,6 +11,7 @@ import {
   usePreferencias, TEMAS,
   type TemaId, type Tono, type Detalle, type IdiomaIA,
 } from '../../hooks/usePreferencias';
+import { Check } from 'lucide-react';
 
 const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
                   bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition`;
@@ -54,6 +55,7 @@ const IDIOMAS: { id: IdiomaIA; label: string }[] = [
 export default function Perfil() {
   const { user } = useAuth();
   const { prefs, tema, setTema, setIA } = usePreferencias();
+  const [pendingTema, setPendingTema] = useState<TemaId>(prefs.tema);
 
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
@@ -123,30 +125,32 @@ export default function Perfil() {
         <div className="bg-white rounded-2xl border border-black/5 p-6">
           <h2 className="text-[15px] font-semibold text-on-background mb-1">Apariencia</h2>
           <p className="text-[13px] text-on-background/40 mb-5">Elige el tema de tu panel</p>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             {(Object.values(TEMAS)).map(t => {
-              const active = prefs.tema === t.id;
+              const isApplied = prefs.tema === t.id;
+              const isPending = pendingTema === t.id;
               return (
                 <button
                   key={t.id}
-                  onClick={() => setTema(t.id as TemaId)}
+                  onClick={() => setPendingTema(t.id as TemaId)}
                   className={`relative rounded-2xl overflow-hidden border-2 transition-all
-                    ${active ? 'border-on-background shadow-md scale-[1.02]' : 'border-transparent hover:border-black/15'}`}
+                    ${isPending
+                      ? 'border-on-background shadow-md scale-[1.02]'
+                      : 'border-transparent hover:border-black/15'
+                    }`}
                 >
-                  {/* Preview swatch */}
-                  <div
-                    className="h-16 w-full"
-                    style={{ background: t.preview }}
-                  />
-                  {/* Accent dot */}
+                  <div className="h-16 w-full" style={{ background: t.preview }} />
                   <div
                     className="absolute top-2 right-2 w-3 h-3 rounded-full ring-2 ring-white"
                     style={{ backgroundColor: t.accent }}
                   />
-                  <div className="px-3 py-2 bg-white">
-                    <p className="text-[12.5px] font-semibold text-on-background text-left">{t.name}</p>
+                  <div className="px-3 py-2 bg-white flex items-center gap-1.5">
+                    <p className="text-[12.5px] font-semibold text-on-background text-left flex-1">{t.name}</p>
+                    {isApplied && !isPending && (
+                      <span className="text-[10px] text-on-background/30 font-medium">activo</span>
+                    )}
                   </div>
-                  {active && (
+                  {isPending && (
                     <div className="absolute top-2 left-2 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
                       <CheckCircle2 size={13} className="text-on-background" />
                     </div>
@@ -155,6 +159,16 @@ export default function Perfil() {
               );
             })}
           </div>
+          <button
+            onClick={() => setTema(pendingTema)}
+            disabled={pendingTema === prefs.tema}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-on-background text-white
+                       text-[13.5px] font-semibold hover:opacity-90 transition disabled:opacity-35
+                       disabled:cursor-not-allowed"
+          >
+            <Check size={15} />
+            Aplicar tema
+          </button>
         </div>
 
         {/* Personalización IA */}

@@ -28,6 +28,7 @@ import OnboardingGuard from './components/OnboardingGuard';
 import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
+import { PreferenciasProvider } from './context/PreferenciasContext';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -62,13 +63,13 @@ function AppShell() {
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
         <Route path="/cliente/onboarding" element={<ClientProtectedRoute><Onboarding /></ClientProtectedRoute>} />
-        <Route path="/cliente" element={<ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/inicio" element={<ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/perfil" element={<ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/plan" element={<ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/documentos" element={<ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/expediente" element={<ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute>} />
-        <Route path="/cliente/chat" element={<ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute>} />
+        <Route path="/cliente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/inicio" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/perfil" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/plan" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/documentos" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
       </Routes>
       {!isAdmin && !isClient && !isHome && <Footer />}
     </div>

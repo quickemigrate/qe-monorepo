@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Bot, Loader2 } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClientLayout from '../../components/client/ClientLayout';
@@ -180,8 +180,8 @@ export default function Chat() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-on-background flex items-center justify-center">
-              <Bot size={18} className="text-white" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-on-background flex items-center justify-center">
+              <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-[17px] font-semibold text-on-background leading-tight">
@@ -234,8 +234,8 @@ export default function Chat() {
         <div className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4">
           {mensajes.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-12">
-              <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center">
-                <Bot size={20} className="text-on-background/30" />
+              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-on-background">
+                <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
               </div>
               <p className="text-[14px] text-on-background/40 max-w-[300px]">
                 Hola, soy tu asistente de inmigración. Pregúntame cualquier cosa sobre tu proceso de emigración a España.
