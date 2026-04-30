@@ -74,7 +74,7 @@ export default function AdminLogin() {
             Panel de administración
           </h1>
           <p className="text-[14px] text-on-background/50 mb-8">
-            Acceso restringido al personal.
+            Acceso restringido al personal
           </p>
 
           {/* Error */}
