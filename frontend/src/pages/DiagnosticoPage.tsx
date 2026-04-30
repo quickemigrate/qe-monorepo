@@ -211,7 +211,7 @@ export default function DiagnosticoPage() {
 
         {/* Card: Precio */}
         <div className="bg-on-background rounded-2xl p-6 text-center">
-          <div className="text-[16px] font-semibold text-white mb-1">Diagnóstico Migratorio IA</div>
+          <div className="text-[16px] font-semibold text-white mb-1">Diagnóstico Migratorio Personalizado</div>
           <div className="text-[13px] text-white/40 mb-4 space-y-0.5">
             <div>Informe PDF personalizado</div>
             <div>+ Checklist de documentos</div>

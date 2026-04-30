@@ -276,6 +276,9 @@
   border-top:1px solid var(--border);
 }
 .ea-footer .ea-sep{margin:0 10px;opacity:.5}
+.ea-footer-links{display:flex;justify-content:center;gap:24px;margin-bottom:16px}
+.ea-footer-link{color:var(--text-muted);font-size:13px;text-decoration:none;opacity:.7;transition:opacity .2s}
+.ea-footer-link:hover{opacity:1}
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width:880px){
