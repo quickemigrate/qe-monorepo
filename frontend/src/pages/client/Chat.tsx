@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Copy, Check, Search, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClientLayout from '../../components/client/ClientLayout';
@@ -8,6 +8,13 @@ import { useAuth } from '../../context/AuthContext';
 import { usePreferencias } from '../../hooks/usePreferencias';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+const QUICK_PROMPTS = [
+  '¿Qué documentos necesito para mi caso?',
+  '¿Cuánto tiempo tarda el proceso?',
+  '¿Cuánto cuesta en total?',
+  '¿Cuál es la ruta más rápida para residir legalmente?',
+];
 
 interface Mensaje {
   id?: string;
@@ -24,6 +31,26 @@ interface EstadoChat {
   diagnosticoId: string | null;
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const handle = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button
+      onClick={handle}
+      title="Copiar respuesta"
+      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1.5 self-end
+                 flex items-center gap-1 text-[11.5px] text-on-background/40 hover:text-on-background px-1.5 py-0.5 rounded-lg hover:bg-black/5"
+    >
+      {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+      {copied ? 'Copiado' : 'Copiar'}
+    </button>
+  );
+}
+
 export default function Chat() {
   const { getToken } = useAuth();
   const { prefs } = usePreferencias();
@@ -38,6 +65,11 @@ export default function Chat() {
   const [loadingEstado, setLoadingEstado] = useState(true);
   const [errorEstado, setErrorEstado] = useState(false);
   const [consentimientoPendiente, setConsentimientoPendiente] = useState(false);
+
+  // Search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const fetchEstado = async () => {
     const token = await getToken();
@@ -78,8 +110,12 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [mensajes]);
+    if (!searchOpen) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [mensajes, searchOpen]);
+
+  useEffect(() => {
+    if (searchOpen) setTimeout(() => searchRef.current?.focus(), 50);
+  }, [searchOpen]);
 
   const handleConsentimiento = async (acepta: boolean) => {
     const token = await getToken();
@@ -93,13 +129,13 @@ export default function Chat() {
     setEstado(prev => prev ? { ...prev, consentimientoDiagnostico: acepta } : prev);
   };
 
-  const handleEnviar = async () => {
-    if (!input.trim() || enviando) return;
-    const texto = input.trim();
+  const handleEnviar = async (texto?: string) => {
+    const msg = (texto ?? input).trim();
+    if (!msg || enviando) return;
     setInput('');
     setEnviando(true);
 
-    const msgUsuario: Mensaje = { role: 'user', contenido: texto, timestamp: new Date().toISOString() };
+    const msgUsuario: Mensaje = { role: 'user', contenido: msg, timestamp: new Date().toISOString() };
     setMensajes(prev => [...prev, msgUsuario]);
 
     const token = await getToken();
@@ -107,7 +143,7 @@ export default function Chat() {
       const res = await fetch(`${API}/api/chat/mensaje`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ mensaje: texto, preferenciasIA: prefs.ia }),
+        body: JSON.stringify({ mensaje: msg, preferenciasIA: prefs.ia }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -137,11 +173,15 @@ export default function Chat() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleEnviar();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
   };
+
+  const mensajesFiltrados = searchQuery
+    ? mensajes.filter(m => m.contenido.toLowerCase().includes(searchQuery.toLowerCase()))
+    : mensajes;
+
+  const pct = estado ? Math.min((estado.mensajesUsados / estado.mensajesLimit) * 100, 100) : 0;
+  const barColor = pct >= 80 ? '#ef4444' : pct >= 60 ? '#f97316' : '#22c55e';
 
   if (loadingEstado) {
     return (
@@ -166,7 +206,6 @@ export default function Chat() {
     );
   }
 
-  // Plan starter — redirigir a /cliente/plan
   if (estado.plan === 'starter') {
     navigate('/cliente/plan', { replace: true });
     return null;
@@ -190,22 +229,59 @@ export default function Chat() {
               <p className="text-[12px] text-on-background/40">Quick Emigrate IA</p>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-[12px] text-on-background/40">Mensajes utilizados</div>
-            <div className="text-[13px] font-semibold text-on-background">
-              {estado.mensajesUsados}
-              <span className="text-on-background/40 font-normal"> / {estado.mensajesLimit}</span>
-            </div>
-            <div className="mt-1 h-1 w-24 rounded-full bg-black/8 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary-container transition-all"
-                style={{ width: `${Math.min((estado.mensajesUsados / estado.mensajesLimit) * 100, 100)}%` }}
-              />
+
+          <div className="flex items-center gap-3">
+            {/* Search toggle */}
+            {mensajes.length > 0 && (
+              <button
+                onClick={() => { setSearchOpen(s => !s); if (searchOpen) setSearchQuery(''); }}
+                className={`p-2 rounded-xl transition-colors ${searchOpen ? 'bg-on-background text-white' : 'text-on-background/40 hover:text-on-background hover:bg-black/5'}`}
+                title="Buscar en historial"
+              >
+                <Search size={16} />
+              </button>
+            )}
+
+            {/* Limit bar */}
+            <div className="text-right">
+              <div className="text-[12px] text-on-background/40">Mensajes</div>
+              <div className="text-[13px] font-semibold text-on-background">
+                {estado.mensajesUsados}
+                <span className="text-on-background/40 font-normal"> / {estado.mensajesLimit}</span>
+              </div>
+              <div className="mt-1 h-1.5 w-24 rounded-full bg-black/8 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, backgroundColor: barColor }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Banner consentimiento */}
+        {/* Search bar */}
+        {searchOpen && (
+          <div className="flex items-center gap-2 bg-white rounded-2xl border border-black/5 px-4 py-2.5 mb-3">
+            <Search size={14} className="text-on-background/30 shrink-0" />
+            <input
+              ref={searchRef}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar en el historial..."
+              className="flex-1 text-[13.5px] text-on-background placeholder:text-on-background/30 focus:outline-none bg-transparent"
+            />
+            {searchQuery && (
+              <span className="text-[12px] text-on-background/40 shrink-0">
+                {mensajesFiltrados.length} resultado{mensajesFiltrados.length !== 1 ? 's' : ''}
+              </span>
+            )}
+            <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="text-on-background/30 hover:text-on-background transition">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Consentimiento */}
         {consentimientoPendiente && (
           <div className="bg-on-background rounded-2xl p-4 mb-4 text-white">
             <p className="text-[13.5px] font-medium mb-3">
@@ -214,15 +290,13 @@ export default function Chat() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleConsentimiento(true)}
-                className="flex-1 py-2 rounded-xl bg-primary-container text-on-background text-[13px] font-semibold
-                           hover:opacity-90 transition"
+                className="flex-1 py-2 rounded-xl bg-primary-container text-on-background text-[13px] font-semibold hover:opacity-90 transition"
               >
                 Sí, permitir acceso
               </button>
               <button
                 onClick={() => handleConsentimiento(false)}
-                className="flex-1 py-2 rounded-xl bg-white/10 text-white text-[13px] font-semibold
-                           hover:bg-white/15 transition"
+                className="flex-1 py-2 rounded-xl bg-white/10 text-white text-[13px] font-semibold hover:bg-white/15 transition"
               >
                 No, preferir privacidad
               </button>
@@ -230,67 +304,84 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Área de mensajes */}
+        {/* Mensajes */}
         <div className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4">
           {mensajes.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-12">
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-5 py-12">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-on-background">
                 <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
               </div>
               <p className="text-[14px] text-on-background/40 max-w-[300px]">
                 Hola, soy tu asistente de inmigración. Pregúntame cualquier cosa sobre tu proceso de emigración a España.
               </p>
+              {/* Quick-start prompts */}
+              <div className="flex flex-wrap justify-center gap-2 max-w-[420px]">
+                {QUICK_PROMPTS.map(p => (
+                  <button
+                    key={p}
+                    onClick={() => handleEnviar(p)}
+                    disabled={enviando}
+                    className="px-3.5 py-2 rounded-xl border border-black/10 text-[12.5px] text-on-background/60
+                               hover:border-black/20 hover:text-on-background hover:bg-surface-container-low
+                               transition-colors text-left disabled:opacity-40"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {mensajes.map((msg, i) => (
+          {/* Quick-start también cuando hay mensajes pero no hay query de búsqueda */}
+          {searchQuery && mensajesFiltrados.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-[13.5px] text-on-background/40">Sin resultados para "{searchQuery}"</p>
+            </div>
+          )}
+
+          {mensajesFiltrados.map((msg, i) => (
             <div
               key={msg.id || i}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start group'}`}
             >
-              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-[14px] leading-[1.6] ${
-                msg.role === 'user'
-                  ? 'bg-primary-container text-on-background rounded-br-sm'
-                  : 'bg-surface-container-low text-on-background rounded-bl-sm'
-              }`}>
-                {msg.role === 'assistant' ? (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                      li: ({ children }) => <li className="ml-2">{children}</li>,
-                      strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-                      em: ({ children }) => <em className="italic">{children}</em>,
-                      h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
-                      h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
-                      h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
-                      code: ({ children }) => (
-                        <code className="bg-black/10 rounded px-1 py-0.5 text-sm font-mono">
-                          {children}
-                        </code>
-                      ),
-                      blockquote: ({ children }) => (
-                        <blockquote className="border-l-2 border-primary-container pl-3 italic opacity-80 mb-2">
-                          {children}
-                        </blockquote>
-                      ),
-                      a: ({ href, children }) => (
-                        <a href={href} target="_blank" rel="noopener noreferrer"
-                           className="text-primary-container underline hover:opacity-80">
-                          {children}
-                        </a>
-                      ),
-                      hr: () => <hr className="border-black/15 my-2" />,
-                    }}
-                  >
-                    {msg.contenido}
-                  </ReactMarkdown>
-                ) : (
+              {msg.role === 'assistant' ? (
+                <div className="flex flex-col max-w-[80%]">
+                  <div className="bg-surface-container-low text-on-background rounded-2xl rounded-bl-sm px-4 py-3 text-[14px] leading-[1.6]">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="ml-2">{children}</li>,
+                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                        code: ({ children }) => (
+                          <code className="bg-black/10 rounded px-1 py-0.5 text-sm font-mono">{children}</code>
+                        ),
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-2 border-primary-container pl-3 italic opacity-80 mb-2">{children}</blockquote>
+                        ),
+                        a: ({ href, children }) => (
+                          <a href={href} target="_blank" rel="noopener noreferrer"
+                             className="text-primary-container underline hover:opacity-80">{children}</a>
+                        ),
+                        hr: () => <hr className="border-black/15 my-2" />,
+                      }}
+                    >
+                      {msg.contenido}
+                    </ReactMarkdown>
+                  </div>
+                  <CopyButton text={msg.contenido} />
+                </div>
+              ) : (
+                <div className="max-w-[80%] bg-primary-container text-on-background rounded-2xl rounded-br-sm px-4 py-3 text-[14px] leading-[1.6]">
                   <p>{msg.contenido}</p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
 
@@ -328,7 +419,7 @@ export default function Chat() {
               style={{ minHeight: '44px', maxHeight: '120px' }}
             />
             <button
-              onClick={handleEnviar}
+              onClick={() => handleEnviar()}
               disabled={!input.trim() || enviando}
               className="w-10 h-10 self-end rounded-xl bg-on-background text-white flex items-center justify-center
                          hover:opacity-90 active:scale-95 transition disabled:opacity-30 shrink-0"
