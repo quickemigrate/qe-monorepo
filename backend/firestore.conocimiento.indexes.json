@@ -1,0 +1,68 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "migration_routes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "mvp_priority", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "migration_routes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "tags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "mvp_priority", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "route_requirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "route_id", "order": "ASCENDING" },
+        { "fieldPath": "mandatory", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "route_documents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "route_id", "order": "ASCENDING" },
+        { "fieldPath": "mandatory_level", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "route_costs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "route_id", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "risk_catalog",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "affected_routes", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "severity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "consulates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "origin_country", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "training_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "output_visa_recomendada", "order": "ASCENDING" },
+        { "fieldPath": "input_nacionalidad", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

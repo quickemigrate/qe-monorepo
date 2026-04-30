@@ -245,6 +245,21 @@ async function procesarDiagnostico(diagnosticoId: string, data: any) {
     ? (data.cualesIdiomas ? `Sí (${data.cualesIdiomas})` : 'Sí')
     : (data.otrosIdiomas || 'Solo español');
 
+  const CAMPOS_YA_MAPEADOS = new Set([
+    'name', 'email', 'age', 'nationality', 'country_of_residence',
+    'current_profession', 'study_area', 'education_level', 'years_experience',
+    'employment_status', 'savings_eur_range', 'migration_goal', 'urgency',
+    'family_in_spain_or_eu', 'diagnostic_disclaimer_accepted', 'diagnostic_data_consent',
+    'otrosIdiomas', 'cualesIdiomas',
+  ]);
+
+  const respuestasExtra = data.respuestas
+    ? Object.entries(data.respuestas as Record<string, any>)
+        .filter(([k, v]) => !CAMPOS_YA_MAPEADOS.has(k) && v !== undefined && v !== null && v !== '' && v !== false)
+        .map(([k, v]) => `- ${k.replace(/_/g, ' ')}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+        .join('\n')
+    : '';
+
   const promptBase = `Eres un experto en inmigración española. Genera un informe de diagnóstico migratorio para el siguiente perfil.
 
 IMPORTANTE: No uses markdown (sin ##, sin **, sin tablas, sin guiones como listas). Usa EXACTAMENTE estos marcadores para estructurar el informe:
@@ -269,6 +284,7 @@ PERFIL DEL USUARIO:
 - Plazo para emigrar: ${data.plazo || 'No especificado'}
 - Familiares en España: ${data.familiaresEnEspana || 'No especificado'}
 - Otros idiomas: ${idiomasStr}
+${respuestasExtra ? `\nINFORMACIÓN COMPLEMENTARIA DEL FORMULARIO:\n${respuestasExtra}` : ''}
 
 Genera el informe con estas secciones en orden:
 

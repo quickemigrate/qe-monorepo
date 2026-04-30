@@ -276,7 +276,7 @@ export default function EarlyAccessLanding() {
           <Link to="/nosotros" className="ea-footer-link">Sobre nosotros</Link>
           <Link to="/blog" className="ea-footer-link">Blog</Link>
         </div>
-        © 2026 Quick Emigrate<span className="ea-sep">·</span>quickemigrate.com<span className="ea-sep">·</span>quickemigrate@gmail.com
+        © 2026 Quick Emigrate<span className="ea-sep">·</span>quickemigrate.com<span className="ea-sep">·</span>contacto@quickemigrate.com
       </footer>
     </div>
   );
