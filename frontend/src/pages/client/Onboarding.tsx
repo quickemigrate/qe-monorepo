@@ -30,6 +30,7 @@ export default function Onboarding() {
         familiaresEnEspana,
         otrosIdiomas: 'No',
         cualesIdiomas: '',
+        respuestas: answers,
       }),
     });
 

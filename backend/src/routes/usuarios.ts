@@ -154,6 +154,7 @@ router.put('/perfil', verifyClientToken, async (req: Request, res: Response) => 
       estudios, experiencia, situacion, medios,
       objetivo, plazo, familiaresEnEspana,
       otrosIdiomas, cualesIdiomas,
+      respuestas,
     } = req.body;
 
     await db.collection('usuarios').doc(userEmail).update({
@@ -163,6 +164,7 @@ router.put('/perfil', verifyClientToken, async (req: Request, res: Response) => 
         estudios, experiencia, situacion, medios,
         objetivo, plazo, familiaresEnEspana,
         otrosIdiomas, cualesIdiomas,
+        ...(respuestas ? { respuestas } : {}),
       },
       perfilCompleto: true,
       actualizadoEn: new Date().toISOString(),
