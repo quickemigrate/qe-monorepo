@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -29,6 +29,12 @@ import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function AppShell() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
@@ -37,6 +43,7 @@ function AppShell() {
 
   return (
     <div className="font-sans selection:bg-primary-container/30">
+      <ScrollToTop />
       {!isAdmin && !isClient && !isHome && <Navbar />}
       <Routes>
         <Route path="/" element={<EarlyAccessLanding />} />
