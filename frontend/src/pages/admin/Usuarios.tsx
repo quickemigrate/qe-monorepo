@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Plus, RefreshCw, AlertCircle, CheckCircle2, Eye } from 'lucide-react';
+import { X, Plus, RefreshCw, AlertCircle, CheckCircle2, Eye, Trash2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -81,6 +81,10 @@ export default function Usuarios() {
 
   // Detalle usuario
   const [detalle, setDetalle] = useState<Usuario | null>(null);
+
+  // Eliminar usuario
+  const [confirmEliminar, setConfirmEliminar] = useState<Usuario | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   // Toast
   const [toast, setToast] = useState<{ msg: string; tipo: 'success' | 'error' } | null>(null);
@@ -176,6 +180,30 @@ export default function Usuarios() {
       showToast('Error de conexión.', 'error');
     } finally {
       setSincronizando(false);
+    }
+  };
+
+  const handleEliminar = async () => {
+    if (!confirmEliminar) return;
+    setEliminando(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API}/api/usuarios/${encodeURIComponent(confirmEliminar.id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setConfirmEliminar(null);
+        showToast('Usuario eliminado correctamente.', 'success');
+        fetchUsuarios();
+      } else {
+        showToast(data.error || 'Error al eliminar.', 'error');
+      }
+    } catch {
+      showToast('Error de conexión.', 'error');
+    } finally {
+      setEliminando(false);
     }
   };
 
@@ -296,6 +324,13 @@ export default function Usuarios() {
                                        hover:opacity-90 transition disabled:opacity-40"
                           >
                             {updatingId === u.id ? 'Guardando...' : 'Guardar'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmEliminar(u)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition"
+                            title="Eliminar usuario"
+                          >
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -466,6 +501,43 @@ export default function Usuarios() {
                   {creando ? 'Creando...' : 'Crear'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal confirmar eliminación */}
+      {confirmEliminar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !eliminando && setConfirmEliminar(null)} />
+          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[400px] px-7 py-6">
+            <div className="flex items-start gap-4 mb-5">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                <Trash2 size={18} className="text-red-500" />
+              </div>
+              <div>
+                <h2 className="text-[17px] font-semibold text-on-background">Eliminar usuario</h2>
+                <p className="text-[13.5px] text-on-background/50 mt-1">
+                  Se borrará <span className="font-medium text-on-background">{confirmEliminar.email}</span> de Firestore y Firebase Auth. Esta acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmEliminar(null)}
+                disabled={eliminando}
+                className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14px]
+                           text-on-background/60 hover:bg-surface-container-low transition disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEliminar}
+                disabled={eliminando}
+                className="flex-1 rounded-xl bg-red-600 text-white font-semibold py-3 text-[14px]
+                           hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {eliminando ? 'Eliminando...' : 'Eliminar'}
+              </button>
             </div>
           </div>
         </div>

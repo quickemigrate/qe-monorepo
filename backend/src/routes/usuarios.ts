@@ -177,6 +177,33 @@ router.put('/perfil', verifyClientToken, async (req: Request, res: Response) => 
   }
 });
 
+// Admin: delete user from Firestore + Firebase Auth
+router.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // id = email (doc key)
+    const docRef = db.collection('usuarios').doc(id);
+    const doc = await docRef.get();
+
+    if (doc.exists) {
+      const uid = doc.data()?.uid;
+      if (uid) {
+        try {
+          const { getAuth } = await import('firebase-admin/auth');
+          await getAuth().deleteUser(uid);
+        } catch (authErr: any) {
+          if (authErr.code !== 'auth/user-not-found') throw authErr;
+        }
+      }
+      await docRef.delete();
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
+    res.status(500).json({ success: false, error: 'Error al eliminar usuario' });
+  }
+});
+
 // Admin: update plan
 router.patch('/:id', verifyToken, async (req: Request, res: Response) => {
   try {
