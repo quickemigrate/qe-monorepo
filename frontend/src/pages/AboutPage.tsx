@@ -41,7 +41,7 @@ const AboutHero = () => (
 
       <motion.h1
         {...rise(0.15)}
-        className="mt-7 font-semibold tracking-[-0.035em] leading-[1.0] text-[48px] md:text-[76px]"
+        className="mt-7 font-semibold tracking-[-0.035em] leading-[1.0] text-[48px] md:text-[76px] text-white"
       >
         Nacimos de una
         <br />
@@ -149,9 +149,9 @@ const OriginStory = () => (
               y una ruta ordenada.
             </p>
             <div className="mt-7 pt-6 border-t border-white/10 flex items-center gap-3">
-              <img src="/logo-dark.png" alt="Quick Emigrate" className="h-10 w-auto" />
+              <img src="/logo-light.png" alt="Quick Emigrate" className="h-10 w-auto" />
               <div>
-                <div className="text-[13px] font-semibold">Equipo Quick Emigrate</div>
+                <div className="text-[13px] font-semibold text-white">Equipo Quick Emigrate</div>
                 <div className="text-[12px] text-white/50">Madrid, 2026</div>
               </div>
             </div>
