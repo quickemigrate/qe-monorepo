@@ -744,7 +744,7 @@ export default function DiagnosticoWizard({ initialAnswers = {}, onSubmit }: Dia
       </div>
 
       {/* Question block */}
-      <div className="rounded-[24px] border border-black/8 bg-[var(--surface)] p-5 sm:p-6">
+      <div className="rounded-[24px] border border-black/8 bg-surface-container-low p-5 sm:p-6">
         <div className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
             {currentBlock.id.replace(/_/g, ' ')}
