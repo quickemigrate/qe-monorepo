@@ -86,7 +86,7 @@ router.post('/consentimiento', verifyClientToken, async (req: Request, res: Resp
 router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
-    const { mensaje } = req.body;
+    const { mensaje, preferenciasIA } = req.body;
 
     if (!mensaje || mensaje.trim().length === 0) {
       return res.status(400).json({ success: false, error: 'Mensaje vacío' });
@@ -162,6 +162,29 @@ Usa formato Markdown en tus respuestas para mejorar la legibilidad:
 - Usa ## para títulos de secciones cuando la respuesta sea larga
 - Usa > para destacar alertas o información importante
 - Mantén un tono profesional y empático`;
+
+    // Aplicar preferencias de IA del usuario
+    if (preferenciasIA) {
+      const extras: string[] = [];
+      if (preferenciasIA.tono === 'formal') {
+        extras.push('Usa un tono formal y profesional, con vocabulario técnico cuando sea apropiado.');
+      } else if (preferenciasIA.tono === 'cercano') {
+        extras.push('Usa un tono cercano y amigable, como si hablaras con un amigo de confianza. Puedes usar primera persona y un estilo conversacional.');
+      }
+      if (preferenciasIA.detalle === 'breve') {
+        extras.push('Sé muy conciso. Máximo 120 palabras. Ve directo al grano, sin contexto innecesario.');
+      } else if (preferenciasIA.detalle === 'detallado') {
+        extras.push('El usuario prefiere respuestas completas y bien explicadas. Puedes extenderte hasta 500 palabras cuando sea útil.');
+      }
+      if (preferenciasIA.idioma === 'ingles') {
+        extras.push('The user prefers responses in English. Always respond in English, regardless of the language used in the question.');
+      } else if (preferenciasIA.idioma === 'portugues') {
+        extras.push('O usuário prefere respostas em português. Responda sempre em português, independentemente do idioma usado na pergunta.');
+      }
+      if (extras.length > 0) {
+        sistemaPrompt += `\n\nPREFERENCIAS DEL USUARIO:\n${extras.join('\n')}`;
+      }
+    }
 
     let paisUsuario = 'general';
     let objetivoUsuario = userData.perfil?.objetivo || userData.objetivo || 'trabajo';

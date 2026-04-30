@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useAuth } from '../../context/AuthContext';
+import { usePreferencias } from '../../hooks/usePreferencias';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -25,6 +26,7 @@ interface EstadoChat {
 
 export default function Chat() {
   const { getToken } = useAuth();
+  const { prefs } = usePreferencias();
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -105,7 +107,7 @@ export default function Chat() {
       const res = await fetch(`${API}/api/chat/mensaje`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ mensaje: texto }),
+        body: JSON.stringify({ mensaje: texto, preferenciasIA: prefs.ia }),
       });
       const data = await res.json();
       if (res.ok) {
