@@ -1,3 +1,23 @@
+/* ---------- LIGHT MODE OVERRIDES FOR TAILWIND COMPONENTS ---------- */
+.ea-root.light .ea-hero-wrap > div:first-child,
+.ea-root.light .ea-scroll-wrap > div:first-child { background:#F5F6F8 !important }
+.ea-root.light .ea-hero-wrap,
+.ea-root.light .ea-scroll-wrap { background:#F5F6F8 }
+
+/* ---------- TOGGLE BUTTON ---------- */
+.ea-theme-btn{
+  position:fixed;bottom:24px;left:24px;z-index:100;
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border-strong);
+  background:var(--surface);
+  color:var(--text);
+  cursor:pointer;
+  transition:background .3s ease, border-color .3s ease, transform .2s ease;
+  box-shadow:0 4px 16px rgba(0,0,0,0.2);
+}
+.ea-theme-btn:hover{transform:scale(1.08)}
+
 /* Targeted reset: only text/list elements, never divs — preserves Tailwind utilities */
 .ea-section *{box-sizing:border-box}
 .ea-section h1,.ea-section h2,.ea-section h3,.ea-section h4,

@@ -1,17 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
-import DiagnosticoWizard, { WizardAnswers } from '../../components/DiagnosticoWizard';
+import QuickEmigrateWizardFormV2, { SubmitPayload } from '../../components/QuickEmigrateWizardFormV2';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export default function Onboarding() {
   const navigate = useNavigate();
 
-  const handleSubmit = async ({ answers }: { answers: WizardAnswers }) => {
+  const handleSubmit = async ({ answers, meta }: SubmitPayload) => {
     const token = await getAuth().currentUser?.getIdToken();
     if (!token) throw new Error('No autenticado');
 
-    const familiaresEnEspana = answers.family_in_spain_or_eu && answers.family_in_spain_or_eu !== 'No' ? 'Sí' : 'No';
+    const familiaresEnEspana = answers.family_in_spain_or_eu && answers.family_in_spain_or_eu !== 'no' ? 'Sí' : 'No';
 
     await fetch(`${API}/api/usuarios/perfil`, {
       method: 'PUT',
@@ -31,6 +31,7 @@ export default function Onboarding() {
         otrosIdiomas: 'No',
         cualesIdiomas: '',
         respuestas: answers,
+        diagnosticoMeta: meta,
       }),
     });
 
@@ -38,12 +39,12 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest flex flex-col items-center justify-start py-12 px-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-start py-12 px-4">
       <div className="flex items-center gap-2.5 mb-10">
-        <img src="/logo-light.png" alt="Quick Emigrate" className="h-9 w-auto" />
-        <span className="text-[17px] font-bold tracking-tight text-on-background">Quick Emigrate</span>
+        <img src="/logo-dark.png" alt="Quick Emigrate" className="h-9 w-auto" />
+        <span className="text-[17px] font-bold tracking-tight text-white">Quick Emigrate</span>
       </div>
-      <DiagnosticoWizard onSubmit={handleSubmit} />
+      <QuickEmigrateWizardFormV2 onSubmit={handleSubmit} />
     </div>
   );
 }
