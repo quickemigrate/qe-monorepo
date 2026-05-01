@@ -20,20 +20,20 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const navLink = 'text-sm font-semibold text-on-background/70 hover:text-on-background transition-colors';
-  const activeLink = 'text-sm font-semibold text-on-background transition-colors';
+  const navLink = 'text-sm font-semibold text-white/60 hover:text-white transition-colors';
+  const activeLink = 'text-sm font-semibold text-white transition-colors';
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'glass py-3 shadow-sm' : 'bg-transparent py-5'
+        isScrolled ? 'bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/10 py-3' : 'bg-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <img src="/logo-light.png" alt="Quick Emigrate" className="h-8 w-auto" />
-          <span className="text-xl font-bold tracking-tight text-on-background">Quick Emigrate</span>
+          <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />
+          <span className="text-xl font-bold tracking-tight text-white">Quick Emigrate</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -59,7 +59,7 @@ const Navbar = () => {
           >
             Blog
           </Link>
-          <div className="h-4 w-px bg-on-background/10" />
+          <div className="h-4 w-px bg-white/10" />
           <Link
             to="/cliente/login"
             className={location.pathname.startsWith('/cliente') ? activeLink : navLink}
@@ -68,8 +68,8 @@ const Navbar = () => {
           </Link>
           <a
             href={isHome ? '#servicios' : '/#servicios'}
-            className="bg-primary-container text-on-background px-6 py-2.5 rounded-full font-bold text-sm
-                       hover:scale-105 transition-transform active:scale-95 shadow-sm"
+            className="bg-[#25D366] text-[#062810] px-6 py-2.5 rounded-full font-bold text-sm
+                       hover:bg-[#2adc6c] hover:scale-105 transition-all active:scale-95"
           >
             Reservar diagnóstico
           </a>
@@ -77,7 +77,7 @@ const Navbar = () => {
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden text-on-background"
+          className="md:hidden text-white"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Menú"
         >
@@ -92,28 +92,28 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-white border-t border-on-background/5 p-6 md:hidden shadow-xl"
+            className="absolute top-full left-0 right-0 bg-[#0F0F0F] border-t border-white/10 p-6 md:hidden shadow-xl"
           >
             <div className="flex flex-col gap-5">
               {isHome ? (
                 <>
-                  <a href="#soluciones" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-on-background">Soluciones</a>
-                  <a href="#servicios" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-on-background">Servicios</a>
-                  <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-on-background">Contacto</a>
+                  <a href="#soluciones" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Soluciones</a>
+                  <a href="#servicios" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Servicios</a>
+                  <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Contacto</a>
                 </>
               ) : (
-                <Link to="/" className="text-lg font-medium text-on-background">Inicio</Link>
+                <Link to="/" className="text-lg font-medium text-white">Inicio</Link>
               )}
-              <Link to="/nosotros" className="text-lg font-medium text-on-background">Nosotros</Link>
-              <Link to="/blog" className="text-lg font-medium text-on-background">Blog</Link>
-              <hr className="border-on-background/5" />
-              <Link to="/cliente/login" className="text-lg font-medium text-on-background">
+              <Link to="/nosotros" className="text-lg font-medium text-white">Nosotros</Link>
+              <Link to="/blog" className="text-lg font-medium text-white">Blog</Link>
+              <hr className="border-white/10" />
+              <Link to="/cliente/login" className="text-lg font-medium text-white">
                 Acceder a mi expediente
               </Link>
               <a
                 href={isHome ? '#servicios' : '/#servicios'}
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-primary-container text-on-background px-6 py-4 rounded-full font-bold text-center"
+                className="bg-[#25D366] text-[#062810] px-6 py-4 rounded-full font-bold text-center hover:bg-[#2adc6c] transition-colors"
               >
                 Reservar diagnóstico
               </a>
