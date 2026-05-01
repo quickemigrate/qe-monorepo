@@ -24,6 +24,32 @@ function normalizarObjetivo(obj: string): string {
   return map[obj?.toLowerCase()] || 'trabajo';
 }
 
+function sanitizarScoring(texto: string): string {
+  let result = texto.replace(/(\d{1,3})(%)/g, (match, num, _pct, offset) => {
+    const before = texto.substring(Math.max(0, offset - 5), offset);
+    if (/\d+[-–]\s?$/.test(before)) return match;
+    const n = parseInt(num);
+    if (n < 0 || n > 100) return match;
+    const lo = Math.floor(n / 5) * 5;
+    const hi = Math.min(lo + 10, 100);
+    return lo === hi ? ` ${lo}%` : ` ${lo}–${hi}%`;
+  });
+  result = result.replace(/score:\s*0\.(\d{2})/gi, (_m, d) => {
+    const n = parseInt(d);
+    if (n >= 80) return 'valoración: Alta';
+    if (n >= 60) return 'valoración: Media-Alta';
+    if (n >= 40) return 'valoración: Media';
+    return 'valoración: Baja';
+  });
+  result = result.replace(/\b(\d{1,3})\/100\b/g, (_m, num) => {
+    const n = parseInt(num);
+    const lo = Math.floor(n / 5) * 5;
+    const hi = Math.min(lo + 10, 100);
+    return ` ${lo}–${hi} sobre 100`;
+  });
+  return result;
+}
+
 // POST /api/diagnostico/create-order
 // Lee el perfil del usuario autenticado, guarda diagnóstico pendiente y crea orden en PayPal
 router.post('/create-order', async (req: Request, res: Response) => {
@@ -335,7 +361,8 @@ Sé específico, útil y directo. Máximo 800 palabras en total. Sé directo y e
     max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }]
   });
-  const informeTexto = (message.content[0] as { type: string; text: string }).text;
+  const informeRaw = (message.content[0] as { type: string; text: string }).text;
+  const informeTexto = sanitizarScoring(informeRaw);
   console.log('Informe generado, longitud:', informeTexto.length);
 
   const pdfBuffer = await generarPDF(nombre, informeTexto, data);
@@ -479,13 +506,41 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
 
     const lineas = informe.split('\n');
 
-    for (const linea of lineas) {
-      const trimmed = linea.trim();
+    const estimateLineHeight = (line: string): number => {
+      const t = line.trim();
+      if (!t) return 0;
+      const raw = t.replace(/\[(?:SECCION|SUBSECCION|ITEM|TEXTO|ALERTA|DESTACADO)\]\s*/g, '');
+      if (t.startsWith('[ALERTA]')) {
+        doc.font('Helvetica').fontSize(9);
+        return Math.max(50, doc.heightOfString(raw, { width: contentWidth - 24 }) + 28) + 20;
+      }
+      if (t.startsWith('[DESTACADO]')) {
+        doc.font('Helvetica-Bold').fontSize(26);
+        return Math.max(52, doc.heightOfString(raw, { width: contentWidth - 32 }) + 24) + 16;
+      }
+      doc.font('Helvetica').fontSize(10);
+      // FIX: [ITEM] renders with contentWidth - 22, not contentWidth
+      const w = t.startsWith('[ITEM]') ? contentWidth - 22 : contentWidth;
+      return doc.heightOfString(raw, { width: w }) + 20;
+    };
+
+    for (let i = 0; i < lineas.length; i++) {
+      const trimmed = lineas[i].trim();
       if (!trimmed) continue;
 
       if (trimmed.startsWith('[SECCION]')) {
         const titulo = trimmed.replace('[SECCION]', '').trim();
-        checkPageBreak(200);
+
+        let firstBlockHeight = 0;
+        for (let j = i + 1; j < lineas.length; j++) {
+          const next = lineas[j].trim();
+          if (!next) continue;
+          if (next.startsWith('[SECCION]')) break;
+          firstBlockHeight = estimateLineHeight(lineas[j]);
+          break;
+        }
+        doc.font('Helvetica-Bold').fontSize(13);
+        checkPageBreak(Math.max(200, 60 + firstBlockHeight));
 
         doc.rect(margin, doc.y, 4, 22).fill('#25D366');
         doc.fill('#1A1C1C').font('Helvetica-Bold').fontSize(13)
@@ -496,8 +551,19 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
         doc.moveDown(0.5);
 
       } else if (trimmed.startsWith('[SUBSECCION]')) {
-        checkPageBreak(40);
         const sub = trimmed.replace('[SUBSECCION]', '').trim();
+
+        let firstBlockHeight = 0;
+        for (let j = i + 1; j < lineas.length; j++) {
+          const next = lineas[j].trim();
+          if (!next) continue;
+          if (next.startsWith('[SECCION]') || next.startsWith('[SUBSECCION]')) break;
+          firstBlockHeight = estimateLineHeight(lineas[j]);
+          break;
+        }
+        // FIX: reset font before moveDown — estimateLineHeight may have changed it
+        doc.font('Helvetica').fontSize(10);
+        checkPageBreak(Math.max(120, 40 + firstBlockHeight));
         doc.moveDown(0.3);
         doc.fill('#25D366').font('Helvetica-Bold').fontSize(10)
           .text(sub, margin, doc.y, { width: contentWidth });
