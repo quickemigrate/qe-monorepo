@@ -199,6 +199,24 @@ async function obtenerContextoRAG(pais: string, objetivo: string): Promise<strin
     }
   } catch { /* omitir */ }
 
+  // Capa 8 — Documentos del admin KB (rutas_migratorias, base_conocimiento, requisitos_legales)
+  try {
+    const adminCols = ['rutas_migratorias', 'base_conocimiento', 'requisitos_legales'];
+    const snaps = await Promise.all(
+      adminCols.map(col => dbKnowledge!.collection(col).limit(10).get())
+    );
+    const allDocs = snaps.flatMap(s => s.docs).map(d => d.data());
+    const relevant = allDocs.filter(d =>
+      !d.pais || d.pais === 'general' || d.pais === pais
+    );
+    if (relevant.length > 0) {
+      const items = relevant.slice(0, 5).map(r =>
+        `**${r.titulo}**\n${r.contenido ?? ''}`
+      ).join('\n\n');
+      secciones.push(`## Base de Conocimiento\n\n${items}`);
+    }
+  } catch { /* omitir */ }
+
   return secciones.join('\n\n---\n\n');
 }
 

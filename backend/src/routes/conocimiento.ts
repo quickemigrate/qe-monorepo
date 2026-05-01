@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth';
-import { db } from '../firebase';
+import { dbKnowledge } from '../config/firebaseKnowledge';
 import { Timestamp } from 'firebase-admin/firestore';
 
 const router = Router();
@@ -10,17 +10,19 @@ const COLECCIONES_VALIDAS = new Set([
 ]);
 
 const queryColeccion = async (col: string, categoria?: string, pais?: string) => {
-  let q: FirebaseFirestore.Query = db.collection(col);
+  if (!dbKnowledge) throw new Error('KB no disponible');
+  let q: FirebaseFirestore.Query = dbKnowledge.collection(col);
   if (categoria) q = q.where('categoria', '==', categoria);
   if (pais) q = q.where('pais', '==', pais);
   if (!categoria && !pais) q = (q as any).orderBy('fechaActualizacion', 'desc');
   q = q.limit(100);
   const snap = await q.get();
-  return snap.docs.map(d => ({ id: d.id, _coleccion: col, ...d.data() }));
+  return snap.docs.map((d: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: d.id, _coleccion: col, ...d.data() }));
 };
 
 // GET /api/conocimiento?coleccion=X&categoria=Y&pais=Z
 router.get('/', verifyToken, async (req: Request, res: Response) => {
+  if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
   const { coleccion, categoria, pais } = req.query as Record<string, string>;
   try {
     if (coleccion && COLECCIONES_VALIDAS.has(coleccion)) {
@@ -45,17 +47,18 @@ router.get('/', verifyToken, async (req: Request, res: Response) => {
 
 // GET /api/conocimiento/search?q=texto&coleccion=X&categoria=Y&pais=Z
 router.get('/search', verifyToken, async (req: Request, res: Response) => {
+  if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
   const { q, coleccion, categoria, pais } = req.query as Record<string, string>;
   if (!q) return res.status(400).json({ success: false, error: 'Falta parámetro q' });
 
   try {
     const searchCol = async (col: string) => {
-      const snap = await db.collection(col)
+      const snap = await dbKnowledge!.collection(col)
         .where('titulo', '>=', q)
         .where('titulo', '<=', q + '')
         .limit(50)
         .get();
-      return snap.docs.map(d => ({ id: d.id, _coleccion: col, ...d.data() }));
+      return snap.docs.map((d: FirebaseFirestore.QueryDocumentSnapshot) => ({ id: d.id, _coleccion: col, ...d.data() }));
     };
 
     const cols = coleccion && COLECCIONES_VALIDAS.has(coleccion)
@@ -79,6 +82,7 @@ router.get('/search', verifyToken, async (req: Request, res: Response) => {
 
 // POST /api/conocimiento
 router.post('/', verifyToken, async (req: Request, res: Response) => {
+  if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
   const { coleccion, titulo, contenido, ...resto } = req.body;
 
   if (!coleccion || !COLECCIONES_VALIDAS.has(coleccion)) {
@@ -89,7 +93,7 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
   }
 
   try {
-    const docRef = await db.collection(coleccion).add({
+    const docRef = await dbKnowledge.collection(coleccion).add({
       titulo,
       contenido,
       ...resto,
@@ -104,12 +108,13 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
 
 // DELETE /api/conocimiento/:coleccion/:id
 router.delete('/:coleccion/:id', verifyToken, async (req: Request, res: Response) => {
+  if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
   const { coleccion, id } = req.params;
   if (!COLECCIONES_VALIDAS.has(coleccion)) {
     return res.status(400).json({ success: false, error: 'Colección inválida' });
   }
   try {
-    await db.collection(coleccion).doc(id).delete();
+    await dbKnowledge.collection(coleccion).doc(id).delete();
     res.json({ success: true });
   } catch {
     res.status(500).json({ success: false, error: 'Error al eliminar documento' });
@@ -118,12 +123,13 @@ router.delete('/:coleccion/:id', verifyToken, async (req: Request, res: Response
 
 // PATCH /api/conocimiento/:coleccion/:id
 router.patch('/:coleccion/:id', verifyToken, async (req: Request, res: Response) => {
+  if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
   const { coleccion, id } = req.params;
   if (!COLECCIONES_VALIDAS.has(coleccion)) {
     return res.status(400).json({ success: false, error: 'Colección inválida' });
   }
   try {
-    await db.collection(coleccion).doc(id).update({
+    await dbKnowledge.collection(coleccion).doc(id).update({
       ...req.body,
       fechaActualizacion: Timestamp.now(),
     });
