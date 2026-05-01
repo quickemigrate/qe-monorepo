@@ -269,7 +269,7 @@ IMPORTANTE: No uses markdown (sin ##, sin **, sin tablas, sin guiones como lista
 [ITEM] para items de lista
 [TEXTO] para párrafos normales
 [ALERTA] para alertas o riesgos importantes
-[DESTACADO] para datos o porcentajes importantes
+[DESTACADO] para valoración de probabilidad de éxito (NUNCA porcentaje exacto: usa intervalo como "65-80%" o texto como "Alta", "Media-Alta", "Media", "Baja")
 
 PERFIL DEL USUARIO:
 - Nombre: ${data.nombre}
@@ -298,7 +298,7 @@ Genera el informe con estas secciones en orden:
 [ITEM] razón 2
 
 [SECCION] Probabilidad de Éxito
-[DESTACADO] XX%
+[DESTACADO] Alta (entre 70-85%) — usa intervalo o texto, NUNCA porcentaje exacto único
 [TEXTO] explicación...
 [SUBSECCION] Factores positivos
 [ITEM] factor 1
@@ -485,7 +485,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
 
       if (trimmed.startsWith('[SECCION]')) {
         const titulo = trimmed.replace('[SECCION]', '').trim();
-        checkPageBreak(100);
+        checkPageBreak(200);
 
         doc.rect(margin, doc.y, 4, 22).fill('#25D366');
         doc.fill('#1A1C1C').font('Helvetica-Bold').fontSize(13)
@@ -536,7 +536,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
         doc.roundedRect(margin, alertY, contentWidth, alertaHeight, 4).fill('#FEF3C7');
         doc.rect(margin, alertY, 4, alertaHeight).fill('#F59E0B');
         doc.fill('#92400E').font('Helvetica-Bold').fontSize(8)
-          .text('⚠ ALERTA IMPORTANTE', margin + 12, alertY + 10, { width: contentWidth - 20 });
+          .text('ALERTA IMPORTANTE', margin + 12, alertY + 10, { width: contentWidth - 20 });
         doc.fill('#78350F').font('Helvetica').fontSize(9)
           .text(alerta, margin + 12, alertY + 24, { width: contentWidth - 24, lineGap: 2 });
         doc.y = alertY + alertaHeight + 8;
@@ -583,7 +583,7 @@ async function generarPDF(nombre: string, informe: string, data: any): Promise<B
     doc.fill('rgba(255,255,255,0.7)').font('Helvetica').fontSize(11)
       .text('¿Tienes dudas sobre tu diagnóstico?', margin, 275, { width: contentWidth, align: 'center' });
     doc.fill('#25D366').font('Helvetica-Bold').fontSize(14)
-      .text('quickemigrate@gmail.com', margin, 298, { width: contentWidth, align: 'center' });
+      .text('diagnostico@quickemigrate.com', margin, 298, { width: contentWidth, align: 'center' });
     doc.fill('rgba(255,255,255,0.6)').font('Helvetica').fontSize(11)
       .text('quickemigrate.com', margin, 322, { width: contentWidth, align: 'center' });
 
