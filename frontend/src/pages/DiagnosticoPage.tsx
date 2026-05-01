@@ -81,8 +81,8 @@ export default function DiagnosticoPage() {
   // ── Cargando ────────────────────────────────────────────────
   if (estado === 'loading') {
     return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center pt-[72px]">
-        <Loader2 size={24} className="animate-spin text-on-background/30" />
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center pt-[72px]">
+        <Loader2 size={24} className="animate-spin text-white/30" />
       </div>
     );
   }
@@ -90,19 +90,19 @@ export default function DiagnosticoPage() {
   // ── Editar perfil ────────────────────────────────────────────
   if (estado === 'editar') {
     return (
-      <div className="min-h-screen bg-surface-container-lowest pt-[72px] px-4">
+      <div className="min-h-screen bg-[#0A0A0A] pt-[72px] px-4">
         <div className="max-w-[560px] mx-auto py-10">
           <button
             onClick={() => setEstado('confirmacion')}
-            className="mb-6 text-[13px] font-semibold text-on-background/50 hover:text-on-background transition flex items-center gap-1.5"
+            className="mb-6 text-[13px] font-semibold text-white/50 hover:text-white transition flex items-center gap-1.5"
           >
             ← Volver sin guardar
           </button>
           <div className="mb-6">
-            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-on-background">
+            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-white">
               Editar mis datos
             </h2>
-            <p className="text-[14px] text-on-background/50 mt-1">
+            <p className="text-[14px] text-white/50 mt-1">
               Los cambios se guardarán en tu perfil y se usarán en el diagnóstico.
             </p>
           </div>
@@ -122,14 +122,14 @@ export default function DiagnosticoPage() {
 
   // ── Confirmación ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-surface-container-lowest font-sans pt-[72px]">
+    <div className="min-h-screen bg-[#0A0A0A] font-sans pt-[72px]">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden bg-on-background text-white rounded-b-[28px]">
+      <section className="relative isolate overflow-hidden bg-[#111111] text-white rounded-b-[28px] border-b border-white/10">
         <div
-          className="absolute inset-0 opacity-[0.05] pointer-events-none"
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
             backgroundImage:
-              'linear-gradient(var(--brand) 1px, transparent 1px), linear-gradient(90deg, var(--brand) 1px, transparent 1px)',
+              'linear-gradient(#25D366 1px, transparent 1px), linear-gradient(90deg, #25D366 1px, transparent 1px)',
             backgroundSize: '44px 44px',
           }}
         />
@@ -139,7 +139,7 @@ export default function DiagnosticoPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-5"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            style={{ background: '#25D366', color: '#062810' }}
           >
             {starterPrecioTexto} — pago único
           </motion.div>
@@ -166,13 +166,13 @@ export default function DiagnosticoPage() {
       <section className="mx-auto max-w-[600px] px-6 py-10 space-y-4">
 
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
             {error}
           </div>
         )}
 
         {/* Card: Sobre ti */}
-        <div className="bg-on-background rounded-2xl p-5">
+        <div className="bg-[#111111] border border-white/10 rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
             Sobre ti
           </div>
@@ -183,7 +183,7 @@ export default function DiagnosticoPage() {
         </div>
 
         {/* Card: Tu situación */}
-        <div className="bg-on-background rounded-2xl p-5">
+        <div className="bg-[#111111] border border-white/10 rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
             Tu situación
           </div>
@@ -194,7 +194,7 @@ export default function DiagnosticoPage() {
         </div>
 
         {/* Card: Tu objetivo */}
-        <div className="bg-on-background rounded-2xl p-5">
+        <div className="bg-[#111111] border border-white/10 rounded-2xl p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30 mb-3">
             Tu objetivo
           </div>
@@ -210,7 +210,7 @@ export default function DiagnosticoPage() {
         </div>
 
         {/* Card: Precio */}
-        <div className="bg-on-background rounded-2xl p-6 text-center">
+        <div className="bg-[#111111] border border-white/10 rounded-2xl p-6 text-center">
           <div className="text-[16px] font-semibold text-white mb-1">Diagnóstico Migratorio Personalizado</div>
           <div className="text-[13px] text-white/40 mb-4 space-y-0.5">
             <div>Informe PDF personalizado</div>
@@ -224,8 +224,8 @@ export default function DiagnosticoPage() {
         {/* Botón editar */}
         <button
           onClick={() => setEstado('editar')}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-black/10
-                     text-[15px] font-semibold text-on-background/70 bg-white hover:bg-black/3 transition shadow-sm"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-white/20
+                     text-[15px] font-semibold text-white/70 bg-transparent hover:border-white/40 hover:text-white transition"
         >
           <Edit2 size={15} />
           Editar mis datos
@@ -305,9 +305,9 @@ export default function DiagnosticoPage() {
             { icon: Clock,       label: 'Informe en menos de 5 minutos' },
             { icon: Mail,        label: `Enviado a ${userEmail || 'tu email'}` },
           ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-3 bg-white rounded-xl border border-black/5 px-4 py-3 shadow-sm">
-              <Icon size={16} className="text-primary-container shrink-0" />
-              <span className="text-[12.5px] font-medium text-on-background/60">{label}</span>
+            <div key={label} className="flex items-center gap-3 bg-[#111111] rounded-xl border border-white/10 px-4 py-3">
+              <Icon size={16} className="text-[#25D366] shrink-0" />
+              <span className="text-[12.5px] font-medium text-white/60">{label}</span>
             </div>
           ))}
         </div>
