@@ -13,7 +13,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-type Estado = 'loading' | 'confirmacion' | 'editar';
+type Estado = 'loading' | 'confirmacion' | 'editar' | 'generando';
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
@@ -91,6 +91,7 @@ export default function DiagnosticoPage() {
 
   const [estado, setEstado] = useState<Estado>('loading');
   const [userEmail, setUserEmail] = useState('');
+  const [userPlan, setUserPlan] = useState<string>('');
   const [perfilData, setPerfilData] = useState<PerfilFormState | null>(null);
   const [error, setError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
@@ -116,6 +117,7 @@ export default function DiagnosticoPage() {
         if (res.ok) {
           const data = await res.json();
           const ud = data.data;
+          setUserPlan(ud?.plan || '');
           setPerfilData({
             nombre: ud?.nombre || user.displayName || '',
             pais: ud?.perfil?.pais || '',
@@ -142,6 +144,7 @@ export default function DiagnosticoPage() {
   }, []);
 
   const p = perfilData;
+  const esPro = userPlan === 'pro' || userPlan === 'premium';
 
   // ── Cargando ────────────────────────────────────────────────
   if (estado === 'loading') {
@@ -197,7 +200,7 @@ export default function DiagnosticoPage() {
           className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-5"
           style={{ background: '#25D366', color: '#062810' }}
         >
-          {starterPrecioTexto} — pago único
+          {esPro ? 'Incluido en tu plan' : `${starterPrecioTexto} — pago único`}
         </motion.div>
         <motion.h1
           initial={{ opacity: 0.5, y: 40 }}
@@ -272,8 +275,17 @@ export default function DiagnosticoPage() {
             <div>+ Checklist de documentos</div>
             <div>+ Plazos estimados</div>
           </div>
-          <div className="text-[56px] font-bold leading-none" style={{ color: '#25D366' }}>{starterPrecioTexto}</div>
-          <div className="text-[13px] text-white/40 mt-1">pago único</div>
+          {esPro ? (
+            <>
+              <div className="text-[28px] font-bold leading-none" style={{ color: '#25D366' }}>Gratis</div>
+              <div className="text-[13px] text-white/40 mt-1">incluido en tu plan {userPlan}</div>
+            </>
+          ) : (
+            <>
+              <div className="text-[56px] font-bold leading-none" style={{ color: '#25D366' }}>{starterPrecioTexto}</div>
+              <div className="text-[13px] text-white/40 mt-1">pago único</div>
+            </>
+          )}
         </div>
 
         {/* Botón editar */}
@@ -286,8 +298,35 @@ export default function DiagnosticoPage() {
           Editar mis datos
         </button>
 
-        {/* Stripe */}
-        {!clientSecret ? (
+        {/* CTA: gratis para Pro/Premium, Stripe para Starter */}
+        {esPro ? (
+          <button
+            onClick={async () => {
+              setError('');
+              setLoadingPayment(true);
+              try {
+                const auth = getAuth();
+                const token = await auth.currentUser?.getIdToken();
+                const res = await fetch(`${API}/api/diagnostico/generar-gratis`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json();
+                if (!data.success) { setError(data.error || 'Error al generar el diagnóstico.'); return; }
+                navigate('/diagnostico/exito');
+              } catch {
+                setError('Error al generar el diagnóstico. Inténtalo de nuevo.');
+              } finally {
+                setLoadingPayment(false);
+              }
+            }}
+            disabled={loadingPayment}
+            className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+          >
+            {loadingPayment ? 'Generando...' : 'Generar mi diagnóstico'}
+          </button>
+        ) : !clientSecret ? (
           <button
             onClick={async () => {
               setError('');

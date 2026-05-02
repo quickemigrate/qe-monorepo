@@ -155,6 +155,53 @@ router.post('/confirm-payment', async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/diagnostico/generar-gratis — Pro/Premium: genera diagnóstico sin pago
+router.post('/generar-gratis', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email as string;
+
+    const userDoc = await db.collection('usuarios').doc(userEmail).get();
+    if (!userDoc.exists) {
+      return res.status(403).json({ success: false, error: 'Usuario no encontrado' });
+    }
+
+    const userData = userDoc.data()!;
+    if (!['pro', 'premium'].includes(userData.plan)) {
+      return res.status(403).json({ success: false, error: 'Requiere plan Pro o Premium' });
+    }
+
+    const datosFormulario = { ...userData.perfil, nombre: userData.nombre, email: userEmail };
+
+    if (!datosFormulario.nombre || !datosFormulario.pais || !datosFormulario.objetivo) {
+      return res.status(400).json({
+        success: false,
+        error: 'Completa tu perfil antes de continuar (nombre, país y objetivo son obligatorios)',
+      });
+    }
+
+    const diagnosticoRef = await db.collection('diagnosticos').add({
+      ...datosFormulario,
+      email: userEmail,
+      estado: 'procesando',
+      creadoEn: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      gratis: true,
+    });
+
+    await db.collection('usuarios').doc(userEmail).update({
+      diagnosticoId: diagnosticoRef.id,
+      actualizadoEn: new Date().toISOString(),
+    });
+
+    procesarConRetry(diagnosticoRef.id, datosFormulario);
+
+    res.json({ success: true, diagnosticoId: diagnosticoRef.id });
+  } catch (error) {
+    console.error('Error generando diagnóstico gratis:', error);
+    res.status(500).json({ success: false, error: 'Error al generar diagnóstico' });
+  }
+});
+
 // GET /api/diagnostico/:id/pdf — descarga el PDF del diagnóstico (cliente autenticado)
 router.get('/:id/pdf', verifyClientToken, async (req: Request, res: Response) => {
   try {

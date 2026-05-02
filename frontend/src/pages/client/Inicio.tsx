@@ -268,8 +268,8 @@ export default function Inicio() {
           </div>
         )}
 
-        {/* STARTER: sección diagnóstico */}
-        {!loading && plan === 'starter' && (
+        {/* Sección diagnóstico — todos los planes */}
+        {!loading && (
           <div className="mb-8">
             {loadingUser ? (
               <div className="bg-white rounded-2xl border border-black/5 p-6 flex items-center gap-3 text-on-background/40">
@@ -321,7 +321,8 @@ export default function Inicio() {
                     </button>
                   </div>
 
-                  {/* Card 2: upgrade */}
+                  {/* Card 2: upgrade — solo para Starter */}
+                  {!isPro && (
                   <div className="bg-on-background border border-white/8 rounded-xl p-5 flex flex-col">
                     <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
                     <ul className="text-[13px] text-white/50 space-y-2">
@@ -345,6 +346,7 @@ export default function Inicio() {
                       Ver planes <ArrowRight size={14} />
                     </Link>
                   </div>
+                  )}
 
                   {quickCards}
 
@@ -433,13 +435,15 @@ export default function Inicio() {
                     {!diagnosticoId ? (
                       <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
                         <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
-                          Paso 1 recomendado
+                          {isPro ? 'Incluido en tu plan' : 'Paso 1 recomendado'}
                         </div>
                         <h2 className="text-[20px] font-semibold mb-2">Obtén tu Diagnóstico Migratorio IA</h2>
                         <p className="text-[14px] text-white/60 leading-[1.6] mb-1">
                           Análisis personalizado con recomendaciones legales, checklist y plazos.
                         </p>
-                        <p className="text-[13px] text-white/40 mb-6">59€ — pago único</p>
+                        <p className="text-[13px] text-white/40 mb-6">
+                          {isPro ? 'Gratis — incluido en tu plan' : '59€ — pago único'}
+                        </p>
                         <Link
                           to="/diagnostico"
                           className="mt-auto self-start inline-flex items-center gap-2 bg-[#25D366] text-white font-bold
@@ -478,7 +482,7 @@ export default function Inicio() {
                         ))}
                       </ul>
                     </div>
-                  ) : (
+                  ) : !isPro ? (
                     <div className="bg-white rounded-2xl border border-black/5 p-6 flex flex-col">
                       <h3 className="text-[15px] font-semibold text-on-background mb-3">
                         ¿Quieres más ayuda con tu proceso?
@@ -504,7 +508,7 @@ export default function Inicio() {
                         Ver planes <ArrowRight size={14} />
                       </Link>
                     </div>
-                  )
+                  ) : null
                 )}
 
                 {/* Acceso rápido cuando procesando — segunda fila, columna izquierda */}
