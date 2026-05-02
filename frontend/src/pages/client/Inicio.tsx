@@ -286,7 +286,7 @@ export default function Inicio() {
                 <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
 
                   {/* Card 1: resumen diagnóstico */}
-                  <div className="bg-on-background border border-white/8 rounded-xl p-5">
+                  <div className="bg-[#111111] border border-white/8 rounded-xl p-5">
                     <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 mb-3">
                       Diagnóstico completado ✓
                     </span>
@@ -325,7 +325,7 @@ export default function Inicio() {
 
                   {/* Card 2: upgrade — solo para Starter */}
                   {!isPro && (
-                  <div className="bg-on-background border border-white/8 rounded-xl p-5 flex flex-col">
+                  <div className="bg-[#111111] border border-white/8 rounded-xl p-5 flex flex-col">
                     <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
                     <ul className="text-[13px] text-white/50 space-y-2">
                       <li className="flex items-start gap-2">
@@ -355,7 +355,7 @@ export default function Inicio() {
                 </div>
 
                 {/* COLUMNA DERECHA — 50% — solo el PDF */}
-                <div className="hidden md:flex w-1/2 flex-col bg-on-background border border-white/8 rounded-xl overflow-hidden">
+                <div className="hidden md:flex w-1/2 flex-col bg-[#111111] border border-white/8 rounded-xl overflow-hidden">
                   {loadingPdf && (
                     <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
                       <Loader2 size={16} className="animate-spin" />
@@ -414,17 +414,17 @@ export default function Inicio() {
                 {/* Columna izquierda: estado actual + acceso rápido */}
                 {diagnosticoEstado === 'procesando' ? (
                   /* Procesando ocupa 2 columnas en desktop */
-                  <div className="md:col-span-2 bg-white rounded-2xl border border-black/5 p-8">
+                  <div className="md:col-span-2 bg-[#111111] rounded-2xl border border-white/8 p-8">
                     <div className="flex items-center gap-3 mb-3">
                       <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
-                      <span className="text-[17px] font-semibold text-on-background">
+                      <span className="text-[17px] font-semibold text-white">
                         Generando tu informe personalizado...
                       </span>
                     </div>
-                    <p className="text-[14px] text-on-background/50 mb-6">
+                    <p className="text-[14px] text-white/50 mb-6">
                       Este proceso puede tardar 1-2 minutos. La página se actualizará automáticamente.
                     </p>
-                    <div className="relative h-2 rounded-full bg-black/6 overflow-hidden">
+                    <div className="relative h-2 rounded-full bg-white/8 overflow-hidden">
                       <div
                         className="absolute top-0 left-0 h-full w-2/5 rounded-full bg-[#25D366]"
                         style={{ animation: 'progress-slide 1.5s ease-in-out infinite' }}
@@ -435,7 +435,7 @@ export default function Inicio() {
                   /* Sin diagnóstico o pendiente pago — columna izquierda */
                   <div className="flex flex-col gap-4">
                     {!diagnosticoId ? (
-                      <div className="bg-on-background rounded-2xl p-6 text-white flex flex-col">
+                      <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 text-white flex flex-col">
                         <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
                           {isPro ? 'Incluido en tu plan' : 'Paso 1 recomendado'}
                         </div>
@@ -455,11 +455,11 @@ export default function Inicio() {
                         </Link>
                       </div>
                     ) : (
-                      <div className="bg-white rounded-2xl border border-black/5 p-5 flex items-center gap-3">
-                        <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-700">
+                      <div className="bg-[#111111] rounded-2xl border border-white/8 p-5 flex items-center gap-3">
+                        <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-500/15 text-orange-300">
                           Pago pendiente
                         </span>
-                        <p className="text-[13.5px] text-on-background/50">El pago no se ha confirmado aún.</p>
+                        <p className="text-[13.5px] text-white/50">El pago no se ha confirmado aún.</p>
                       </div>
                     )}
                     {quickCards}
@@ -469,27 +469,27 @@ export default function Inicio() {
                 {/* Columna derecha: beneficios o upgrade (solo si no está procesando) */}
                 {diagnosticoEstado !== 'procesando' && (
                   !diagnosticoId ? (
-                    <div className="bg-white rounded-2xl border border-black/5 p-6">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-4">
+                    <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-4">
                         ¿Qué incluye tu diagnóstico?
                       </div>
                       <ul className="space-y-3">
                         {BENEFICIOS.map(({ icon: Icon, label }) => (
                           <li key={label} className="flex items-center gap-3">
-                            <span className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-[#E8F8EE]">
+                            <span className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-[#25D366]/15">
                               <Icon size={13} strokeWidth={2.5} className="text-[#25D366]" />
                             </span>
-                            <span className="text-[14px] text-on-background/70">{label}</span>
+                            <span className="text-[14px] text-white/70">{label}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                   ) : !isPro ? (
-                    <div className="bg-white rounded-2xl border border-black/5 p-6 flex flex-col">
-                      <h3 className="text-[15px] font-semibold text-on-background mb-3">
+                    <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 flex flex-col">
+                      <h3 className="text-[15px] font-semibold text-white mb-3">
                         ¿Quieres más ayuda con tu proceso?
                       </h3>
-                      <ul className="text-[13.5px] text-on-background/60 space-y-2">
+                      <ul className="text-[13.5px] text-white/60 space-y-2">
                         <li className="flex items-start gap-2">
                           <span className="text-[#25D366] font-bold shrink-0">✓</span>
                           Chat con IA especializada en inmigración
@@ -505,7 +505,7 @@ export default function Inicio() {
                       </ul>
                       <Link
                         to="/cliente/plan"
-                        className="mt-auto pt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary-container hover:opacity-80 transition"
+                        className="mt-auto pt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#25D366] hover:opacity-80 transition"
                       >
                         Ver planes <ArrowRight size={14} />
                       </Link>

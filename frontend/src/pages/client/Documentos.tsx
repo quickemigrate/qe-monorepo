@@ -17,7 +17,7 @@ export default function Documentos() {
   if (loading) {
     return (
       <ClientLayout>
-        <div className="p-8 text-[14px] text-on-background/40">Cargando...</div>
+        <div className="p-8 text-[14px] text-white/40">Cargando...</div>
       </ClientLayout>
     );
   }

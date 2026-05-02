@@ -273,14 +273,14 @@ export default function Chat() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl overflow-hidden bg-on-background flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center">
               <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-[17px] font-semibold text-on-background leading-tight">
+              <h1 className="text-[17px] font-semibold text-white leading-tight">
                 Asistente de Inmigración
               </h1>
-              <p className="text-[12px] text-on-background/40">Quick Emigrate IA</p>
+              <p className="text-[12px] text-white/40">Quick Emigrate IA</p>
             </div>
           </div>
 
@@ -289,7 +289,7 @@ export default function Chat() {
             {mensajes.length > 0 && (
               <button
                 onClick={() => { setSearchOpen(s => !s); if (searchOpen) setSearchQuery(''); }}
-                className={`p-2 rounded-xl transition-colors ${searchOpen ? 'bg-on-background text-white' : 'text-on-background/40 hover:text-on-background hover:bg-black/5'}`}
+                className={`p-2 rounded-xl transition-colors ${searchOpen ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white hover:bg-white/8'}`}
                 title="Buscar en historial"
               >
                 <Search size={16} />
@@ -337,14 +337,14 @@ export default function Chat() {
 
         {/* Consentimiento */}
         {consentimientoPendiente && (
-          <div className="bg-on-background rounded-2xl p-4 mb-4 text-white">
+          <div className="bg-[#111111] border border-white/8 rounded-2xl p-4 mb-4 text-white">
             <p className="text-[13.5px] font-medium mb-3">
               ¿Quieres que el asistente tenga acceso a tu diagnóstico previo para darte respuestas más personalizadas?
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => handleConsentimiento(true)}
-                className="flex-1 py-2 rounded-xl bg-primary-container text-on-background text-[13px] font-semibold hover:opacity-90 transition"
+                className="flex-1 py-2 rounded-xl bg-[#25D366] text-[#062810] text-[13px] font-semibold hover:bg-[#2adc6c] transition"
               >
                 Sí, permitir acceso
               </button>
