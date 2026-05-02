@@ -101,7 +101,7 @@ router.post('/create-payment-intent', async (req: Request, res: Response) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(precioStarter * 100),
       currency: 'eur',
-      automatic_payment_methods: { enabled: true },
+      payment_method_types: ['card', 'bizum'],
       description: 'Diagnóstico Migratorio IA — Quick Emigrate',
       metadata: { diagnosticoId: diagnosticoRef.id, email },
     });
