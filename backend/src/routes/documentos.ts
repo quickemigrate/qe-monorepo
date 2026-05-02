@@ -2,8 +2,11 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import * as pdfParseModule from 'pdf-parse';
 const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
+import Anthropic from '@anthropic-ai/sdk';
 import { verifyClientToken } from '../middleware/clientAuth';
 import { db } from '../firebase';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const router = Router();
 
@@ -22,9 +25,40 @@ const MAX_TEXT_CHARS = 50_000;
 
 async function extraerTexto(buffer: Buffer, mimetype: string): Promise<string> {
   if (mimetype === 'application/pdf') {
+    // Try native text extraction first (fast, free)
     try {
       const data = await pdfParse(buffer);
-      return data.text.substring(0, MAX_TEXT_CHARS);
+      const text = data.text.trim();
+      if (text.length > 50) return text.substring(0, MAX_TEXT_CHARS);
+    } catch {
+      // fall through to OCR
+    }
+
+    // Scanned PDF — use Claude vision for OCR
+    try {
+      const response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: {
+                type: 'base64',
+                media_type: 'application/pdf',
+                data: buffer.toString('base64'),
+              },
+            } as any,
+            {
+              type: 'text',
+              text: 'Transcribe todo el texto de este documento exactamente como aparece. Solo el texto, sin comentarios ni explicaciones adicionales.',
+            },
+          ],
+        }],
+      });
+      const text = response.content[0].type === 'text' ? response.content[0].text : '';
+      return text.substring(0, MAX_TEXT_CHARS);
     } catch {
       return '';
     }

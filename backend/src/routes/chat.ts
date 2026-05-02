@@ -234,7 +234,7 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
           : '\n(Sin texto extraído — documento escaneado o imagen)';
         return `--- DOCUMENTO: ${label} (${data.tipo === 'application/pdf' ? 'PDF' : 'TXT'}) ---\n${preview}`;
       }).join('\n\n');
-      sistemaPrompt += `\n\nDOCUMENTOS PERSONALES DEL USUARIO:\nEl usuario ha subido los siguientes documentos a su expediente. Cuando el usuario pregunte sobre su situación, sus documentos, o pida analizar o resumir alguno de ellos, responde basándote directamente en su contenido. Cita información concreta del documento cuando sea relevante.\n\n${docsContext}`;
+      sistemaPrompt += `\n\nDOCUMENTOS PERSONALES DEL USUARIO:\nTienes acceso al contenido de los siguientes documentos a través de este contexto. NUNCA digas que no puedes leer o acceder a los documentos del usuario — los ves aquí mismo. Cuando el usuario pregunte sobre sus documentos o pida analizarlos, responde basándote directamente en el contenido mostrado. Si un documento aparece como "Sin texto extraído", explica que es un PDF escaneado (imagen) y que necesita subir una versión con texto seleccionable.\n\n${docsContext}`;
     }
 
     const contextoLegal = await obtenerContextoLegal(
