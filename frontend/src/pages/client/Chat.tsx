@@ -43,9 +43,9 @@ function CopyButton({ text }: { text: string }) {
       onClick={handle}
       title="Copiar respuesta"
       className="opacity-0 group-hover:opacity-100 transition-opacity mt-1.5 self-end
-                 flex items-center gap-1 text-[11.5px] text-on-background/40 hover:text-on-background px-1.5 py-0.5 rounded-lg hover:bg-black/5"
+                 flex items-center gap-1 text-[11.5px] text-white/40 hover:text-white px-1.5 py-0.5 rounded-lg hover:bg-white/8"
     >
-      {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+      {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
       {copied ? 'Copiado' : 'Copiar'}
     </button>
   );
@@ -240,7 +240,7 @@ export default function Chat() {
   if (loadingEstado) {
     return (
       <ClientLayout>
-        <div className="flex items-center justify-center h-64 gap-2 text-on-background/40">
+        <div className="flex items-center justify-center h-64 gap-2 text-white/40">
           <Loader2 size={18} className="animate-spin" />
           <span className="text-[14px]">Cargando asistente...</span>
         </div>
@@ -251,8 +251,8 @@ export default function Chat() {
   if (errorEstado || !estado) {
     return (
       <ClientLayout>
-        <div className="bg-white rounded-2xl border border-black/5 p-8 text-center">
-          <p className="text-[14px] text-on-background/50">
+        <div className="bg-[#111111] rounded-2xl border border-white/8 p-8 text-center">
+          <p className="text-[14px] text-white/50">
             No se pudo cargar el estado del asistente. Inténtalo de nuevo más tarde.
           </p>
         </div>
@@ -298,12 +298,12 @@ export default function Chat() {
 
             {/* Limit bar */}
             <div className="text-right">
-              <div className="text-[12px] text-on-background/40">Mensajes</div>
-              <div className="text-[13px] font-semibold text-on-background">
+              <div className="text-[12px] text-white/40">Mensajes</div>
+              <div className="text-[13px] font-semibold text-white">
                 {estado.mensajesUsados}
-                <span className="text-on-background/40 font-normal"> / {estado.mensajesLimit}</span>
+                <span className="text-white/40 font-normal"> / {estado.mensajesLimit}</span>
               </div>
-              <div className="mt-1 h-1.5 w-24 rounded-full bg-black/8 overflow-hidden">
+              <div className="mt-1 h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${pct}%`, backgroundColor: barColor }}
@@ -315,21 +315,21 @@ export default function Chat() {
 
         {/* Search bar */}
         {searchOpen && (
-          <div className="flex items-center gap-2 bg-white rounded-2xl border border-black/5 px-4 py-2.5 mb-3">
-            <Search size={14} className="text-on-background/30 shrink-0" />
+          <div className="flex items-center gap-2 bg-[#111111] rounded-2xl border border-white/8 px-4 py-2.5 mb-3">
+            <Search size={14} className="text-white/30 shrink-0" />
             <input
               ref={searchRef}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Buscar en el historial..."
-              className="flex-1 text-[13.5px] text-on-background placeholder:text-on-background/30 focus:outline-none bg-transparent"
+              className="flex-1 text-[13.5px] text-white placeholder:text-white/30 focus:outline-none bg-transparent"
             />
             {searchQuery && (
-              <span className="text-[12px] text-on-background/40 shrink-0">
+              <span className="text-[12px] text-white/40 shrink-0">
                 {mensajesFiltrados.length} resultado{mensajesFiltrados.length !== 1 ? 's' : ''}
               </span>
             )}
-            <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="text-on-background/30 hover:text-on-background transition">
+            <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="text-white/30 hover:text-white transition">
               <X size={14} />
             </button>
           </div>
@@ -362,20 +362,20 @@ export default function Chat() {
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4"
+          className="flex-1 bg-[#111111] rounded-2xl border border-white/8 overflow-y-auto p-5 space-y-4 mb-3 mt-4"
         >
           {loadingMas && (
             <div className="flex justify-center py-2">
-              <Loader2 size={16} className="animate-spin text-on-background/30" />
+              <Loader2 size={16} className="animate-spin text-white/30" />
             </div>
           )}
 
           {mensajes.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-5 py-12">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-on-background">
+              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/10">
                 <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
               </div>
-              <p className="text-[14px] text-on-background/40 max-w-[300px]">
+              <p className="text-[14px] text-white/40 max-w-[300px]">
                 Hola, soy tu asistente de inmigración. Pregúntame cualquier cosa sobre tu proceso de emigración a España.
               </p>
               {/* Quick-start prompts */}
@@ -385,8 +385,8 @@ export default function Chat() {
                     key={p}
                     onClick={() => handleEnviar(p)}
                     disabled={enviando}
-                    className="px-3.5 py-2 rounded-xl border border-black/10 text-[12.5px] text-on-background/60
-                               hover:border-black/20 hover:text-on-background hover:bg-surface-container-low
+                    className="px-3.5 py-2 rounded-xl border border-white/10 text-[12.5px] text-white/60
+                               hover:border-white/20 hover:text-white hover:bg-white/8
                                transition-colors text-left disabled:opacity-40"
                   >
                     {p}
@@ -396,10 +396,9 @@ export default function Chat() {
             </div>
           )}
 
-          {/* Quick-start también cuando hay mensajes pero no hay query de búsqueda */}
           {searchQuery && mensajesFiltrados.length === 0 && (
             <div className="flex items-center justify-center h-full">
-              <p className="text-[13.5px] text-on-background/40">Sin resultados para "{searchQuery}"</p>
+              <p className="text-[13.5px] text-white/40">Sin resultados para "{searchQuery}"</p>
             </div>
           )}
 
@@ -410,7 +409,7 @@ export default function Chat() {
             >
               {msg.role === 'assistant' ? (
                 <div className="flex flex-col max-w-[80%]">
-                  <div className="bg-surface-container-low text-on-background rounded-2xl rounded-bl-sm px-4 py-3 text-[14px] leading-[1.6]">
+                  <div className="bg-white/8 text-white rounded-2xl rounded-bl-sm px-4 py-3 text-[14px] leading-[1.6]">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       components={{
@@ -424,16 +423,16 @@ export default function Chat() {
                         h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
                         h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
                         code: ({ children }) => (
-                          <code className="bg-black/10 rounded px-1 py-0.5 text-sm font-mono">{children}</code>
+                          <code className="bg-white/10 rounded px-1 py-0.5 text-sm font-mono">{children}</code>
                         ),
                         blockquote: ({ children }) => (
-                          <blockquote className="border-l-2 border-primary-container pl-3 italic opacity-80 mb-2">{children}</blockquote>
+                          <blockquote className="border-l-2 border-[#25D366] pl-3 italic opacity-80 mb-2">{children}</blockquote>
                         ),
                         a: ({ href, children }) => (
                           <a href={href} target="_blank" rel="noopener noreferrer"
-                             className="text-primary-container underline hover:opacity-80">{children}</a>
+                             className="text-[#25D366] underline hover:opacity-80">{children}</a>
                         ),
-                        hr: () => <hr className="border-black/15 my-2" />,
+                        hr: () => <hr className="border-white/15 my-2" />,
                       }}
                     >
                       {msg.contenido}
@@ -442,7 +441,7 @@ export default function Chat() {
                   <CopyButton text={msg.contenido} />
                 </div>
               ) : (
-                <div className="max-w-[80%] bg-primary-container text-on-background rounded-2xl rounded-br-sm px-4 py-3 text-[14px] leading-[1.6]">
+                <div className="max-w-[80%] bg-[#25D366] text-[#062810] rounded-2xl rounded-br-sm px-4 py-3 text-[14px] leading-[1.6]">
                   <p>{msg.contenido}</p>
                 </div>
               )}
@@ -451,11 +450,11 @@ export default function Chat() {
 
           {enviando && (
             <div className="flex justify-start">
-              <div className="bg-surface-container-low rounded-2xl rounded-bl-sm px-4 py-3">
+              <div className="bg-white/8 rounded-2xl rounded-bl-sm px-4 py-3">
                 <div className="flex gap-1 items-center h-5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-on-background/30 animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-on-background/30 animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-on-background/30 animate-bounce [animation-delay:300ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             </div>
@@ -465,11 +464,11 @@ export default function Chat() {
 
         {/* Input */}
         {limiteAlcanzado ? (
-          <div className="bg-white rounded-2xl border border-black/5 px-4 py-3 text-center text-[13.5px] text-on-background/50">
+          <div className="bg-[#111111] rounded-2xl border border-white/8 px-4 py-3 text-center text-[13.5px] text-white/50">
             Has alcanzado el límite de {estado.mensajesLimit} mensajes de tu plan.
           </div>
         ) : (
-          <div className="flex gap-2 bg-white rounded-2xl border border-black/5 p-2">
+          <div className="flex gap-2 bg-[#111111] rounded-2xl border border-white/8 p-2">
             <textarea
               ref={inputRef}
               value={input}
@@ -478,15 +477,15 @@ export default function Chat() {
               placeholder="Escribe tu pregunta... (Enter para enviar)"
               rows={1}
               disabled={enviando}
-              className="flex-1 resize-none bg-transparent px-3 py-2.5 text-[14px] text-on-background
-                         placeholder:text-on-background/30 focus:outline-none disabled:opacity-50"
+              className="flex-1 resize-none bg-transparent px-3 py-2.5 text-[14px] text-white
+                         placeholder:text-white/30 focus:outline-none disabled:opacity-50"
               style={{ minHeight: '44px', maxHeight: '120px' }}
             />
             <button
               onClick={() => handleEnviar()}
               disabled={!input.trim() || enviando}
-              className="w-10 h-10 self-end rounded-xl bg-on-background text-white flex items-center justify-center
-                         hover:opacity-90 active:scale-95 transition disabled:opacity-30 shrink-0"
+              className="w-10 h-10 self-end rounded-xl bg-[#25D366] text-[#062810] flex items-center justify-center
+                         hover:bg-[#2adc6c] active:scale-95 transition disabled:opacity-30 shrink-0"
             >
               <Send size={16} />
             </button>

@@ -25,18 +25,18 @@ export default function Documentos() {
   return (
     <ClientLayout>
       <div className="p-8 max-w-[600px]">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background mb-8">
+        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">
           Mis Documentos
         </h1>
 
-        <div className="bg-white rounded-2xl border border-black/5 p-12 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-surface-container-low flex items-center justify-center mb-5">
-            <FolderOpen size={28} className="text-on-background/25" />
+        <div className="bg-[#111111] rounded-2xl border border-white/8 p-12 flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/8 flex items-center justify-center mb-5">
+            <FolderOpen size={28} className="text-white/25" />
           </div>
-          <h2 className="text-[18px] font-semibold text-on-background mb-2">
+          <h2 className="text-[18px] font-semibold text-white mb-2">
             Próximamente
           </h2>
-          <p className="text-[14px] text-on-background/50 max-w-[320px]">
+          <p className="text-[14px] text-white/50 max-w-[320px]">
             Aquí podrás subir y gestionar todos los documentos de tu proceso migratorio de forma segura.
           </p>
         </div>

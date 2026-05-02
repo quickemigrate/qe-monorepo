@@ -5,10 +5,10 @@ import { auth } from '../../firebase';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-const inputCls = `w-full rounded-xl border border-black/10 bg-surface-container-lowest px-4 py-3
-                  text-[15px] text-on-background placeholder-on-background/30
-                  focus:outline-none focus:ring-2 focus:ring-primary-container/60 focus:border-transparent transition`;
-const labelCls = 'block text-[12px] font-semibold uppercase tracking-[0.1em] text-on-background/50 mb-1.5';
+const inputCls = `w-full rounded-xl border border-white/15 bg-[#0A0A0A] px-4 py-3
+                  text-[15px] text-white placeholder-white/25
+                  focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 focus:border-transparent transition`;
+const labelCls = 'block text-[12px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5';
 
 export default function ClientLogin() {
   const navigate = useNavigate();
@@ -95,34 +95,34 @@ export default function ClientLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4">
       <div className="w-full max-w-[400px]">
         <div
-          className={`bg-white rounded-[24px] border border-black/5 p-8 shadow-sm tonal-lift
+          className={`bg-[#111111] rounded-[24px] border border-white/10 p-8
                        transition-opacity duration-200 ${transitioning ? 'opacity-0' : 'opacity-100'}`}
         >
           <div className="flex items-center gap-2.5 mb-8">
-            <img src="/logo-light.png" alt="Quick Emigrate" className="h-10 w-auto" />
-            <span className="text-lg font-bold tracking-tight text-on-background">Quick Emigrate</span>
+            <img src="/logo-dark.png" alt="Quick Emigrate" className="h-10 w-auto" />
+            <span className="text-lg font-bold tracking-tight text-white">Quick Emigrate</span>
           </div>
 
           {mensaje && (
-            <div className="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13.5px] text-emerald-700 font-medium text-center">
+            <div className="mb-5 rounded-xl bg-emerald-500/15 border border-emerald-500/20 px-4 py-3 text-[13.5px] text-emerald-400 font-medium text-center">
               {mensaje}
             </div>
           )}
 
           {mode === 'login' ? (
             <>
-              <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-background mb-1">
+              <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-white mb-1">
                 Accede a tu área privada
               </h1>
-              <p className="text-[14px] text-on-background/50 mb-8">
+              <p className="text-[14px] text-white/50 mb-8">
                 Introduce tu email y contraseña para continuar
               </p>
 
               {error && (
-                <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+                <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
                   {error}
                 </div>
               )}
@@ -139,31 +139,31 @@ export default function ClientLogin() {
                     required className={inputCls} placeholder="••••••••" />
                 </div>
                 <button type="submit" disabled={isLoading}
-                  className="w-full rounded-xl bg-primary-container text-on-background font-bold py-3.5 text-[15px]
-                             hover:scale-[1.02] active:scale-[0.98] transition disabled:opacity-50 shadow-sm">
+                  className="w-full rounded-xl bg-[#25D366] text-[#062810] font-bold py-3.5 text-[15px]
+                             hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50">
                   {isLoading ? 'Entrando...' : 'Entrar'}
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-[13px] text-on-background/40">
+              <p className="mt-6 text-center text-[13px] text-white/40">
                 ¿No tienes cuenta?{' '}
                 <button onClick={toggleMode}
-                  className="text-on-background/70 font-semibold hover:text-on-background transition-colors underline underline-offset-2">
+                  className="text-white/70 font-semibold hover:text-white transition-colors underline underline-offset-2">
                   Regístrate gratis
                 </button>
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-background mb-1">
+              <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-white mb-1">
                 Crea tu cuenta
               </h1>
-              <p className="text-[14px] text-on-background/50 mb-8">
+              <p className="text-[14px] text-white/50 mb-8">
                 Empieza tu proceso de emigración a España
               </p>
 
               {error && (
-                <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+                <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
                   {error}
                 </div>
               )}
@@ -185,16 +185,16 @@ export default function ClientLogin() {
                     required className={inputCls} placeholder="Repite la contraseña" />
                 </div>
                 <button type="submit" disabled={isLoading}
-                  className="w-full rounded-xl bg-primary-container text-on-background font-bold py-3.5 text-[15px]
-                             hover:scale-[1.02] active:scale-[0.98] transition disabled:opacity-50 shadow-sm">
+                  className="w-full rounded-xl bg-[#25D366] text-[#062810] font-bold py-3.5 text-[15px]
+                             hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50">
                   {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-[13px] text-on-background/40">
+              <p className="mt-6 text-center text-[13px] text-white/40">
                 ¿Ya tienes cuenta?{' '}
                 <button onClick={toggleMode}
-                  className="text-on-background/70 font-semibold hover:text-on-background transition-colors underline underline-offset-2">
+                  className="text-white/70 font-semibold hover:text-white transition-colors underline underline-offset-2">
                   Inicia sesión
                 </button>
               </p>

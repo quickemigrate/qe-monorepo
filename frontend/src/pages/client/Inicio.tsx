@@ -16,10 +16,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PLAN_BADGE: Record<string, string> = {
-  free:    'bg-gray-100 text-gray-500',
-  starter: 'bg-gray-100 text-gray-600',
-  pro:     'bg-blue-100 text-blue-700',
-  premium: 'bg-amber-100 text-amber-700',
+  free:    'bg-white/10 text-white/50',
+  starter: 'bg-white/10 text-white/60',
+  pro:     'bg-blue-500/15 text-blue-300',
+  premium: 'bg-amber-500/15 text-amber-300',
 };
 const PLAN_LABEL: Record<string, string> = {
   free:    'Plan Free',
@@ -48,23 +48,23 @@ function QuickCard({ icon: Icon, title, description, to, accent }: CardProps) {
   return (
     <Link
       to={to}
-      className={`group flex flex-col gap-3 p-5 rounded-2xl border transition-all hover:shadow-md hover:-translate-y-0.5
-        ${accent ? 'bg-on-background border-white/8 text-white' : 'bg-white border-black/5 text-on-background'}`}
+      className={`group flex flex-col gap-3 p-5 rounded-2xl border transition-all hover:border-white/15 hover:-translate-y-0.5
+        ${accent ? 'bg-[#111111] border-white/8 text-white' : 'bg-[#111111] border-white/8 text-white'}`}
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-        ${accent ? 'bg-white/10' : 'bg-surface-container-low'}`}>
-        <Icon size={19} className={accent ? 'text-[#25D366]' : 'text-on-background/50'} />
+        ${accent ? 'bg-white/10' : 'bg-white/8'}`}>
+        <Icon size={19} className={accent ? 'text-[#25D366]' : 'text-white/50'} />
       </div>
       <div>
-        <div className={`text-[14.5px] font-semibold mb-0.5 ${accent ? 'text-white' : 'text-on-background'}`}>
+        <div className="text-[14.5px] font-semibold mb-0.5 text-white">
           {title}
         </div>
-        <div className={`text-[13px] leading-[1.5] ${accent ? 'text-white/50' : 'text-on-background/50'}`}>
+        <div className="text-[13px] leading-[1.5] text-white/50">
           {description}
         </div>
       </div>
       <div className={`flex items-center gap-1 text-[12px] font-semibold mt-auto
-        ${accent ? 'text-[#25D366]' : 'text-on-background/40 group-hover:text-on-background transition-colors'}`}>
+        ${accent ? 'text-[#25D366]' : 'text-white/40 group-hover:text-white transition-colors'}`}>
         Ir ahora <ArrowRight size={13} />
       </div>
     </Link>
@@ -196,7 +196,7 @@ export default function Inicio() {
 
   const quickCards = (
     <div>
-      <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">
+      <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
         Acceso rápido
       </h2>
       <div className="grid grid-cols-2 gap-3">
@@ -207,14 +207,14 @@ export default function Inicio() {
         {!loading && !isPro && (
           <Link
             to="/cliente/plan"
-            className="flex flex-col gap-3 p-5 rounded-2xl border border-dashed border-black/10
-                       bg-surface-container-low text-on-background/40 hover:border-black/20 transition-all"
+            className="flex flex-col gap-3 p-5 rounded-2xl border border-dashed border-white/10
+                       bg-white/4 text-white/40 hover:border-white/20 transition-all"
           >
             <div className="text-[14px] font-semibold">Desbloquea más funciones</div>
             <div className="text-[13px] leading-[1.5]">
               Con el plan Pro obtienes el Asistente IA y gestión de documentos.
             </div>
-            <div className="text-[12px] font-semibold text-primary-container flex items-center gap-1 mt-auto">
+            <div className="text-[12px] font-semibold text-[#25D366] flex items-center gap-1 mt-auto">
               Ver planes <ArrowRight size={13} />
             </div>
           </Link>
@@ -236,11 +236,11 @@ export default function Inicio() {
 
         {/* Saludo */}
         <div className="mb-8">
-          <h1 className="text-[32px] font-semibold tracking-[-0.03em] text-on-background">
+          <h1 className="text-[32px] font-semibold tracking-[-0.03em] text-white">
             Bienvenido/a, {nombre}
           </h1>
           <div className="flex items-center gap-3 mt-2">
-            <p className="text-[14px] text-on-background/50">
+            <p className="text-[14px] text-white/50">
               {(!plan || plan === 'free') ? 'Tu ruta hacia España empieza aquí' : 'Tu área privada de Quick Emigrate'}
             </p>
             {!loading && plan && (
@@ -253,19 +253,19 @@ export default function Inicio() {
 
         {/* PRO / PREMIUM: barra de mensajes */}
         {!loading && isPro && mensajesLimit > 0 && (
-          <div className="bg-white rounded-2xl border border-black/5 p-5 mb-6 flex items-center gap-4">
+          <div className="bg-[#111111] rounded-2xl border border-white/8 p-5 mb-6 flex items-center gap-4">
             <div className="flex-1">
-              <div className="text-[13px] text-on-background/50 mb-1.5">Mensajes del Asistente IA este mes</div>
-              <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
+              <div className="text-[13px] text-white/50 mb-1.5">Mensajes del Asistente IA este mes</div>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-primary-container transition-all"
+                  className="h-full rounded-full bg-[#25D366] transition-all"
                   style={{ width: `${Math.min((mensajesUsados / mensajesLimit) * 100, 100)}%` }}
                 />
               </div>
             </div>
             <div className="text-right shrink-0">
-              <span className="text-[15px] font-semibold text-on-background">{mensajesUsados}</span>
-              <span className="text-[13px] text-on-background/40"> / {mensajesLimit}</span>
+              <span className="text-[15px] font-semibold text-white">{mensajesUsados}</span>
+              <span className="text-[13px] text-white/40"> / {mensajesLimit}</span>
             </div>
           </div>
         )}
@@ -274,11 +274,11 @@ export default function Inicio() {
         {!loading && (
           <div className="mb-8">
             {loadingUser ? (
-              <div className="bg-white rounded-2xl border border-black/5 p-6 flex items-center gap-3 text-on-background/40">
+              <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 flex items-center gap-3 text-white/40">
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
-            ) : diagnosticoEstado === 'completado' ? (
+            ) : diagnosticoEstado === 'completado' ? ( // already dark-styled
               /* ── COMPLETADO: flex-row 50% + 50% ── */
               <div className="w-full flex flex-col md:flex-row gap-6" style={{ height: 'calc(100vh - 120px)' }}>
 
