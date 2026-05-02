@@ -70,7 +70,10 @@ function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="rounded-xl border border-white/15 bg-[#0A0A0A] p-4 [&_.p-StripeElement]:text-white">
-        <PaymentElement options={{ layout: 'tabs' }} />
+        <PaymentElement options={{
+          layout: 'tabs',
+          paymentMethodOrder: ['apple_pay', 'google_pay', 'card', 'bizum'],
+        }} />
       </div>
       <button
         type="submit"
