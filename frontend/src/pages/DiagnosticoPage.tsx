@@ -82,7 +82,7 @@ export default function DiagnosticoPage() {
   // ── Cargando ────────────────────────────────────────────────
   if (estado === 'loading') {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center pt-[72px]">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center pt-20">
         <Loader2 size={24} className="animate-spin text-white/30" />
       </div>
     );
@@ -91,7 +91,7 @@ export default function DiagnosticoPage() {
   // ── Editar perfil ────────────────────────────────────────────
   if (estado === 'editar') {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] pt-[72px] px-4">
+      <div className="min-h-screen bg-[#0A0A0A] pt-20 px-4">
         <div className="max-w-[560px] mx-auto py-10">
           <button
             onClick={() => setEstado('confirmacion')}
@@ -123,7 +123,7 @@ export default function DiagnosticoPage() {
 
   // ── Confirmación ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0A0A0A] font-sans pt-[72px]">
+    <div className="min-h-screen bg-[#0A0A0A] font-sans">
       {/* Hero */}
       <AuroraBackground className="min-h-[28rem] pt-20">
         <motion.div

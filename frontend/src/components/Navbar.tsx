@@ -1,122 +1,123 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Menu } from 'lucide-react';
+
+const NAV_LINKS = [
+  { label: 'Inicio', to: '/' },
+  { label: 'Sobre nosotros', to: '/nosotros' },
+  { label: 'Blog', to: '/blog' },
+];
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const isHome = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
 
-  const navLink = 'text-sm font-semibold text-white/60 hover:text-white transition-colors';
-  const activeLink = 'text-sm font-semibold text-white transition-colors';
+  const isActive = (to: string) =>
+    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/10 py-3' : 'bg-transparent py-5'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-250 ${
+        isScrolled
+          ? 'bg-[#0A0A0A]/72 backdrop-blur-[12px] border-b border-white/7 py-3.5'
+          : 'bg-transparent py-[18px]'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
+      <div className="w-full px-6 md:px-8 grid grid-cols-3 items-center">
+
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />
-          <span className="text-xl font-bold tracking-tight text-white">Quick Emigrate</span>
+        <Link to="/" className="flex items-center gap-[9px]">
+          <img src="/logo-dark.png" alt="Quick Emigrate" className="h-[26px] w-auto" />
+          <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">Quick Emigrate</span>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {isHome ? (
-            <>
-              <a href="#soluciones" className={navLink}>Soluciones</a>
-              <a href="#servicios" className={navLink}>Servicios</a>
-              <a href="#contacto" className={navLink}>Contacto</a>
-            </>
-          ) : (
-            <Link to="/" className={navLink}>Inicio</Link>
-          )}
-          <Link
-            to="/nosotros"
-            className={location.pathname === '/nosotros' ? activeLink : navLink}
-          >
-            Nosotros
-          </Link>
-          <Link
-            to="/blog"
-            className={location.pathname.startsWith('/blog') ? activeLink : navLink}
-          >
-            Blog
-          </Link>
-          <div className="h-4 w-px bg-white/10" />
-          <Link
-            to="/cliente/login"
-            className={location.pathname.startsWith('/cliente') ? activeLink : navLink}
-          >
-            Acceder a mi expediente
-          </Link>
-          <a
-            href={isHome ? '#servicios' : '/#servicios'}
-            className="bg-[#25D366] text-[#062810] px-6 py-2.5 rounded-full font-bold text-sm
-                       hover:bg-[#2adc6c] hover:scale-105 transition-all active:scale-95"
-          >
-            Reservar diagnóstico
-          </a>
+        {/* Desktop center nav */}
+        <div className="hidden md:flex items-center justify-center gap-8">
+          {NAV_LINKS.map(({ label, to }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`text-[14px] font-medium transition-colors ${
+                isActive(to) ? 'text-white' : 'text-white/55 hover:text-white'
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
 
-        {/* Mobile Toggle */}
-        <button
-          className="md:hidden text-white"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Menú"
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Desktop right / Mobile toggle */}
+        <div className="flex items-center justify-end gap-4">
+          <Link
+            to="/cliente/login"
+            className="hidden md:block text-[13.5px] font-medium text-white/50 hover:text-white transition-colors"
+          >
+            Mi expediente
+          </Link>
+          <Link
+            to="/diagnostico"
+            className="hidden md:block px-[18px] py-[10px] rounded-full border border-[#25D366]/45 text-[#25D366]
+                       text-[14px] font-medium bg-transparent
+                       hover:bg-[#25D366]/8 hover:border-[#25D366] hover:-translate-y-px
+                       transition-all duration-200"
+          >
+            Reservar diagnóstico
+          </Link>
+          <button
+            className="md:hidden text-white/70 hover:text-white transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menú"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-[#0F0F0F] border-t border-white/10 p-6 md:hidden shadow-xl"
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-0 right-0 bg-[#0A0A0A]/95 backdrop-blur-[12px]
+                       border-t border-white/7 px-6 py-6 md:hidden"
           >
             <div className="flex flex-col gap-5">
-              {isHome ? (
-                <>
-                  <a href="#soluciones" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Soluciones</a>
-                  <a href="#servicios" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Servicios</a>
-                  <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium text-white">Contacto</a>
-                </>
-              ) : (
-                <Link to="/" className="text-lg font-medium text-white">Inicio</Link>
-              )}
-              <Link to="/nosotros" className="text-lg font-medium text-white">Nosotros</Link>
-              <Link to="/blog" className="text-lg font-medium text-white">Blog</Link>
+              {NAV_LINKS.map(({ label, to }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`text-[17px] font-medium transition-colors ${
+                    isActive(to) ? 'text-white' : 'text-white/60'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
               <hr className="border-white/10" />
-              <Link to="/cliente/login" className="text-lg font-medium text-white">
-                Acceder a mi expediente
+              <Link to="/cliente/login" className="text-[16px] font-medium text-white/60">
+                Mi expediente
               </Link>
-              <a
-                href={isHome ? '#servicios' : '/#servicios'}
-                onClick={() => setMobileMenuOpen(false)}
-                className="bg-[#25D366] text-[#062810] px-6 py-4 rounded-full font-bold text-center hover:bg-[#2adc6c] transition-colors"
+              <Link
+                to="/diagnostico"
+                className="border border-[#25D366]/45 text-[#25D366] px-6 py-4 rounded-full
+                           font-medium text-center text-[15px] hover:bg-[#25D366]/8 transition-colors"
               >
                 Reservar diagnóstico
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}

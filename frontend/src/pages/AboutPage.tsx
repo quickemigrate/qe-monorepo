@@ -406,7 +406,7 @@ const AboutCta = () => (
 
 /* ─── Page ──────────────────────────────────────────────── */
 const AboutPage = () => (
-  <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px]">
+  <div className="bg-[#0A0A0A] min-h-screen font-sans">
     <AboutHero />
     <OriginStory />
     <Mission />

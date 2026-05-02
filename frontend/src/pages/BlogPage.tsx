@@ -123,7 +123,7 @@ const BlogList = () => {
   }, []);
 
   return (
-    <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px]">
+    <div className="bg-[#0A0A0A] min-h-screen font-sans">
       <BlogHero />
       <section className="mx-auto max-w-[1200px] px-6 py-16">
         {loading ? (

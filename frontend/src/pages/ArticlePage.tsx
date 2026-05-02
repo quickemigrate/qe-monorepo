@@ -36,7 +36,7 @@ const ProseStyles = () => (
 
 /* ─── Skeleton ───────────────────────────────────────────── */
 const Skeleton = () => (
-  <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px] animate-pulse">
+  <div className="bg-[#0A0A0A] min-h-screen font-sans animate-pulse">
     <div className="bg-[#111111] rounded-b-[28px] px-6 pt-20 pb-16 md:pt-28 md:pb-20">
       <div className="max-w-[800px] mx-auto space-y-4">
         <div className="h-4 w-32 bg-white/10 rounded" />
@@ -72,7 +72,7 @@ export default function ArticlePage() {
 
   if (notFound || !article) {
     return (
-      <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px] flex items-center justify-center">
+      <div className="bg-[#0A0A0A] min-h-screen font-sans pt-20 flex items-center justify-center">
         <div className="text-center px-6">
           <p className="text-[56px] font-bold text-white/10 mb-4">404</p>
           <p className="text-[18px] font-semibold text-white mb-2">Artículo no encontrado</p>
@@ -98,7 +98,7 @@ export default function ArticlePage() {
   return (
     <>
       <ProseStyles />
-      <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px]">
+      <div className="bg-[#0A0A0A] min-h-screen font-sans">
         {/* Hero */}
         <section className="bg-[#111111] border-b border-white/10 rounded-b-[28px]">
           <div className="mx-auto max-w-[800px] px-6 pt-20 pb-16 md:pt-28 md:pb-20">
