@@ -145,6 +145,42 @@ export default function DiagnosticoPage() {
 
   const p = perfilData;
   const esPro = userPlan === 'pro' || userPlan === 'premium';
+  const yaEsStarter = userPlan === 'starter';
+
+  // ── Plan activo: Starter ─────────────────────────────────────
+  if (estado !== 'loading' && estado !== 'editar' && yaEsStarter) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-6 pt-20">
+        <div className="max-w-[480px] w-full bg-[#111111] border border-white/10 rounded-2xl p-8 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-6"
+               style={{ background: '#25D366', color: '#062810' }}>
+            Plan Starter activo
+          </div>
+          <h2 className="text-[22px] font-bold text-white mb-3">Ya tienes un diagnóstico</h2>
+          <p className="text-[14px] text-white/50 mb-8">
+            Ya has generado tu diagnóstico migratorio. Puedes consultarlo en tu área de cliente.
+            Si quieres más funciones, actualiza al Plan Pro.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate('/cliente/inicio')}
+              className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-3.5 text-[15px]
+                         hover:bg-[#2adc6c] active:scale-[0.98] transition"
+            >
+              Ver mi diagnóstico
+            </button>
+            <a
+              href="mailto:hola@quickemigrate.com?subject=Cambio al Plan Pro"
+              className="w-full rounded-full border border-white/20 text-white/70 font-semibold py-3.5 text-[15px]
+                         hover:border-white/40 hover:text-white transition text-center block"
+            >
+              Actualizar al Plan Pro
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Cargando ────────────────────────────────────────────────
   if (estado === 'loading') {

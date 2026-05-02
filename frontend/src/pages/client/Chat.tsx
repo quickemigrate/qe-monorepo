@@ -56,10 +56,14 @@ export default function Chat() {
   const { prefs } = usePreferencias();
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [estado, setEstado] = useState<EstadoChat | null>(null);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
+  const [hayMas, setHayMas] = useState(false);
+  const [loadingMas, setLoadingMas] = useState(false);
+  const [cursorBefore, setCursorBefore] = useState<string | undefined>(undefined);
   const [input, setInput] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [loadingEstado, setLoadingEstado] = useState(true);
@@ -92,26 +96,73 @@ export default function Chat() {
     }
   };
 
+  const scrollToBottom = (smooth = false) => {
+    const c = containerRef.current;
+    if (!c) return;
+    if (smooth) {
+      c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
+    } else {
+      c.scrollTop = c.scrollHeight;
+    }
+  };
+
   const fetchHistorial = async () => {
     const token = await getToken();
     if (!token) return;
-    const res = await fetch(`${API}/api/chat/historial`, {
+    const res = await fetch(`${API}/api/chat/historial?limit=30`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) {
       const data = await res.json();
-      setMensajes(data.data || []);
+      const msgs: Mensaje[] = data.data || [];
+      setMensajes(msgs);
+      setHayMas(data.hasMore || false);
+      if (msgs.length > 0) setCursorBefore(msgs[0].timestamp);
+      // instant scroll to bottom after paint
+      requestAnimationFrame(() => scrollToBottom(false));
     }
+  };
+
+  const cargarMensajesAnteriores = async () => {
+    if (!cursorBefore || loadingMas || !hayMas) return;
+    setLoadingMas(true);
+    const token = await getToken();
+    if (!token) { setLoadingMas(false); return; }
+    try {
+      const res = await fetch(
+        `${API}/api/chat/historial?limit=30&before=${encodeURIComponent(cursorBefore)}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const anteriores: Mensaje[] = data.data || [];
+        if (anteriores.length > 0) {
+          const c = containerRef.current;
+          const scrollHeightAntes = c?.scrollHeight ?? 0;
+          setMensajes(prev => [...anteriores, ...prev]);
+          setCursorBefore(anteriores[0].timestamp);
+          setHayMas(data.hasMore || false);
+          // restore scroll position so user stays at same message
+          requestAnimationFrame(() => {
+            if (c) c.scrollTop = c.scrollHeight - scrollHeightAntes;
+          });
+        }
+      }
+    } finally {
+      setLoadingMas(false);
+    }
+  };
+
+  const handleScroll = () => {
+    const c = containerRef.current;
+    if (!c || loadingMas || !hayMas) return;
+    if (c.scrollTop < 80) cargarMensajesAnteriores();
   };
 
   useEffect(() => {
     fetchEstado();
     fetchHistorial();
   }, []);
-
-  useEffect(() => {
-    if (!searchOpen) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [mensajes, searchOpen]);
 
   useEffect(() => {
     if (searchOpen) setTimeout(() => searchRef.current?.focus(), 50);
@@ -137,6 +188,7 @@ export default function Chat() {
 
     const msgUsuario: Mensaje = { role: 'user', contenido: msg, timestamp: new Date().toISOString() };
     setMensajes(prev => [...prev, msgUsuario]);
+    requestAnimationFrame(() => scrollToBottom(false));
 
     const token = await getToken();
     try {
@@ -160,12 +212,14 @@ export default function Chat() {
           timestamp: new Date().toISOString(),
         }]);
       }
+      requestAnimationFrame(() => scrollToBottom(false));
     } catch {
       setMensajes(prev => [...prev, {
         role: 'assistant',
         contenido: '⚠️ Error de conexión. Inténtalo de nuevo.',
         timestamp: new Date().toISOString(),
       }]);
+      requestAnimationFrame(() => scrollToBottom(false));
     } finally {
       setEnviando(false);
       inputRef.current?.focus();
@@ -305,7 +359,17 @@ export default function Chat() {
         )}
 
         {/* Mensajes */}
-        <div className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4">
+        <div
+          ref={containerRef}
+          onScroll={handleScroll}
+          className="flex-1 bg-white rounded-2xl border border-black/5 overflow-y-auto p-5 space-y-4 mb-3 mt-4"
+        >
+          {loadingMas && (
+            <div className="flex justify-center py-2">
+              <Loader2 size={16} className="animate-spin text-on-background/30" />
+            </div>
+          )}
+
           {mensajes.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-5 py-12">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-on-background">

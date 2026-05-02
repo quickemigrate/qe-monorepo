@@ -142,6 +142,7 @@ router.post('/confirm-payment', async (req: Request, res: Response) => {
     if (diagData.email) {
       await db.collection('usuarios').doc(diagData.email).update({
         diagnosticoId,
+        plan: 'starter',
         actualizadoEn: new Date().toISOString(),
       });
     }

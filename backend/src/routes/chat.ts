@@ -21,14 +21,24 @@ function normalizarObjetivo(obj: string): string {
 router.get('/historial', verifyClientToken, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
+    const limit = Math.min(parseInt(req.query.limit as string) || 30, 100);
+    const before = req.query.before as string | undefined;
 
-    const snapshot = await db.collection('usuarios').doc(userEmail)
+    let query: FirebaseFirestore.Query = db.collection('usuarios').doc(userEmail)
       .collection('chat')
-      .orderBy('timestamp', 'asc')
-      .get();
+      .orderBy('timestamp', 'desc')
+      .limit(limit);
 
-    const mensajes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    res.json({ success: true, data: mensajes });
+    if (before) {
+      query = query.startAfter(before);
+    }
+
+    const snapshot = await query.get();
+    // reverse to return chronological order (oldest first within batch)
+    const mensajes = snapshot.docs.reverse().map(d => ({ id: d.id, ...d.data() }));
+    const hasMore = snapshot.docs.length === limit;
+
+    res.json({ success: true, data: mensajes, hasMore });
   } catch {
     res.status(500).json({ success: false, error: 'Error al obtener historial' });
   }
