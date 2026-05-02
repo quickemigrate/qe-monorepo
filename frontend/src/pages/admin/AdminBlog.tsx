@@ -113,8 +113,14 @@ function ArticleEditor({
 
   const handleSave = async (status: 'draft' | 'published') => {
     setSaving(true);
-    await onSave({ ...form, content: editor?.getHTML() || '' }, status);
-    setSaving(false);
+    try {
+      await onSave({ ...form, content: editor?.getHTML() || '' }, status);
+    } catch (err) {
+      console.error('Error guardando artículo:', err);
+      alert('Error al guardar. Revisa la consola.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
@@ -253,15 +259,22 @@ export default function AdminBlog() {
     status: 'draft' | 'published'
   ) => {
     const token = await getToken();
+    if (!token) throw new Error('No autenticado');
+
     const isEdit = editing && editing !== 'new' && (editing as Article).id;
     const method = isEdit ? 'PATCH' : 'POST';
     const url = isEdit ? `${API}/api/articles/${(editing as Article).id}` : `${API}/api/articles`;
 
-    await fetch(url, {
+    const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...data, status }),
     });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
 
     setEditing(null);
     fetchArticles();

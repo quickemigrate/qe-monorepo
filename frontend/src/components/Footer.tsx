@@ -50,10 +50,10 @@ const Footer = () => (
       <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-white/40 text-xs font-bold uppercase tracking-widest">
         <div>© 2026 Quick Emigrate. Todos los derechos reservados.</div>
         <div className="flex gap-4 mt-4 md:mt-0">
-          <a href="#" className="hover:text-white transition-colors flex items-center gap-1">
+          <a href="https://www.linkedin.com/company/quickemigrate" className="hover:text-white transition-colors flex items-center gap-1">
             LinkedIn <ExternalLink size={12} />
           </a>
-          <a href="#" className="hover:text-white transition-colors flex items-center gap-1">
+          <a href="https://www.instagram.com/quickemigrate/" className="hover:text-white transition-colors flex items-center gap-1">
             Instagram <ExternalLink size={12} />
           </a>
         </div>
