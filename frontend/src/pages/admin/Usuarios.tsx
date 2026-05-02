@@ -25,7 +25,7 @@ interface Usuario {
   id: string;
   email: string;
   nombre?: string;
-  plan: 'starter' | 'pro' | 'premium';
+  plan: 'free' | 'starter' | 'pro' | 'premium';
   mensajesUsados: number;
   creadoEn: string;
   perfilCompleto?: boolean;
@@ -35,19 +35,20 @@ interface Usuario {
 interface FormCrear {
   email: string;
   nombre: string;
-  plan: 'starter' | 'pro' | 'premium';
+  plan: 'free' | 'starter' | 'pro' | 'premium';
   password: string;
 }
 
-const FORM_INICIAL: FormCrear = { email: '', nombre: '', plan: 'starter', password: '' };
+const FORM_INICIAL: FormCrear = { email: '', nombre: '', plan: 'free', password: '' };
 
 const PLAN_BADGE: Record<string, string> = {
+  free:    'bg-white/5 text-white/30',
   starter: 'bg-white/8 text-white/50',
   pro:     'bg-blue-500/15 text-blue-400',
   premium: 'bg-amber-500/15 text-amber-400',
 };
 
-const PLANES = ['starter', 'pro', 'premium'] as const;
+const PLANES = ['free', 'starter', 'pro', 'premium'] as const;
 
 const inputCls = `w-full rounded-xl border border-white/15 px-4 py-3 text-[14.5px] text-white
                   bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 transition placeholder-white/25`;
