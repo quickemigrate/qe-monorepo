@@ -125,7 +125,7 @@ export default function DiagnosticoPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] font-sans pt-[72px]">
       {/* Hero */}
-      <LampContainer className="min-h-[28rem]">
+      <LampContainer className="min-h-[22rem]">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
