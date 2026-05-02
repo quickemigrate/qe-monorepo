@@ -41,11 +41,12 @@ function AppShell() {
   const isAdmin = location.pathname.startsWith('/admin');
   const isClient = location.pathname.startsWith('/cliente');
   const isHome = location.pathname === '/';
+  const isLandingRoute = isAdmin || isClient || isHome;
 
   return (
     <div className="font-sans selection:bg-primary-container/30">
       <ScrollToTop />
-      {!isAdmin && !isClient && !isHome && <Navbar />}
+      {!isLandingRoute && <Navbar />}
       <Routes>
         <Route path="/" element={<EarlyAccessLanding />} />
         <Route path="/nosotros" element={<AboutPage />} />
@@ -71,7 +72,7 @@ function AppShell() {
         <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
       </Routes>
-      {!isAdmin && !isClient && !isHome && <Footer />}
+      {!isLandingRoute && <Footer />}
     </div>
   );
 }

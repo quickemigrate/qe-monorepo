@@ -14,7 +14,9 @@ export default function ClientLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const mensaje = (location.state as any)?.mensaje as string | undefined;
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const redirectTo = (location.state as any)?.redirect as string | undefined;
+  const initialMode = (location.state as any)?.mode === 'register' ? 'register' : 'login';
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [transitioning, setTransitioning] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -53,7 +55,7 @@ export default function ClientLogin() {
       } catch {
         // Silently fall through to inicio; OnboardingGuard will redirect if needed
       }
-      navigate('/cliente/inicio');
+      navigate(redirectTo || '/cliente/inicio');
     } catch {
       setError('Email o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.');
     } finally {
@@ -80,7 +82,7 @@ export default function ClientLogin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, nombre: email.split('@')[0] }),
       });
-      navigate('/cliente/onboarding');
+      navigate(redirectTo || '/cliente/onboarding');
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setError('Este email ya está registrado. Inicia sesión.');

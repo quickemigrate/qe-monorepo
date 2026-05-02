@@ -1,10 +1,15 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { animate, stagger } from 'animejs';
 
 interface Props { precioTexto: string }
 
 export default function HowItWorksSection({ precioTexto }: Props) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleDiagnostico = () => user ? navigate('/diagnostico') : navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+
   useEffect(() => {
     const el = document.getElementById('ea-timeline');
     if (!el) return;
@@ -47,10 +52,10 @@ export default function HowItWorksSection({ precioTexto }: Props) {
           </li>
         </ol>
         <div className="ea-sec-cta">
-          <Link to="/diagnostico" className="ea-btn-primary">
+          <button onClick={handleDiagnostico} className="ea-btn-primary">
             Obtener mi diagnóstico — {precioTexto}
             <span className="ea-arrow" aria-hidden="true">→</span>
-          </Link>
+          </button>
           <div className="ea-sec-cta-note">Pago único · Acceso inmediato</div>
         </div>
       </div>

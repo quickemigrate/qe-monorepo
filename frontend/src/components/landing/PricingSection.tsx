@@ -1,10 +1,15 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { animate } from 'animejs';
 
 interface Props { precioTexto: string; precioViejo: string }
 
 export default function PricingSection({ precioTexto, precioViejo }: Props) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleDiagnostico = () => user ? navigate('/diagnostico') : navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+
   useEffect(() => {
     const el = document.getElementById('ea-price-card');
     if (!el) return;
@@ -33,10 +38,10 @@ export default function PricingSection({ precioTexto, precioViejo }: Props) {
             <li><span className="ea-check">✓</span>Próximos pasos inmediatos</li>
             <li><span className="ea-check">✓</span>Acceso al área de cliente</li>
           </ul>
-          <Link to="/diagnostico" className="ea-btn-full">
+          <button onClick={handleDiagnostico} className="ea-btn-full">
             Obtener mi diagnóstico ahora
             <span aria-hidden="true">→</span>
-          </Link>
+          </button>
           <div className="ea-price-foot">Recibirás tu diagnóstico en menos de 5 minutos tras el pago.</div>
         </div>
       </div>

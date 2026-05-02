@@ -1,11 +1,11 @@
 import { usePlanes } from '../hooks/usePlanes';
 import { HeroGeometric } from '../components/ui/shape-landing-hero';
 import DiagnosticPreviewSection from '../components/DiagnosticPreviewSection';
-import LandingNav from '../components/landing/LandingNav';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import IncludesSection from '../components/landing/IncludesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import PricingSection from '../components/landing/PricingSection';
-import LandingFooter from '../components/landing/LandingFooter';
 import '../styles/early-access.css';
 import '../styles/landing-sections.css';
 
@@ -17,13 +17,13 @@ export default function EarlyAccessLanding() {
 
   return (
     <div className="ea-root">
-      <LandingNav />
+      <Navbar />
       <HeroGeometric />
       <DiagnosticPreviewSection />
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />
       <PricingSection precioTexto={precioTexto} precioViejo={precioViejo} />
-      <LandingFooter />
+      <Footer />
     </div>
   );
 }

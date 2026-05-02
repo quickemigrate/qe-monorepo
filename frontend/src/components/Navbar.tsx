@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Menu } from 'lucide-react';
 
@@ -13,6 +14,19 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleDiagnostico = () => {
+    if (user) {
+      navigate('/diagnostico');
+    } else {
+      navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+    }
+  };
+
+  const registerTo = { pathname: '/cliente/login' };
+  const registerState = { mode: 'register' };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -63,16 +77,17 @@ const Navbar = () => {
             to="/cliente/login"
             className="hidden md:block text-[13.5px] font-medium text-white/50 hover:text-white transition-colors"
           >
-            Mi expediente
+            Iniciar sesión
           </Link>
           <Link
-            to="/diagnostico"
+            to={registerTo}
+            state={registerState}
             className="hidden md:block px-[18px] py-[10px] rounded-full border border-[#25D366]/45 text-[#25D366]
                        text-[14px] font-medium bg-transparent
                        hover:bg-[#25D366]/8 hover:border-[#25D366] hover:-translate-y-px
                        transition-all duration-200"
           >
-            Reservar diagnóstico
+            Registrarse
           </Link>
           <button
             className="md:hidden text-white/70 hover:text-white transition-colors"
@@ -109,14 +124,15 @@ const Navbar = () => {
               ))}
               <hr className="border-white/10" />
               <Link to="/cliente/login" className="text-[16px] font-medium text-white/60">
-                Mi expediente
+                Iniciar sesión
               </Link>
               <Link
-                to="/diagnostico"
+                to={registerTo}
+                state={registerState}
                 className="border border-[#25D366]/45 text-[#25D366] px-6 py-4 rounded-full
                            font-medium text-center text-[15px] hover:bg-[#25D366]/8 transition-colors"
               >
-                Reservar diagnóstico
+                Registrarse
               </Link>
             </div>
           </motion.div>
