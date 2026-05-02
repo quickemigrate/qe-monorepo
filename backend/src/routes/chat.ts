@@ -218,6 +218,25 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
       }
     }
 
+    // Documentos subidos por el usuario
+    const docsSnap = await db.collection('usuarios').doc(userEmail)
+      .collection('documentos')
+      .orderBy('creadoEn', 'desc')
+      .limit(10)
+      .get();
+
+    if (!docsSnap.empty) {
+      const docsContext = docsSnap.docs.map(d => {
+        const data = d.data();
+        const label = data.etiqueta || data.nombre;
+        const preview = data.textoExtraido
+          ? `\nContenido:\n${data.textoExtraido.substring(0, 2000)}`
+          : '';
+        return `- ${label} (${data.tipo === 'application/pdf' ? 'PDF' : 'TXT'})${preview}`;
+      }).join('\n\n');
+      sistemaPrompt += `\n\nDOCUMENTOS DEL USUARIO:\nEl usuario ha subido los siguientes documentos a su expediente. Úsalos para dar respuestas más precisas y personalizadas:\n${docsContext}`;
+    }
+
     const contextoLegal = await obtenerContextoLegal(
       paisUsuario,
       normalizarObjetivo(objetivoUsuario)
