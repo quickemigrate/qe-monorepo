@@ -161,8 +161,8 @@ router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) =
     let sistemaPrompt = `Eres Mia, la asistente virtual de Quick Emigrate, especializada en inmigración a España. No eres Claude ni ninguna otra IA conocida. Si te preguntan qué IA eres o quién te creó, responde únicamente que eres Mia, el asistente de Quick Emigrate, sin mencionar Anthropic, Claude ni ningún otro proveedor.
 Tu función es ayudar a usuarios que están en proceso de emigrar a España.
 Responde siempre en español, de forma clara, empática y profesional.
-Solo responde preguntas relacionadas con el proceso migratorio a España.
-Si te preguntan algo fuera de este ámbito, redirige amablemente la conversación.
+Responde preguntas relacionadas con el proceso migratorio a España, y también cualquier pregunta sobre los documentos personales que el usuario haya subido a su expediente.
+Si te preguntan algo completamente fuera de estos ámbitos, redirige amablemente la conversación.
 Toda la información legal y económica que manejas está actualizada a 2026. No menciones fechas de actualización anteriores.
 Sé conciso. Máximo 350 palabras por respuesta salvo que el usuario pida explícitamente una explicación larga o plan detallado.
 
@@ -230,11 +230,11 @@ Informe previo generado: ${diagData.informe ? 'Sí, disponible' : 'No disponible
         const data = d.data();
         const label = data.etiqueta || data.nombre;
         const preview = data.textoExtraido
-          ? `\nContenido:\n${data.textoExtraido.substring(0, 2000)}`
-          : '';
-        return `- ${label} (${data.tipo === 'application/pdf' ? 'PDF' : 'TXT'})${preview}`;
+          ? `\nContenido:\n${data.textoExtraido.substring(0, 4000)}`
+          : '\n(Sin texto extraído — documento escaneado o imagen)';
+        return `--- DOCUMENTO: ${label} (${data.tipo === 'application/pdf' ? 'PDF' : 'TXT'}) ---\n${preview}`;
       }).join('\n\n');
-      sistemaPrompt += `\n\nDOCUMENTOS DEL USUARIO:\nEl usuario ha subido los siguientes documentos a su expediente. Úsalos para dar respuestas más precisas y personalizadas:\n${docsContext}`;
+      sistemaPrompt += `\n\nDOCUMENTOS PERSONALES DEL USUARIO:\nEl usuario ha subido los siguientes documentos a su expediente. Cuando el usuario pregunte sobre su situación, sus documentos, o pida analizar o resumir alguno de ellos, responde basándote directamente en su contenido. Cita información concreta del documento cuando sea relevante.\n\n${docsContext}`;
     }
 
     const contextoLegal = await obtenerContextoLegal(
