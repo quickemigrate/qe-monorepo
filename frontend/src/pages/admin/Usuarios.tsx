@@ -42,23 +42,23 @@ interface FormCrear {
 const FORM_INICIAL: FormCrear = { email: '', nombre: '', plan: 'starter', password: '' };
 
 const PLAN_BADGE: Record<string, string> = {
-  starter: 'bg-gray-100 text-gray-600',
-  pro:     'bg-blue-100 text-blue-700',
-  premium: 'bg-amber-100 text-amber-700',
+  starter: 'bg-white/8 text-white/50',
+  pro:     'bg-blue-500/15 text-blue-400',
+  premium: 'bg-amber-500/15 text-amber-400',
 };
 
 const PLANES = ['starter', 'pro', 'premium'] as const;
 
-const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
-                  bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition`;
-const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1.5';
+const inputCls = `w-full rounded-xl border border-white/15 px-4 py-3 text-[14.5px] text-white
+                  bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 transition placeholder-white/25`;
+const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5';
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
-    <div className="bg-surface-container-lowest rounded-xl px-4 py-3">
-      <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-on-background/40 mb-0.5">{label}</p>
-      <p className="text-[13.5px] text-on-background font-medium">{value}</p>
+    <div className="bg-white/5 rounded-xl px-4 py-3">
+      <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/40 mb-0.5">{label}</p>
+      <p className="text-[13.5px] text-white font-medium">{value}</p>
     </div>
   );
 }
@@ -70,23 +70,16 @@ export default function Usuarios() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [planLocal, setPlanLocal] = useState<Record<string, string>>({});
 
-  // Modal crear
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<FormCrear>(FORM_INICIAL);
   const [creando, setCreando] = useState(false);
   const [crearError, setCrearError] = useState('');
 
-  // Sincronizar
   const [sincronizando, setSincronizando] = useState(false);
-
-  // Detalle usuario
   const [detalle, setDetalle] = useState<Usuario | null>(null);
-
-  // Eliminar usuario
   const [confirmEliminar, setConfirmEliminar] = useState<Usuario | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
-  // Toast
   const [toast, setToast] = useState<{ msg: string; tipo: 'success' | 'error' } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -221,35 +214,30 @@ export default function Usuarios() {
         {toast && (
           <div className={`fixed top-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg text-[13.5px] font-medium
             ${toast.tipo === 'success'
-              ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-              : 'bg-red-50 border border-red-200 text-red-600'
+              ? 'bg-emerald-500/15 border border-emerald-500/20 text-emerald-400'
+              : 'bg-red-500/15 border border-red-500/20 text-red-400'
             }`}>
-            {toast.tipo === 'success'
-              ? <CheckCircle2 size={16} />
-              : <AlertCircle size={16} />
-            }
+            {toast.tipo === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
             {toast.msg}
           </div>
         )}
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background">
-            Usuarios
-          </h1>
+          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Usuarios</h1>
           <div className="flex gap-2">
             <button
               onClick={handleSincronizar}
               disabled={sincronizando}
-              className="flex items-center gap-2 border border-black/10 text-on-background/70 px-4 py-2.5 rounded-xl
-                         text-[13.5px] font-semibold hover:bg-surface-container-low transition disabled:opacity-50"
+              className="flex items-center gap-2 border border-white/15 text-white/60 px-4 py-2.5 rounded-xl
+                         text-[13.5px] font-semibold hover:bg-white/5 hover:text-white transition disabled:opacity-50"
             >
               <RefreshCw size={15} className={sincronizando ? 'animate-spin' : ''} />
               {sincronizando ? 'Sincronizando...' : 'Sincronizar desde Auth'}
             </button>
             <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 bg-on-background text-white px-4 py-2.5 rounded-xl
-                         text-[13.5px] font-semibold hover:opacity-90 active:scale-[0.98] transition"
+              className="flex items-center gap-2 bg-[#25D366] text-[#062810] px-4 py-2.5 rounded-xl
+                         text-[13.5px] font-semibold hover:bg-[#2adc6c] active:scale-[0.98] transition"
             >
               <Plus size={15} />
               Crear Usuario
@@ -257,22 +245,18 @@ export default function Usuarios() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-black/5 overflow-hidden">
+        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
           {loading ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">
-              Cargando usuarios...
-            </div>
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando usuarios...</div>
           ) : usuarios.length === 0 ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">
-              No hay usuarios registrados aún.
-            </div>
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">No hay usuarios registrados aún.</div>
           ) : (
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[600px] text-[13.5px]">
                 <thead>
-                  <tr className="border-b border-black/5">
+                  <tr className="border-b border-white/10">
                     {['Email', 'Nombre', 'Plan', 'Perfil', 'Registro', 'Acciones'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
+                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40">
                         {h}
                       </th>
                     ))}
@@ -282,29 +266,29 @@ export default function Usuarios() {
                   {usuarios.map((u, i) => (
                     <tr
                       key={u.id}
-                      className={`border-b border-black/4 ${i % 2 !== 0 ? 'bg-surface-container-lowest/40' : ''}`}
+                      className={`border-b border-white/8 ${i % 2 !== 0 ? 'bg-white/[0.02]' : ''}`}
                     >
-                      <td className="px-5 py-3.5 font-medium text-on-background">{u.email}</td>
-                      <td className="px-5 py-3.5 text-on-background/60">{u.nombre || '—'}</td>
+                      <td className="px-5 py-3.5 font-medium text-white">{u.email}</td>
+                      <td className="px-5 py-3.5 text-white/60">{u.nombre || '—'}</td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${PLAN_BADGE[u.plan] || 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${PLAN_BADGE[u.plan] || 'bg-white/8 text-white/40'}`}>
                           {u.plan}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
                         {u.perfilCompleto
-                          ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-emerald-100 text-emerald-700">Completo</span>
-                          : <span className="inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-gray-100 text-gray-500">Pendiente</span>
+                          ? <span className="inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-emerald-500/15 text-emerald-400">Completo</span>
+                          : <span className="inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-white/8 text-white/30">Pendiente</span>
                         }
                       </td>
-                      <td className="px-5 py-3.5 text-on-background/40">
+                      <td className="px-5 py-3.5 text-white/40">
                         {u.creadoEn ? new Date(u.creadoEn).toLocaleDateString('es-ES') : '—'}
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setDetalle(u)}
-                            className="p-1.5 rounded-lg text-on-background/40 hover:text-on-background hover:bg-surface-container-low transition"
+                            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition"
                             title="Ver perfil completo"
                           >
                             <Eye size={15} />
@@ -312,22 +296,22 @@ export default function Usuarios() {
                           <select
                             value={planLocal[u.id] || u.plan}
                             onChange={e => setPlanLocal(prev => ({ ...prev, [u.id]: e.target.value }))}
-                            className="rounded-xl border border-black/10 px-3 py-1.5 text-[13px] text-on-background
-                                       bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50"
+                            className="rounded-xl border border-white/15 px-3 py-1.5 text-[13px] text-white
+                                       bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30"
                           >
                             {PLANES.map(p => <option key={p} value={p}>{p}</option>)}
                           </select>
                           <button
                             onClick={() => handleCambiarPlan(u.id)}
                             disabled={updatingId === u.id || planLocal[u.id] === u.plan}
-                            className="px-3 py-1.5 rounded-xl bg-on-background text-white text-[12px] font-semibold
-                                       hover:opacity-90 transition disabled:opacity-40"
+                            className="px-3 py-1.5 rounded-xl bg-[#25D366] text-[#062810] text-[12px] font-semibold
+                                       hover:bg-[#2adc6c] transition disabled:opacity-40"
                           >
                             {updatingId === u.id ? 'Guardando...' : 'Guardar'}
                           </button>
                           <button
                             onClick={() => setConfirmEliminar(u)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition"
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
                             title="Eliminar usuario"
                           >
                             <Trash2 size={15} />
@@ -346,22 +330,21 @@ export default function Usuarios() {
       {/* Modal detalle usuario */}
       {detalle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDetalle(null)} />
-          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[580px] max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-7 py-5 border-b border-black/5">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDetalle(null)} />
+          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[580px] max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
               <div>
-                <h2 className="text-[18px] font-semibold text-on-background">{detalle.nombre || detalle.email}</h2>
-                <p className="text-[13px] text-on-background/40 mt-0.5">{detalle.email}</p>
+                <h2 className="text-[18px] font-semibold text-white">{detalle.nombre || detalle.email}</h2>
+                <p className="text-[13px] text-white/40 mt-0.5">{detalle.email}</p>
               </div>
-              <button onClick={() => setDetalle(null)} className="text-on-background/40 hover:text-on-background transition-colors">
+              <button onClick={() => setDetalle(null)} className="text-white/40 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
 
             <div className="overflow-y-auto px-7 py-6 space-y-6">
-              {/* Info básica */}
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">Cuenta</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">Cuenta</p>
                 <div className="grid grid-cols-2 gap-3">
                   <InfoRow label="Plan" value={detalle.plan} />
                   <InfoRow label="Mensajes usados" value={String(detalle.mensajesUsados || 0)} />
@@ -370,10 +353,9 @@ export default function Usuarios() {
                 </div>
               </div>
 
-              {/* Perfil de onboarding */}
               {detalle.perfil && (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">Perfil migratorio</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">Perfil migratorio</p>
                   <div className="grid grid-cols-2 gap-3">
                     <InfoRow label="País / Nacionalidad" value={detalle.perfil.pais} />
                     <InfoRow label="Edad" value={detalle.perfil.edad} />
@@ -391,17 +373,16 @@ export default function Usuarios() {
                 </div>
               )}
 
-              {/* Respuestas completas del wizard */}
               {detalle.perfil?.respuestas && (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-3">Respuestas del diagnóstico</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">Respuestas del diagnóstico</p>
                   <div className="space-y-1.5">
                     {Object.entries(detalle.perfil.respuestas)
                       .filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== false)
                       .map(([k, v]) => (
                         <div key={k} className="flex gap-3 text-[13px]">
-                          <span className="text-on-background/40 font-medium min-w-[180px] shrink-0">{k.replace(/_/g, ' ')}</span>
-                          <span className="text-on-background break-words">
+                          <span className="text-white/40 font-medium min-w-[180px] shrink-0">{k.replace(/_/g, ' ')}</span>
+                          <span className="text-white break-words">
                             {Array.isArray(v) ? v.join(', ') : String(v)}
                           </span>
                         </div>
@@ -412,7 +393,7 @@ export default function Usuarios() {
               )}
 
               {!detalle.perfil && (
-                <p className="text-[13.5px] text-on-background/40 text-center py-4">Este usuario aún no completó el onboarding.</p>
+                <p className="text-[13.5px] text-white/40 text-center py-4">Este usuario aún no completó el onboarding.</p>
               )}
             </div>
           </div>
@@ -422,18 +403,18 @@ export default function Usuarios() {
       {/* Modal crear usuario */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[440px]">
-            <div className="flex items-center justify-between px-7 py-5 border-b border-black/5">
-              <h2 className="text-[18px] font-semibold text-on-background">Crear Usuario</h2>
-              <button onClick={closeModal} className="text-on-background/40 hover:text-on-background transition-colors">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[440px]">
+            <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
+              <h2 className="text-[18px] font-semibold text-white">Crear Usuario</h2>
+              <button onClick={closeModal} className="text-white/40 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
 
             <div className="px-7 py-6 space-y-4">
               {crearError && (
-                <div className="flex items-center gap-2.5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+                <div className="flex items-center gap-2.5 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
                   <AlertCircle size={16} />
                   {crearError}
                 </div>
@@ -487,16 +468,16 @@ export default function Usuarios() {
                 <button
                   onClick={closeModal}
                   disabled={creando}
-                  className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14.5px]
-                             text-on-background/60 hover:bg-surface-container-low transition disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-white/15 font-semibold py-3 text-[14.5px]
+                             text-white/60 hover:bg-white/5 transition disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleCrear}
                   disabled={creando}
-                  className="flex-1 rounded-xl bg-on-background text-white font-semibold py-3 text-[14.5px]
-                             hover:opacity-90 transition disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3 text-[14.5px]
+                             hover:bg-[#2adc6c] transition disabled:opacity-50"
                 >
                   {creando ? 'Creando...' : 'Crear'}
                 </button>
@@ -505,19 +486,20 @@ export default function Usuarios() {
           </div>
         </div>
       )}
+
       {/* Modal confirmar eliminación */}
       {confirmEliminar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !eliminando && setConfirmEliminar(null)} />
-          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[400px] px-7 py-6">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !eliminando && setConfirmEliminar(null)} />
+          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[400px] px-7 py-6">
             <div className="flex items-start gap-4 mb-5">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-                <Trash2 size={18} className="text-red-500" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Trash2 size={18} className="text-red-400" />
               </div>
               <div>
-                <h2 className="text-[17px] font-semibold text-on-background">Eliminar usuario</h2>
-                <p className="text-[13.5px] text-on-background/50 mt-1">
-                  Se borrará <span className="font-medium text-on-background">{confirmEliminar.email}</span> de Firestore y Firebase Auth. Esta acción no se puede deshacer.
+                <h2 className="text-[17px] font-semibold text-white">Eliminar usuario</h2>
+                <p className="text-[13.5px] text-white/50 mt-1">
+                  Se borrará <span className="font-medium text-white">{confirmEliminar.email}</span> de Firestore y Firebase Auth. Esta acción no se puede deshacer.
                 </p>
               </div>
             </div>
@@ -525,8 +507,8 @@ export default function Usuarios() {
               <button
                 onClick={() => setConfirmEliminar(null)}
                 disabled={eliminando}
-                className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14px]
-                           text-on-background/60 hover:bg-surface-container-low transition disabled:opacity-50"
+                className="flex-1 rounded-xl border border-white/15 font-semibold py-3 text-[14px]
+                           text-white/60 hover:bg-white/5 transition disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -534,7 +516,7 @@ export default function Usuarios() {
                 onClick={handleEliminar}
                 disabled={eliminando}
                 className="flex-1 rounded-xl bg-red-600 text-white font-semibold py-3 text-[14px]
-                           hover:bg-red-700 transition disabled:opacity-50"
+                           hover:bg-red-500 transition disabled:opacity-50"
               >
                 {eliminando ? 'Eliminando...' : 'Eliminar'}
               </button>

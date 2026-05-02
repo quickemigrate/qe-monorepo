@@ -20,10 +20,10 @@ interface Lead {
 const ESTADOS = ['nuevo', 'contactado', 'convertido', 'descartado'];
 
 const ESTADO_BADGE: Record<string, string> = {
-  nuevo:      'bg-green-100 text-green-700',
-  contactado: 'bg-yellow-100 text-yellow-700',
-  convertido: 'bg-blue-100 text-blue-700',
-  descartado: 'bg-gray-100 text-gray-500',
+  nuevo:      'bg-emerald-500/15 text-emerald-400',
+  contactado: 'bg-amber-500/15 text-amber-400',
+  convertido: 'bg-blue-500/15 text-blue-400',
+  descartado: 'bg-white/8 text-white/30',
 };
 
 const TIPOS_VISADO = [
@@ -45,18 +45,20 @@ interface ConvertForm {
   notas: string;
 }
 
+const inputCls = `w-full rounded-xl border border-white/15 px-4 py-3 text-[14.5px] text-white
+                  bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 transition placeholder-white/25`;
+const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5';
+
 export default function AdminLeads() {
   const { getToken } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Side panel
   const [selected, setSelected] = useState<Lead | null>(null);
   const [editEstado, setEditEstado] = useState('');
   const [editNotas, setEditNotas] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Convert modal
   const [convertLead, setConvertLead] = useState<Lead | null>(null);
   const [convertForm, setConvertForm] = useState<ConvertForm | null>(null);
   const [converting, setConverting] = useState(false);
@@ -116,28 +118,20 @@ export default function AdminLeads() {
     setConvertResult(null);
     try {
       const token = await getToken();
-
       const expRes = await fetch(`${API}/api/expedientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(convertForm),
       });
-
       if (!expRes.ok) throw new Error('Error creando expediente');
-
       await fetch(`${API}/api/leads/${convertLead.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ estado: 'convertido' }),
       });
-
       setConvertResult('success');
       fetchLeads();
-      setTimeout(() => {
-        setConvertLead(null);
-        setConvertForm(null);
-        setConvertResult(null);
-      }, 1500);
+      setTimeout(() => { setConvertLead(null); setConvertForm(null); setConvertResult(null); }, 1500);
     } catch {
       setConvertResult('error');
     } finally {
@@ -145,27 +139,23 @@ export default function AdminLeads() {
     }
   };
 
-  const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
-                    bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition`;
-  const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1.5';
-
   return (
     <AdminLayout>
       <div className="p-8">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background mb-8">Leads</h1>
+        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Leads</h1>
 
-        <div className="bg-white rounded-2xl border border-black/5 overflow-hidden">
+        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
           {loading ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">Cargando leads...</div>
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando leads...</div>
           ) : leads.length === 0 ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">Sin leads aún.</div>
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Sin leads aún.</div>
           ) : (
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[600px] text-[13.5px]">
                 <thead>
-                  <tr className="border-b border-black/5">
+                  <tr className="border-b border-white/10">
                     {['Nombre', 'Email', 'País', 'Interés', 'Mensaje', 'Estado', 'Fecha', ''].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
+                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40">
                         {h}
                       </th>
                     ))}
@@ -176,28 +166,28 @@ export default function AdminLeads() {
                     <tr
                       key={lead.id}
                       onClick={() => openPanel(lead)}
-                      className={`border-b border-black/4 cursor-pointer hover:bg-surface-container-low transition-colors
-                        ${i % 2 === 0 ? '' : 'bg-surface-container-lowest/40'}`}
+                      className={`border-b border-white/8 cursor-pointer hover:bg-white/5 transition-colors
+                        ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}
                     >
-                      <td className="px-5 py-3.5 font-medium text-on-background">{lead.nombre}</td>
-                      <td className="px-5 py-3.5 text-on-background/60">{lead.email}</td>
-                      <td className="px-5 py-3.5 text-on-background/60">{lead.pais || '—'}</td>
-                      <td className="px-5 py-3.5 text-on-background/60">{lead.interes || '—'}</td>
-                      <td className="px-5 py-3.5 text-on-background/50 max-w-[180px] truncate">{lead.mensaje}</td>
+                      <td className="px-5 py-3.5 font-medium text-white">{lead.nombre}</td>
+                      <td className="px-5 py-3.5 text-white/60">{lead.email}</td>
+                      <td className="px-5 py-3.5 text-white/60">{lead.pais || '—'}</td>
+                      <td className="px-5 py-3.5 text-white/60">{lead.interes || '—'}</td>
+                      <td className="px-5 py-3.5 text-white/40 max-w-[180px] truncate">{lead.mensaje}</td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${ESTADO_BADGE[lead.estado] || 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${ESTADO_BADGE[lead.estado] || 'bg-white/8 text-white/30'}`}>
                           {lead.estado}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-on-background/40">
+                      <td className="px-5 py-3.5 text-white/40">
                         {new Date(lead.createdAt).toLocaleDateString('es-ES')}
                       </td>
                       <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
                         {lead.estado !== 'convertido' && lead.estado !== 'descartado' && (
                           <button
                             onClick={() => openConvertModal(lead)}
-                            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary-container
-                                       bg-primary-container/10 hover:bg-primary-container/20 px-3 py-1.5 rounded-lg
+                            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#25D366]
+                                       bg-[#25D366]/10 hover:bg-[#25D366]/20 px-3 py-1.5 rounded-lg
                                        transition-colors whitespace-nowrap"
                           >
                             <ArrowRightCircle size={13} />
@@ -217,11 +207,11 @@ export default function AdminLeads() {
       {/* Side panel */}
       {selected && (
         <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/30 backdrop-blur-sm" onClick={() => setSelected(null)} />
-          <div className="w-[420px] bg-white h-full shadow-2xl flex flex-col overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-black/5">
-              <h2 className="text-[17px] font-semibold text-on-background">Detalle del lead</h2>
-              <button onClick={() => setSelected(null)} className="text-on-background/40 hover:text-on-background transition-colors">
+          <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={() => setSelected(null)} />
+          <div className="w-[420px] bg-[#111111] border-l border-white/10 h-full shadow-2xl flex flex-col overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <h2 className="text-[17px] font-semibold text-white">Detalle del lead</h2>
+              <button onClick={() => setSelected(null)} className="text-white/40 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -235,49 +225,47 @@ export default function AdminLeads() {
                 { label: 'Fecha', value: new Date(selected.createdAt).toLocaleString('es-ES') },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1">{label}</div>
-                  <div className="text-[14.5px] text-on-background font-medium">{value}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1">{label}</div>
+                  <div className="text-[14.5px] text-white font-medium">{value}</div>
                 </div>
               ))}
 
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1">Mensaje</div>
-                <div className="text-[14px] text-on-background/70 leading-[1.6] bg-surface-container-low rounded-xl p-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1">Mensaje</div>
+                <div className="text-[14px] text-white/70 leading-[1.6] bg-white/5 rounded-xl p-4">
                   {selected.mensaje}
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">Estado</label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-2 block">Estado</label>
                 <select
                   value={editEstado}
                   onChange={e => setEditEstado(e.target.value)}
-                  className="w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
-                             bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition"
+                  className={inputCls}
                 >
                   {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-2 block">Notas internas</label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-2 block">Notas internas</label>
                 <textarea
                   value={editNotas}
                   onChange={e => setEditNotas(e.target.value)}
                   rows={4}
-                  className="w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
-                             bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition"
+                  className={`${inputCls} resize-none`}
                   placeholder="Notas sobre este lead..."
                 />
               </div>
             </div>
 
-            <div className="px-6 py-5 border-t border-black/5">
+            <div className="px-6 py-5 border-t border-white/10">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full rounded-xl bg-on-background text-white font-semibold py-3.5 text-[15px]
-                           hover:opacity-90 active:scale-[0.98] transition disabled:opacity-50"
+                className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
+                           hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
               >
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
@@ -289,13 +277,13 @@ export default function AdminLeads() {
       {/* Convert modal */}
       {convertLead && convertForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }} />
-          <div className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-7 py-5 border-b border-black/5">
-              <h2 className="text-[18px] font-semibold text-on-background">Convertir a expediente</h2>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }} />
+          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
+              <h2 className="text-[18px] font-semibold text-white">Convertir a expediente</h2>
               <button
                 onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }}
-                className="text-on-background/40 hover:text-on-background transition-colors"
+                className="text-white/40 hover:text-white transition-colors"
               >
                 <X size={20} />
               </button>
@@ -303,13 +291,13 @@ export default function AdminLeads() {
 
             <div className="px-7 py-6 space-y-4">
               {convertResult === 'success' && (
-                <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-[13.5px] text-emerald-700 font-medium">
+                <div className="flex items-center gap-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-[13.5px] text-emerald-400 font-medium">
                   <CheckCircle2 size={16} />
                   Expediente creado correctamente.
                 </div>
               )}
               {convertResult === 'error' && (
-                <div className="flex items-center gap-2.5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+                <div className="flex items-center gap-2.5 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
                   <AlertCircle size={16} />
                   Error al crear el expediente. Inténtalo de nuevo.
                 </div>
@@ -330,7 +318,7 @@ export default function AdminLeads() {
                   <input
                     value={convertForm.email}
                     readOnly
-                    className={`${inputCls} bg-surface-container-low text-on-background/50 cursor-not-allowed`}
+                    className={`${inputCls} opacity-50 cursor-not-allowed`}
                   />
                 </div>
               </div>
@@ -383,7 +371,7 @@ export default function AdminLeads() {
                   type="button"
                   onClick={() => { setConvertLead(null); setConvertForm(null); }}
                   disabled={converting}
-                  className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14.5px] text-on-background/60 hover:bg-surface-container-low transition disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-white/15 font-semibold py-3 text-[14.5px] text-white/60 hover:bg-white/5 transition disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -391,7 +379,7 @@ export default function AdminLeads() {
                   type="button"
                   onClick={handleConvert}
                   disabled={converting || convertResult === 'success'}
-                  className="flex-1 rounded-xl bg-on-background text-white font-semibold py-3 text-[14.5px] hover:opacity-90 transition disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3 text-[14.5px] hover:bg-[#2adc6c] transition disabled:opacity-50"
                 >
                   {converting ? 'Creando...' : 'Crear expediente'}
                 </button>

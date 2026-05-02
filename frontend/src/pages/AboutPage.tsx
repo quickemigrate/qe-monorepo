@@ -124,7 +124,7 @@ const OriginStory = () => (
               <img src="/logo-dark.png" alt="Quick Emigrate" className="h-10 w-auto" />
               <div>
                 <div className="text-[13px] font-semibold text-white">Equipo Quick Emigrate</div>
-                <div className="text-[12px] text-white/50">Madrid, 2026</div>
+                <div className="text-[12px] text-white/50">España, 2026</div>
               </div>
             </div>
           </div>
@@ -250,6 +250,7 @@ const Team = () => {
       role: 'CEO · Estrategia y negocio',
       bio: 'Lidera la visión comercial y las relaciones con clientes y partners. Se asegura de que Quick Emigrate crezca con propósito.',
       green: true,
+      linkedin: 'https://www.linkedin.com/in/manuelgonzalezgordillo/'
     },
     {
       initial: 'P',
@@ -257,6 +258,7 @@ const Team = () => {
       role: 'CTO · Tecnología y producto',
       bio: 'Construye la plataforma y los sistemas que hacen posible una experiencia guiada, automatizada y sin errores.',
       green: false,
+      linkedin: 'https://www.linkedin.com/in/pablosegundogonzalezgarcia/'
     },
   ];
 
@@ -296,7 +298,7 @@ const Team = () => {
                 <div className="mt-0.5 text-[13.5px] font-semibold text-[#25D366]">{m.role}</div>
                 <p className="mt-4 text-[14.5px] leading-[1.6] text-white/60">{m.bio}</p>
                 <div className="mt-5 pt-5 border-t border-white/10 flex items-center gap-3">
-                  <a href="#" className="text-[12px] text-white/40 hover:text-white transition-colors">LinkedIn</a>
+                  <a href={m.linkedin} className="text-[12px] text-white/40 hover:text-white transition-colors">LinkedIn</a>
                   <span className="text-white/20">·</span>
                   <a href="#" className="text-[12px] text-white/40 hover:text-white transition-colors">Email</a>
                 </div>

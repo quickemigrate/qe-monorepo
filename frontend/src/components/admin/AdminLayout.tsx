@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-surface-container-low">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0A0A]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Link>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface-container-low">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0A0A0A]">
           {children}
         </main>
       </div>

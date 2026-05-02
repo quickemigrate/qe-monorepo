@@ -58,7 +58,7 @@ function Avatar({ name }: { name: string }) {
 }
 
 function Skeleton({ h = 'h-[120px]' }: { h?: string }) {
-  return <div className={`bg-on-background border border-white/8 rounded-2xl animate-pulse ${h}`} />;
+  return <div className={`bg-[#111111] border border-white/10 rounded-2xl animate-pulse ${h}`} />;
 }
 
 export default function AdminDashboard() {
@@ -141,11 +141,11 @@ export default function AdminDashboard() {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background">Dashboard</h1>
+          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Dashboard</h1>
           <button
             onClick={() => fetchMetrics(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-on-background border border-white/8
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111111] border border-white/10
                        text-[13px] font-semibold text-white/60 hover:text-white transition disabled:opacity-50"
           >
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={label}
-                    className={`bg-on-background border border-white/8 border-t-2 ${cls.border} rounded-2xl p-6`}
+                    className={`bg-[#111111] border border-white/10 border-t-2 ${cls.border} rounded-2xl p-6`}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40">
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
             : (
               <>
                 {/* Top países */}
-                <div className="bg-on-background border border-white/8 rounded-2xl p-6">
+                <div className="bg-[#111111] border border-white/10 rounded-2xl p-6">
                   <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-5">
                     Top países — diagnósticos
                   </h2>
@@ -227,7 +227,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Usuarios por plan */}
-                <div className="bg-on-background border border-white/8 rounded-2xl p-6">
+                <div className="bg-[#111111] border border-white/10 rounded-2xl p-6">
                   <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-5">
                     Usuarios por plan
                   </h2>
@@ -267,8 +267,8 @@ export default function AdminDashboard() {
             : (
               <>
                 {/* Últimos diagnósticos */}
-                <div className="bg-on-background border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+                <div className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
                     <h2 className="text-[14px] font-semibold text-white">Últimos diagnósticos</h2>
                     <Link
                       to="/admin/expedientes"
@@ -304,8 +304,8 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Últimos leads */}
-                <div className="bg-on-background border border-white/8 rounded-2xl overflow-hidden">
-                  <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+                <div className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
                     <h2 className="text-[14px] font-semibold text-white">Últimos leads</h2>
                     <Link
                       to="/admin/leads"

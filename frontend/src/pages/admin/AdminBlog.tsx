@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Plus, Pencil, Trash2, Globe, FileText, Bold, Italic, List, ListOrdered, Heading2, Heading3, ArrowLeft } from 'lucide-react';
+import { Plus, Pencil, Trash2, Globe, Bold, Italic, List, ListOrdered, Heading2, Heading3, ArrowLeft } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -32,8 +32,8 @@ const EMPTY_FORM = {
 };
 
 const ESTADO_BADGE: Record<string, string> = {
-  published: 'bg-emerald-100 text-emerald-700',
-  draft: 'bg-yellow-100 text-yellow-700',
+  published: 'bg-emerald-500/15 text-emerald-400',
+  draft:     'bg-amber-500/15 text-amber-400',
 };
 
 function slugify(text: string) {
@@ -51,24 +51,24 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   if (!editor) return null;
 
   const btnCls = (active: boolean) =>
-    `p-1.5 rounded-lg transition-colors ${active ? 'bg-on-background text-white' : 'text-on-background/50 hover:bg-surface-container-low hover:text-on-background'}`;
+    `p-1.5 rounded-lg transition-colors ${active ? 'bg-white/15 text-white' : 'text-white/50 hover:bg-white/8 hover:text-white'}`;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-black/8 bg-surface-container-lowest rounded-t-xl">
+    <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-white/10 bg-[#0A0A0A] rounded-t-xl">
       <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnCls(editor.isActive('bold'))}>
         <Bold size={15} />
       </button>
       <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnCls(editor.isActive('italic'))}>
         <Italic size={15} />
       </button>
-      <div className="w-px h-4 bg-black/10 mx-1" />
+      <div className="w-px h-4 bg-white/10 mx-1" />
       <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnCls(editor.isActive('heading', { level: 2 }))}>
         <Heading2 size={15} />
       </button>
       <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnCls(editor.isActive('heading', { level: 3 }))}>
         <Heading3 size={15} />
       </button>
-      <div className="w-px h-4 bg-black/10 mx-1" />
+      <div className="w-px h-4 bg-white/10 mx-1" />
       <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnCls(editor.isActive('bulletList'))}>
         <List size={15} />
       </button>
@@ -98,7 +98,7 @@ function ArticleEditor({
     content: initial?.content || '',
     editorProps: {
       attributes: {
-        class: 'min-h-[280px] px-4 py-3 text-[15px] leading-[1.7] text-on-background focus:outline-none',
+        class: 'min-h-[280px] px-4 py-3 text-[15px] leading-[1.7] text-white focus:outline-none',
       },
     },
   });
@@ -123,22 +123,22 @@ function ArticleEditor({
     }
   };
 
-  const inputCls = `w-full rounded-xl border border-black/10 px-4 py-3 text-[14.5px] text-on-background
-                    bg-white focus:outline-none focus:ring-2 focus:ring-primary-container/50 transition`;
-  const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40 mb-1.5';
+  const inputCls = `w-full rounded-xl border border-white/15 px-4 py-3 text-[14.5px] text-white
+                    bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 transition placeholder-white/25`;
+  const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5';
 
   return (
     <div className="p-8 max-w-[820px]">
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-[13px] text-on-background/50 hover:text-on-background transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-white/50 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft size={14} />
         Volver a la lista
       </button>
 
-      <h1 className="text-[26px] font-semibold tracking-[-0.025em] text-on-background mb-8">
+      <h1 className="text-[26px] font-semibold tracking-[-0.025em] text-white mb-8">
         {initial?.id ? 'Editar artículo' : 'Nuevo artículo'}
       </h1>
 
@@ -161,7 +161,7 @@ function ArticleEditor({
             className={inputCls}
             placeholder="como-emigrar-desde-argentina"
           />
-          <p className="text-[11.5px] text-on-background/35 mt-1">
+          <p className="text-[11.5px] text-white/30 mt-1">
             Se genera automáticamente desde el título. URL: /blog/{form.slug || '…'}
           </p>
         </div>
@@ -195,12 +195,12 @@ function ArticleEditor({
             className={`${inputCls} resize-none`}
             placeholder="Descripción para buscadores, max 160 caracteres..."
           />
-          <p className="text-[11.5px] text-on-background/35 mt-1">{form.metaDescription.length}/160</p>
+          <p className="text-[11.5px] text-white/30 mt-1">{form.metaDescription.length}/160</p>
         </div>
 
         <div>
           <label className={labelCls}>Contenido</label>
-          <div className="rounded-xl border border-black/10 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-primary-container/50 transition">
+          <div className="rounded-xl border border-white/15 overflow-hidden bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-[#25D366]/30 transition">
             <Toolbar editor={editor} />
             <EditorContent editor={editor} />
           </div>
@@ -211,8 +211,8 @@ function ArticleEditor({
             type="button"
             disabled={saving}
             onClick={() => handleSave('draft')}
-            className="flex-1 rounded-xl border border-black/10 font-semibold py-3 text-[14.5px] text-on-background/60
-                       hover:bg-surface-container-low transition disabled:opacity-50"
+            className="flex-1 rounded-xl border border-white/15 font-semibold py-3 text-[14.5px] text-white/60
+                       hover:bg-white/5 transition disabled:opacity-50"
           >
             {saving ? 'Guardando...' : 'Guardar borrador'}
           </button>
@@ -220,8 +220,8 @@ function ArticleEditor({
             type="button"
             disabled={saving}
             onClick={() => handleSave('published')}
-            className="flex-1 rounded-xl bg-on-background text-white font-semibold py-3 text-[14.5px]
-                       hover:opacity-90 transition disabled:opacity-50"
+            className="flex-1 rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3 text-[14.5px]
+                       hover:bg-[#2adc6c] transition disabled:opacity-50"
           >
             {saving ? 'Publicando...' : 'Publicar'}
           </button>
@@ -318,31 +318,31 @@ export default function AdminBlog() {
     <AdminLayout>
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-on-background">Blog</h1>
+          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Blog</h1>
           <button
             onClick={() => setEditing('new')}
-            className="inline-flex items-center gap-2 rounded-xl bg-on-background text-white font-semibold
-                       px-5 py-2.5 text-[14px] hover:opacity-90 transition active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] text-[#062810] font-semibold
+                       px-5 py-2.5 text-[14px] hover:bg-[#2adc6c] transition active:scale-[0.98]"
           >
             <Plus size={16} />
             Nuevo artículo
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-black/5 overflow-hidden">
+        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
           {loading ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">Cargando artículos...</div>
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando artículos...</div>
           ) : articles.length === 0 ? (
-            <div className="px-6 py-10 text-center text-on-background/40 text-[14px]">
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">
               Sin artículos aún. Crea el primero.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-[13.5px]">
                 <thead>
-                  <tr className="border-b border-black/5">
+                  <tr className="border-b border-white/10">
                     {['Título', 'País', 'Estado', 'Fecha', 'Acciones'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-on-background/40">
+                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40">
                         {h}
                       </th>
                     ))}
@@ -352,38 +352,38 @@ export default function AdminBlog() {
                   {articles.map((article, i) => (
                     <tr
                       key={article.id}
-                      className={`border-b border-black/4 ${i % 2 === 0 ? '' : 'bg-surface-container-lowest/40'}`}
+                      className={`border-b border-white/8 ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}
                     >
-                      <td className="px-5 py-3.5 font-medium text-on-background max-w-[280px]">
+                      <td className="px-5 py-3.5 font-medium text-white max-w-[280px]">
                         <div className="truncate">{article.title}</div>
-                        <div className="text-[11.5px] text-on-background/35 mt-0.5 truncate">/blog/{article.slug}</div>
+                        <div className="text-[11.5px] text-white/30 mt-0.5 truncate">/blog/{article.slug}</div>
                       </td>
-                      <td className="px-5 py-3.5 text-on-background/60">
+                      <td className="px-5 py-3.5 text-white/60">
                         <span className="inline-flex items-center gap-1">
-                          <Globe size={12} className="text-on-background/30" />
+                          <Globe size={12} className="text-white/30" />
                           {article.country}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${ESTADO_BADGE[article.status] || 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${ESTADO_BADGE[article.status] || 'bg-white/8 text-white/30'}`}>
                           {article.status === 'published' ? 'Publicado' : 'Borrador'}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-on-background/40">
+                      <td className="px-5 py-3.5 text-white/40">
                         {new Date(article.createdAt).toLocaleDateString('es-ES')}
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => setEditing(article)}
-                            className="p-1.5 rounded-lg text-on-background/40 hover:text-on-background hover:bg-surface-container-low transition-colors"
+                            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors"
                             title="Editar"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleToggleStatus(article)}
-                            className="p-1.5 rounded-lg text-on-background/40 hover:text-on-background hover:bg-surface-container-low transition-colors text-[11px] font-semibold px-2"
+                            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors text-[11px] font-semibold px-2"
                             title={article.status === 'published' ? 'Despublicar' : 'Publicar'}
                           >
                             {article.status === 'published' ? 'Despublicar' : 'Publicar'}
@@ -391,7 +391,7 @@ export default function AdminBlog() {
                           <button
                             onClick={() => handleDelete(article.id)}
                             disabled={deleting === article.id}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors disabled:opacity-40"
                             title="Eliminar"
                           >
                             <Trash2 size={14} />

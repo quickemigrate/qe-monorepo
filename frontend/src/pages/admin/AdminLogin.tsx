@@ -59,35 +59,33 @@ export default function AdminLogin() {
     }
   };
 
+  const inputCls = `w-full rounded-xl border border-white/15 bg-[#0A0A0A] px-4 py-3
+                    text-[15px] text-white placeholder-white/25
+                    focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 focus:border-transparent transition`;
+
   return (
-    <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4">
       <div className="w-full max-w-[400px]">
-        {/* Card */}
-        <div className="bg-white rounded-[24px] border border-black/5 p-8 shadow-sm tonal-lift">
-          {/* Logo */}
+        <div className="bg-[#111111] rounded-[24px] border border-white/10 p-8">
           <div className="flex items-center gap-2.5 mb-8">
-            <img src="/logo-light.png" alt="Quick Emigrate" className="h-10 w-auto" />
-            <span className="text-lg font-bold tracking-tight text-on-background">Quick Emigrate</span>
+            <img src="/logo-dark.png" alt="Quick Emigrate" className="h-10 w-auto" />
+            <span className="text-lg font-bold tracking-tight text-white">Quick Emigrate</span>
           </div>
 
-          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-background mb-1">
+          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-white mb-1">
             Panel de administración
           </h1>
-          <p className="text-[14px] text-on-background/50 mb-8">
-            Acceso restringido al personal
-          </p>
+          <p className="text-[14px] text-white/50 mb-8">Acceso restringido al personal</p>
 
-          {/* Error */}
           {error && (
-            <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-[13.5px] text-red-600 font-medium">
+            <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13.5px] text-red-400 font-medium">
               {error}
             </div>
           )}
 
-          {/* Email form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-[0.1em] text-on-background/50 mb-1.5">
+              <label className="block text-[12px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5">
                 Email
               </label>
               <input
@@ -95,14 +93,12 @@ export default function AdminLogin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-xl border border-black/10 bg-surface-container-lowest px-4 py-3
-                           text-[15px] text-on-background placeholder-on-background/30
-                           focus:outline-none focus:ring-2 focus:ring-primary-container/60 focus:border-transparent transition"
+                className={inputCls}
                 placeholder="tu@email.com"
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-[0.1em] text-on-background/50 mb-1.5">
+              <label className="block text-[12px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5">
                 Contraseña
               </label>
               <input
@@ -110,36 +106,32 @@ export default function AdminLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-black/10 bg-surface-container-lowest px-4 py-3
-                           text-[15px] text-on-background placeholder-on-background/30
-                           focus:outline-none focus:ring-2 focus:ring-primary-container/60 focus:border-transparent transition"
+                className={inputCls}
                 placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-xl bg-on-background text-white font-semibold py-3.5 text-[15px]
-                         hover:opacity-90 active:scale-[0.98] transition disabled:opacity-50"
+              className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
+                         hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
             >
               {isLoading ? 'Entrando...' : 'Entrar con email'}
             </button>
           </form>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-black/8" />
-            <span className="text-[12px] text-on-background/30 font-medium">o</span>
-            <div className="flex-1 h-px bg-black/8" />
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-[12px] text-white/30 font-medium">o</span>
+            <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          {/* Google */}
           <button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full rounded-xl border border-black/10 bg-white font-semibold py-3.5 text-[15px]
-                       text-on-background flex items-center justify-center gap-2.5
-                       hover:bg-surface-container-lowest active:scale-[0.98] transition disabled:opacity-50"
+            className="w-full rounded-xl border border-white/15 bg-[#111111] font-semibold py-3.5 text-[15px]
+                       text-white flex items-center justify-center gap-2.5
+                       hover:bg-white/8 active:scale-[0.98] transition disabled:opacity-50"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
