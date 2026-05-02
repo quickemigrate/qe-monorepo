@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -23,6 +26,64 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
+function CheckoutForm({
+  diagnosticoId,
+  precioTexto,
+  onSuccess,
+  onError,
+}: {
+  diagnosticoId: string;
+  precioTexto: string;
+  onSuccess: () => void;
+  onError: (msg: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: 'if_required',
+      });
+      if (error) { onError(error.message || 'Error al procesar el pago.'); return; }
+      if (paymentIntent?.status === 'succeeded') {
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        const res = await fetch(`${API}/api/diagnostico/confirm-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ paymentIntentId: paymentIntent.id, diagnosticoId }),
+        });
+        if ((await res.json()).success) onSuccess();
+        else onError('Error al procesar el pago. Contacta con soporte.');
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="rounded-xl border border-white/15 bg-[#0A0A0A] p-4 [&_.p-StripeElement]:text-white">
+        <PaymentElement options={{ layout: 'tabs' }} />
+      </div>
+      <button
+        type="submit"
+        disabled={!stripe || !elements || processing}
+        className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
+                   hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+      >
+        {processing ? 'Procesando...' : `Pagar ${precioTexto}`}
+      </button>
+    </form>
+  );
+}
+
 export default function DiagnosticoPage() {
   const { planes } = usePlanes();
   const starterPrecioTexto = planes.find(p => p.id === 'starter')?.precioTexto ?? '59€';
@@ -32,6 +93,9 @@ export default function DiagnosticoPage() {
   const [userEmail, setUserEmail] = useState('');
   const [perfilData, setPerfilData] = useState<PerfilFormState | null>(null);
   const [error, setError] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [diagnosticoId, setDiagnosticoId] = useState('');
+  const [loadingPayment, setLoadingPayment] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(getAuth(), async (user) => {
@@ -222,77 +286,50 @@ export default function DiagnosticoPage() {
           Editar mis datos
         </button>
 
-        {/* PayPal */}
-        <PayPalScriptProvider options={{
-          clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
-          currency: 'EUR',
-        }}>
-          <PayPalButtons
-            style={{
-              layout: 'vertical',
-              color: 'black',
-              shape: 'rect',
-              label: 'pay',
-            }}
-            createOrder={async () => {
+        {/* Stripe */}
+        {!clientSecret ? (
+          <button
+            onClick={async () => {
               setError('');
-              const auth = getAuth();
-              const token = await auth.currentUser?.getIdToken();
-
-              const res = await fetch(
-                `${API}/api/diagnostico/create-order`,
-                {
+              setLoadingPayment(true);
+              try {
+                const auth = getAuth();
+                const token = await auth.currentUser?.getIdToken();
+                const res = await fetch(`${API}/api/diagnostico/create-payment-intent`, {
                   method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                  },
-                }
-              );
-              const data = await res.json();
-              if (!data.success) throw new Error(data.error);
-
-              sessionStorage.setItem('diagnosticoId', data.diagnosticoId);
-              return data.orderId;
-            }}
-            onApprove={async (data) => {
-              const auth = getAuth();
-              const token = await auth.currentUser?.getIdToken();
-              const diagnosticoId = sessionStorage.getItem('diagnosticoId');
-
-              const res = await fetch(
-                `${API}/api/diagnostico/capture-order`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    orderId: data.orderID,
-                    diagnosticoId,
-                  }),
-                }
-              );
-              const result = await res.json();
-              if (result.success) {
-                sessionStorage.removeItem('diagnosticoId');
-                navigate('/diagnostico/exito');
-              } else {
-                setError('Error al procesar el pago. Por favor contacta con soporte.');
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json();
+                if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
+                setClientSecret(data.clientSecret);
+                setDiagnosticoId(data.diagnosticoId);
+              } catch {
+                setError('Error al iniciar el pago. Inténtalo de nuevo.');
+              } finally {
+                setLoadingPayment(false);
               }
             }}
-            onError={(err) => {
-              console.error('Error PayPal:', err);
-              setError('Error al procesar el pago. Por favor inténtalo de nuevo.');
-            }}
-          />
-        </PayPalScriptProvider>
+            disabled={loadingPayment}
+            className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+          >
+            {loadingPayment ? 'Cargando...' : `Pagar ${starterPrecioTexto}`}
+          </button>
+        ) : (
+          <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
+            <CheckoutForm
+              diagnosticoId={diagnosticoId}
+              precioTexto={starterPrecioTexto}
+              onSuccess={() => navigate('/diagnostico/exito')}
+              onError={(msg) => setError(msg)}
+            />
+          </Elements>
+        )}
 
         {/* Garantías */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
           {[
-            { icon: ShieldCheck, label: 'Pago seguro con PayPal' },
+            { icon: ShieldCheck, label: 'Pago seguro con Stripe' },
             { icon: Clock,       label: 'Informe en menos de 5 minutos' },
             { icon: Mail,        label: `Enviado a ${userEmail || 'tu email'}` },
           ].map(({ icon: Icon, label }) => (

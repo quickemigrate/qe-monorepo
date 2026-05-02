@@ -1,5 +1,4 @@
 import { Router, Request, Response } from 'express';
-import checkoutNodeJssdk from '@paypal/checkout-server-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../firebase';
 import { Resend } from 'resend';
@@ -7,7 +6,7 @@ import PDFDocument from 'pdfkit';
 import path from 'path';
 import { obtenerContextoLegal } from '../services/rag';
 import { verifyClientToken } from '../middleware/clientAuth';
-import { paypalClient } from '../config/paypal';
+import { stripe } from '../config/stripe';
 
 const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
@@ -50,9 +49,8 @@ function sanitizarScoring(texto: string): string {
   return result;
 }
 
-// POST /api/diagnostico/create-order
-// Lee el perfil del usuario autenticado, guarda diagnóstico pendiente y crea orden en PayPal
-router.post('/create-order', async (req: Request, res: Response) => {
+// POST /api/diagnostico/create-payment-intent
+router.post('/create-payment-intent', async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers.authorization;
     let email = '';
@@ -68,11 +66,7 @@ router.post('/create-order', async (req: Request, res: Response) => {
         const userDoc = await db.collection('usuarios').doc(email).get();
         if (userDoc.exists) {
           const userData = userDoc.data()!;
-          datosFormulario = {
-            ...userData.perfil,
-            nombre: userData.nombre,
-            email,
-          };
+          datosFormulario = { ...userData.perfil, nombre: userData.nombre, email };
         }
       } catch (e) {
         console.error('Error verificando token:', e);
@@ -104,61 +98,40 @@ router.post('/create-order', async (req: Request, res: Response) => {
       }
     } catch { /* fallback */ }
 
-    const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
-    request.prefer('return=representation');
-    request.requestBody({
-      intent: 'CAPTURE',
-      purchase_units: [{
-        amount: {
-          currency_code: 'EUR',
-          value: precioStarter.toFixed(2),
-        },
-        description: 'Diagnóstico Migratorio IA — Quick Emigrate',
-        custom_id: diagnosticoRef.id,
-      }],
-      application_context: {
-        brand_name: 'Quick Emigrate',
-        landing_page: 'NO_PREFERENCE',
-        user_action: 'PAY_NOW',
-      },
-    } as any);
-
-    const order = await paypalClient.execute(request);
-
-    await diagnosticoRef.update({
-      paypalOrderId: order.result.id,
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(precioStarter * 100),
+      currency: 'eur',
+      description: 'Diagnóstico Migratorio IA — Quick Emigrate',
+      metadata: { diagnosticoId: diagnosticoRef.id, email },
     });
+
+    await diagnosticoRef.update({ stripePaymentIntentId: paymentIntent.id });
 
     res.json({
       success: true,
-      orderId: order.result.id,
+      clientSecret: paymentIntent.client_secret,
       diagnosticoId: diagnosticoRef.id,
     });
   } catch (error) {
-    console.error('Error creando orden PayPal:', error);
+    console.error('Error creando PaymentIntent:', error);
     res.status(500).json({ success: false, error: 'Error al crear orden' });
   }
 });
 
-// POST /api/diagnostico/capture-order
-// Captura el pago en PayPal y dispara el procesamiento del diagnóstico
-router.post('/capture-order', async (req: Request, res: Response) => {
+// POST /api/diagnostico/confirm-payment
+router.post('/confirm-payment', async (req: Request, res: Response) => {
   try {
-    const { orderId, diagnosticoId } = req.body;
+    const { paymentIntentId, diagnosticoId } = req.body;
 
-    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderId);
-    const capture = await paypalClient.execute(request);
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-    if (capture.result.status !== 'COMPLETED') {
-      return res.status(400).json({
-        success: false,
-        error: 'Pago no completado',
-      });
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({ success: false, error: 'Pago no completado' });
     }
 
     await db.collection('diagnosticos').doc(diagnosticoId).update({
       estado: 'procesando',
-      paypalCaptureId: capture.result.id,
+      stripePaymentIntentId: paymentIntentId,
       pagadoEn: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -177,8 +150,8 @@ router.post('/capture-order', async (req: Request, res: Response) => {
 
     res.json({ success: true, diagnosticoId });
   } catch (error) {
-    console.error('Error capturando orden PayPal:', error);
-    res.status(500).json({ success: false, error: 'Error al capturar pago' });
+    console.error('Error confirmando pago Stripe:', error);
+    res.status(500).json({ success: false, error: 'Error al confirmar pago' });
   }
 });
 
