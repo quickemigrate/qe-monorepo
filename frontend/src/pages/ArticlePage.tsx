@@ -20,24 +20,24 @@ interface Article {
 /* ─── Prose styles for TipTap HTML ──────────────────────── */
 const ProseStyles = () => (
   <style>{`
-    .prose-qe p  { margin-bottom: 1.25rem; font-size: 16.5px; line-height: 1.75; color: rgba(26,28,28,0.75); }
+    .prose-qe p  { margin-bottom: 1.25rem; font-size: 16.5px; line-height: 1.75; color: rgba(255,255,255,0.65); }
     .prose-qe h2 { margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 22px; font-weight: 600;
-                   letter-spacing: -0.02em; color: #1A1C1C; }
+                   letter-spacing: -0.02em; color: #ffffff; }
     .prose-qe h3 { margin-top: 2rem; margin-bottom: 0.5rem; font-size: 18px; font-weight: 600;
-                   letter-spacing: -0.015em; color: #1A1C1C; }
+                   letter-spacing: -0.015em; color: #ffffff; }
     .prose-qe h2:first-child, .prose-qe h3:first-child { margin-top: 0; }
     .prose-qe ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; }
     .prose-qe ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.25rem; }
-    .prose-qe li { margin-bottom: 0.4rem; font-size: 16.5px; line-height: 1.7; color: rgba(26,28,28,0.75); }
-    .prose-qe strong { font-weight: 600; color: #1A1C1C; }
+    .prose-qe li { margin-bottom: 0.4rem; font-size: 16.5px; line-height: 1.7; color: rgba(255,255,255,0.65); }
+    .prose-qe strong { font-weight: 600; color: #ffffff; }
     .prose-qe em { font-style: italic; }
   `}</style>
 );
 
 /* ─── Skeleton ───────────────────────────────────────────── */
 const Skeleton = () => (
-  <div className="bg-surface-container-lowest min-h-screen font-sans pt-[72px] animate-pulse">
-    <div className="bg-[var(--ink)] rounded-b-[28px] px-6 pt-20 pb-16 md:pt-28 md:pb-20">
+  <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px] animate-pulse">
+    <div className="bg-[#111111] rounded-b-[28px] px-6 pt-20 pb-16 md:pt-28 md:pb-20">
       <div className="max-w-[800px] mx-auto space-y-4">
         <div className="h-4 w-32 bg-white/10 rounded" />
         <div className="h-10 w-3/4 bg-white/10 rounded-lg" />
@@ -45,7 +45,7 @@ const Skeleton = () => (
       </div>
     </div>
     <div className="max-w-[720px] mx-auto px-6 py-16 space-y-4">
-      {[1, 2, 3].map(i => <div key={i} className="h-4 bg-black/6 rounded" />)}
+      {[1, 2, 3].map(i => <div key={i} className="h-4 bg-white/6 rounded" />)}
     </div>
   </div>
 );
@@ -72,17 +72,17 @@ export default function ArticlePage() {
 
   if (notFound || !article) {
     return (
-      <div className="bg-surface-container-lowest min-h-screen font-sans pt-[72px] flex items-center justify-center">
+      <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px] flex items-center justify-center">
         <div className="text-center px-6">
-          <p className="text-[56px] font-bold text-on-background/10 mb-4">404</p>
-          <p className="text-[18px] font-semibold text-on-background mb-2">Artículo no encontrado</p>
-          <p className="text-[14.5px] text-on-background/50 mb-8">
+          <p className="text-[56px] font-bold text-white/10 mb-4">404</p>
+          <p className="text-[18px] font-semibold text-white mb-2">Artículo no encontrado</p>
+          <p className="text-[14.5px] text-white/50 mb-8">
             El artículo que buscas no existe o ha sido eliminado.
           </p>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 bg-primary-container text-on-background font-bold
-                       px-6 py-3 rounded-full text-[14.5px] hover:scale-105 transition-transform"
+            className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
+                       px-6 py-3 rounded-full text-[14.5px] hover:bg-[#2adc6c] transition-colors"
           >
             <ArrowLeft size={15} />
             Volver al blog
@@ -98,17 +98,9 @@ export default function ArticlePage() {
   return (
     <>
       <ProseStyles />
-      <div className="bg-surface-container-lowest min-h-screen font-sans pt-[72px]">
+      <div className="bg-[#0A0A0A] min-h-screen font-sans pt-[72px]">
         {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-[var(--ink)] text-white rounded-b-[28px]">
-          <div
-            className="absolute inset-0 opacity-[0.05] pointer-events-none"
-            style={{
-              backgroundImage:
-                'linear-gradient(var(--brand) 1px, transparent 1px), linear-gradient(90deg, var(--brand) 1px, transparent 1px)',
-              backgroundSize: '44px 44px',
-            }}
-          />
+        <section className="bg-[#111111] border-b border-white/10 rounded-b-[28px]">
           <div className="mx-auto max-w-[800px] px-6 pt-20 pb-16 md:pt-28 md:pb-20">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -124,7 +116,7 @@ export default function ArticlePage() {
               </Link>
 
               <div className="flex flex-wrap items-center gap-3 mb-5">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--brand)] bg-[var(--brand)]/12 border border-[var(--brand)]/20 px-2.5 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#25D366] bg-[#25D366]/10 border border-[#25D366]/20 px-2.5 py-1 rounded-full">
                   <Globe size={10} />
                   {article.country}
                 </span>
@@ -134,11 +126,11 @@ export default function ArticlePage() {
                 </div>
               </div>
 
-              <h1 className="text-[36px] md:text-[56px] font-semibold tracking-[-0.03em] leading-[1.08] mb-5">
+              <h1 className="text-[36px] md:text-[52px] font-semibold tracking-[-0.03em] leading-[1.08] text-white mb-5">
                 {article.title}
               </h1>
               {article.excerpt && (
-                <p className="text-[17px] leading-[1.6] text-white/60 max-w-[640px]">{article.excerpt}</p>
+                <p className="text-[17px] leading-[1.6] text-white/55 max-w-[640px]">{article.excerpt}</p>
               )}
             </motion.div>
           </div>
@@ -160,7 +152,7 @@ export default function ArticlePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mt-16 rounded-[24px] bg-[var(--ink)] text-white p-8 md:p-10"
+            className="mt-16 rounded-[24px] bg-[#111111] border border-white/10 text-white p-8 md:p-10"
           >
             <p className="text-[20px] font-semibold tracking-[-0.02em] leading-[1.3] mb-4">
               ¿Necesitas ayuda con tu caso específico?
@@ -170,8 +162,8 @@ export default function ArticlePage() {
             </p>
             <Link
               to="/#contacto"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand)] text-[var(--brand-ink)]
-                         font-semibold px-5 py-3 text-[14.5px] hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 rounded-full bg-[#25D366] text-[#062810]
+                         font-semibold px-5 py-3 text-[14.5px] hover:bg-[#2adc6c] transition-colors"
             >
               Reservar diagnóstico
               <ArrowRight size={15} />
@@ -181,7 +173,7 @@ export default function ArticlePage() {
           <div className="mt-12">
             <Link
               to="/blog"
-              className="inline-flex items-center gap-2 text-[13.5px] font-semibold text-[var(--ink)]/50 hover:text-[var(--ink)] transition-colors"
+              className="inline-flex items-center gap-2 text-[13.5px] font-semibold text-white/40 hover:text-white transition-colors"
             >
               <ArrowLeft size={14} />
               Todos los artículos
