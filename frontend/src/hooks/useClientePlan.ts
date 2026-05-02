@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 
 export function useClientePlan() {
-  const [plan, setPlan] = useState<'starter' | 'pro' | 'premium' | null>(null);
+  const [plan, setPlan] = useState<'free' | 'starter' | 'pro' | 'premium' | null>(null);
   const [mensajesUsados, setMensajesUsados] = useState(0);
   const [mensajesLimit, setMensajesLimit] = useState(0);
   const [loading, setLoading] = useState(true);

@@ -3,12 +3,14 @@ import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
 
 const PLAN_BADGE: Record<string, string> = {
+  free:    'bg-gray-100 text-gray-500',
   starter: 'bg-gray-100 text-gray-700',
   pro:     'bg-blue-100 text-blue-700',
   premium: 'bg-amber-100 text-amber-700',
 };
 
 const PLAN_LABEL: Record<string, string> = {
+  free:    'Free',
   starter: 'Starter',
   pro:     'Pro',
   premium: 'Premium',
@@ -58,8 +60,8 @@ export default function Plan() {
             <div className="text-[14px] text-on-background/40">Cargando...</div>
           ) : (
             <div className="flex items-center gap-4 flex-wrap">
-              <span className={`inline-flex px-3 py-1.5 rounded-xl text-[14px] font-semibold ${PLAN_BADGE[plan || 'starter']}`}>
-                {PLAN_LABEL[plan || 'starter']}
+              <span className={`inline-flex px-3 py-1.5 rounded-xl text-[14px] font-semibold ${PLAN_BADGE[plan || 'free']}`}>
+                {PLAN_LABEL[plan || 'free']}
               </span>
               {(plan === 'pro' || plan === 'premium') && mensajesLimit > 0 && (
                 <div className="flex items-center gap-3">

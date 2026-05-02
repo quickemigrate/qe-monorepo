@@ -16,11 +16,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PLAN_BADGE: Record<string, string> = {
+  free:    'bg-gray-100 text-gray-500',
   starter: 'bg-gray-100 text-gray-600',
   pro:     'bg-blue-100 text-blue-700',
   premium: 'bg-amber-100 text-amber-700',
 };
 const PLAN_LABEL: Record<string, string> = {
+  free:    'Plan Free',
   starter: 'Plan Starter',
   pro:     'Plan Pro',
   premium: 'Plan Premium',
@@ -239,7 +241,7 @@ export default function Inicio() {
           </h1>
           <div className="flex items-center gap-3 mt-2">
             <p className="text-[14px] text-on-background/50">
-              {plan === 'starter' ? 'Tu ruta hacia España empieza aquí' : 'Tu área privada de Quick Emigrate'}
+              {(!plan || plan === 'free') ? 'Tu ruta hacia España empieza aquí' : 'Tu área privada de Quick Emigrate'}
             </p>
             {!loading && plan && (
               <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${PLAN_BADGE[plan]}`}>

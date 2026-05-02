@@ -54,7 +54,7 @@ router.post('/sincronizar', verifyToken, async (_req: Request, res: Response) =>
           uid: userRecord.uid,
           email,
           nombre: userRecord.displayName || email.split('@')[0],
-          plan: 'starter',
+          plan: 'free',
           mensajesUsados: 0,
           consentimientoDiagnostico: false,
           diagnosticoId: null,
@@ -84,7 +84,7 @@ router.post('/registro', async (req: Request, res: Response) => {
     await db.collection('usuarios').doc(email).set({
       email,
       nombre: nombre || email.split('@')[0],
-      plan: 'starter',
+      plan: 'free',
       mensajesUsados: 0,
       consentimientoDiagnostico: false,
       diagnosticoId: null,
@@ -210,7 +210,7 @@ router.patch('/:id', verifyToken, async (req: Request, res: Response) => {
     const { id } = req.params;
     const { plan } = req.body;
 
-    if (!['starter', 'pro', 'premium'].includes(plan)) {
+    if (!['free', 'starter', 'pro', 'premium'].includes(plan)) {
       return res.status(400).json({ success: false, error: 'Plan inválido' });
     }
 
