@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
 import { usePlanes } from '../hooks/usePlanes';
+import { LampContainer } from '../components/ui/lamp';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -124,43 +125,33 @@ export default function DiagnosticoPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] font-sans pt-[72px]">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden bg-[#111111] text-white rounded-b-[28px] border-b border-white/10">
-        <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{
-            backgroundImage:
-              'linear-gradient(#25D366 1px, transparent 1px), linear-gradient(90deg, #25D366 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
-          }}
-        />
-        <div className="mx-auto max-w-[720px] px-6 pt-12 pb-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-5"
-            style={{ background: '#25D366', color: '#062810' }}
-          >
-            {starterPrecioTexto} — pago único
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.06 }}
-            className="text-[34px] md:text-[48px] font-bold tracking-[-0.03em] leading-[1.1] mb-3"
-          >
-            Tu diagnóstico personalizado
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.12 }}
-            className="text-[16px] text-white/55 leading-[1.5]"
-          >
-            Basado en tu perfil. Revisa que todo es correcto antes de pagar.
-          </motion.p>
-        </div>
-      </section>
+      <LampContainer className="min-h-[28rem]">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-bold mb-5"
+          style={{ background: '#25D366', color: '#062810' }}
+        >
+          {starterPrecioTexto} — pago único
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0.5, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8, ease: "easeInOut" }}
+          className="bg-gradient-to-br from-white to-white/60 bg-clip-text text-center text-[34px] md:text-[52px] font-bold tracking-[-0.03em] leading-[1.1] text-transparent mb-3"
+        >
+          Tu diagnóstico personalizado
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.55 }}
+          className="text-[16px] text-white/50 leading-[1.5] text-center max-w-md"
+        >
+          Basado en tu perfil. Revisa que todo es correcto antes de pagar.
+        </motion.p>
+      </LampContainer>
 
       {/* Contenido */}
       <section className="mx-auto max-w-[600px] px-6 py-10 space-y-4">
