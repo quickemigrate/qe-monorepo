@@ -91,7 +91,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         className={`fixed top-0 left-0 h-full ${sidebarW} flex flex-col z-30
           transform transition-all duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
-        style={{ backgroundColor: t.sidebar }}
+        style={{ backgroundColor: t.sidebar, borderRight: `1px solid ${t.sidebarBorder}` }}
       >
         {/* Logo */}
         <div
