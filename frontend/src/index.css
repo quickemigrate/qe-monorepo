@@ -3,11 +3,13 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
+
   --color-primary-container: #25D366;
   --color-on-background: #1A1C1C;
   --color-surface-container-low: #F3F3F4;
   --color-surface-container-lowest: #FFFFFF;
+
+  --animate-aurora: aurora 60s linear infinite;
 }
 
 @layer base {
@@ -43,6 +45,11 @@
 
 .tonal-lift {
   box-shadow: 0 32px 64px -16px rgba(26, 28, 28, 0.04);
+}
+
+@keyframes aurora {
+  from { background-position: 50% 50%, 50% 50%; }
+  to   { background-position: 350% 50%, 350% 50%; }
 }
 
 /* TipTap editor content styles */

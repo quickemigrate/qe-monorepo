@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, Globe } from 'lucide-react';
-import { LampContainer } from '../components/ui/lamp';
+import { AuroraBackground } from '../components/ui/aurora-background';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -18,7 +18,7 @@ interface Article {
 
 /* ─── Blog Hero ──────────────────────────────────────────── */
 const BlogHero = () => (
-  <LampContainer className="min-h-[26rem] pt-16">
+  <AuroraBackground className="min-h-[26rem] pt-16">
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -46,7 +46,7 @@ const BlogHero = () => (
     >
       Información actualizada sobre visados, trámites y vida en España para la comunidad latinoamericana.
     </motion.p>
-  </LampContainer>
+  </AuroraBackground>
 );
 
 /* ─── Skeleton Card ──────────────────────────────────────── */

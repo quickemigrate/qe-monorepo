@@ -6,7 +6,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
 import { usePlanes } from '../hooks/usePlanes';
-import { LampContainer } from '../components/ui/lamp';
+import { AuroraBackground } from '../components/ui/aurora-background';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -125,7 +125,7 @@ export default function DiagnosticoPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] font-sans pt-[72px]">
       {/* Hero */}
-      <LampContainer className="min-h-[28rem] pt-20">
+      <AuroraBackground className="min-h-[28rem] pt-20">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export default function DiagnosticoPage() {
         >
           Basado en tu perfil. Revisa que todo es correcto antes de pagar.
         </motion.p>
-      </LampContainer>
+      </AuroraBackground>
 
       {/* Contenido */}
       <section className="mx-auto max-w-[600px] px-6 py-10 space-y-4">
