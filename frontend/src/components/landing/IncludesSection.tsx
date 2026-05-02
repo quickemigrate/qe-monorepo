@@ -54,7 +54,7 @@ export default function IncludesSection({ precioTexto }: Props) {
             Obtener mi diagnóstico — {precioTexto}
             <span className="ea-arrow" aria-hidden="true">→</span>
           </button>
-          <div className="ea-sec-cta-note">Pago único · Acceso inmediato</div>
+          <div className="ea-sec-cta-note">Suscripción mensual · Sin permanencia</div>
         </div>
       </div>
     </section>

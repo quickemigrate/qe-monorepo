@@ -11,9 +11,9 @@ import '../styles/landing-sections.css';
 
 export default function EarlyAccessLanding() {
   const { planes } = usePlanes();
-  const starter = planes.find(p => p.id === 'starter');
-  const precioTexto = starter?.precioTexto ?? '19€';
-  const precioViejo = '59€';
+  const pro = planes.find(p => p.id === 'pro');
+  const precioTexto = pro?.precioTexto ?? '39€/mes';
+  const precioViejo = '59€/mes';
 
   return (
     <div className="ea-root">
