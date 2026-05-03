@@ -5,8 +5,6 @@ import { stripe } from '../config/stripe';
 
 const router = Router();
 
-const DEFAULT_PRO_PRICE_CENTS = 3900; // €39
-
 router.post('/create-payment-intent', verifyClientToken, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
@@ -21,9 +19,14 @@ router.post('/create-payment-intent', verifyClientToken, async (req: Request, re
 
     const configDoc = await db.collection('config').doc('planes').get();
     const planes: any[] = configDoc.data()?.planes || [];
-    const proPlan = planes.find(p => p.id === 'pro');
-    const amount = proPlan?.precio ? Math.round(proPlan.precio * 100) : DEFAULT_PRO_PRICE_CENTS;
-    const precioTexto = proPlan?.precioTexto || '39€/mes';
+    const proPlan = planes.find((p: any) => p.id === 'pro');
+
+    if (!proPlan?.precio) {
+      return res.status(500).json({ success: false, error: 'Plan Pro no configurado. Contacta con soporte.' });
+    }
+
+    const amount = Math.round(proPlan.precio * 100);
+    const precioTexto = proPlan.precioTexto || `${proPlan.precio}€/mes`;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
