@@ -1,4 +1,5 @@
-import { Check, X, Mail } from 'lucide-react';
+import { Check, X, Mail, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
 
@@ -45,6 +46,7 @@ function Fila({ caracteristica, starter, pro, premium, actual }: FilaProps) {
 
 export default function Plan() {
   const { plan, mensajesUsados, mensajesLimit, loading } = useClientePlan();
+  const navigate = useNavigate();
 
   return (
     <ClientLayout>
@@ -121,18 +123,52 @@ export default function Plan() {
 
         {/* CTA cambio de plan */}
         <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-1">¿Quieres cambiar de plan?</h2>
-          <p className="text-[13.5px] text-white/50 mb-4">
-            Contacta con nuestro equipo y te ayudamos a encontrar el plan que mejor se adapta a tu situación.
-          </p>
-          <a
-            href="mailto:hola@quickemigrate.com?subject=Cambio de plan"
-            className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
-                       px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
-          >
-            <Mail size={15} />
-            Contactar para cambiar de plan
-          </a>
+          {plan === 'starter' ? (
+            <>
+              <h2 className="text-[15px] font-semibold text-white mb-1">Actualiza al Plan Pro</h2>
+              <p className="text-[13.5px] text-white/50 mb-4">
+                Desbloquea el asistente IA, sube documentos y obtén respuestas personalizadas a tu caso.
+              </p>
+              <button
+                onClick={() => navigate('/cliente/suscripcion-pro')}
+                className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
+                           px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
+              >
+                <Sparkles size={15} />
+                Actualizar a Pro — 39€/mes
+              </button>
+            </>
+          ) : plan === 'pro' ? (
+            <>
+              <h2 className="text-[15px] font-semibold text-white mb-1">Actualiza al Plan Premium</h2>
+              <p className="text-[13.5px] text-white/50 mb-4">
+                Accede a asesor humano, expediente completo y hasta 200 mensajes IA al mes.
+              </p>
+              <a
+                href="mailto:hola@quickemigrate.com?subject=Cambio a Plan Premium"
+                className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
+                           px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
+              >
+                <Mail size={15} />
+                Contactar para Premium
+              </a>
+            </>
+          ) : (
+            <>
+              <h2 className="text-[15px] font-semibold text-white mb-1">¿Necesitas cambiar de plan?</h2>
+              <p className="text-[13.5px] text-white/50 mb-4">
+                Contacta con nuestro equipo y te ayudamos.
+              </p>
+              <a
+                href="mailto:hola@quickemigrate.com?subject=Cambio de plan"
+                className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
+                           px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
+              >
+                <Mail size={15} />
+                Contactar
+              </a>
+            </>
+          )}
         </div>
       </div>
     </ClientLayout>

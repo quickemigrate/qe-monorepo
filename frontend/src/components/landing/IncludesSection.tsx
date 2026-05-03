@@ -8,7 +8,7 @@ interface Props { precioTexto: string }
 export default function IncludesSection({ precioTexto }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const handleDiagnostico = () => user ? navigate('/diagnostico') : navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+  const handleDiagnostico = () => user ? navigate('/cliente/suscripcion-pro') : navigate('/cliente/login', { state: { redirect: '/cliente/suscripcion-pro' } });
 
   useEffect(() => {
     const el = document.getElementById('ea-cards');
@@ -51,10 +51,10 @@ export default function IncludesSection({ precioTexto }: Props) {
         </div>
         <div className="ea-sec-cta">
           <button onClick={handleDiagnostico} className="ea-btn-primary">
-            Obtener mi diagnóstico — {precioTexto}
+            Empezar con Plan Pro — {precioTexto}
             <span className="ea-arrow" aria-hidden="true">→</span>
           </button>
-          <div className="ea-sec-cta-note">Suscripción mensual · Sin permanencia</div>
+          <div className="ea-sec-cta-note">Diagnóstico incluido · Sin permanencia · Cancela cuando quieras</div>
         </div>
       </div>
     </section>

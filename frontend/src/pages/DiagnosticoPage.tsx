@@ -4,8 +4,9 @@ import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
+import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
 
@@ -23,67 +24,6 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
       </span>
       <span className="text-[13.5px] text-white/80">{value || '—'}</span>
     </div>
-  );
-}
-
-function CheckoutForm({
-  diagnosticoId,
-  precioTexto,
-  onSuccess,
-  onError,
-}: {
-  diagnosticoId: string;
-  precioTexto: string;
-  onSuccess: () => void;
-  onError: (msg: string) => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-    setProcessing(true);
-    try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        redirect: 'if_required',
-      });
-      if (error) { onError(error.message || 'Error al procesar el pago.'); return; }
-      if (paymentIntent?.status === 'succeeded') {
-        const auth = getAuth();
-        const token = await auth.currentUser?.getIdToken();
-        const res = await fetch(`${API}/api/diagnostico/confirm-payment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ paymentIntentId: paymentIntent.id, diagnosticoId }),
-        });
-        if ((await res.json()).success) onSuccess();
-        else onError('Error al procesar el pago. Contacta con soporte.');
-      }
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-xl border border-white/15 bg-[#0A0A0A] p-4 [&_.p-StripeElement]:text-white">
-        <PaymentElement options={{
-          layout: 'tabs',
-          wallets: { applePay: 'auto', googlePay: 'auto' },
-        }} />
-      </div>
-      <button
-        type="submit"
-        disabled={!stripe || !elements || processing}
-        className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
-                   hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
-      >
-        {processing ? 'Procesando...' : `Pagar ${precioTexto}`}
-      </button>
-    </form>
   );
 }
 
@@ -395,9 +335,18 @@ export default function DiagnosticoPage() {
           </button>
         ) : (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-            <CheckoutForm
-              diagnosticoId={diagnosticoId}
+            <StripeCheckoutForm
               precioTexto={starterPrecioTexto}
+              onConfirm={async (paymentIntentId) => {
+                const auth = getAuth();
+                const token = await auth.currentUser?.getIdToken();
+                const res = await fetch(`${API}/api/diagnostico/confirm-payment`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ paymentIntentId, diagnosticoId }),
+                });
+                return res.json();
+              }}
               onSuccess={() => navigate('/diagnostico/exito')}
               onError={(msg) => setError(msg)}
             />

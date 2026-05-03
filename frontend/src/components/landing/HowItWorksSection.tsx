@@ -8,7 +8,7 @@ interface Props { precioTexto: string }
 export default function HowItWorksSection({ precioTexto }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const handleDiagnostico = () => user ? navigate('/diagnostico') : navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+  const handleDiagnostico = () => user ? navigate('/cliente/suscripcion-pro') : navigate('/cliente/login', { state: { redirect: '/cliente/suscripcion-pro' } });
 
   useEffect(() => {
     const el = document.getElementById('ea-timeline');
@@ -47,16 +47,16 @@ export default function HowItWorksSection({ precioTexto }: Props) {
           <li className="ea-step">
             <span className="ea-dot"></span>
             <div className="ea-num">Paso 3</div>
-            <h3>Recibes tu diagnóstico</h3>
-            <p>Un informe PDF personalizado en tu email con tu ruta migratoria, checklist y próximos pasos.</p>
+            <h3>Recibes tu diagnóstico y accedes al área de cliente</h3>
+            <p>Informe PDF personalizado, asistente IA para resolver dudas y gestión de tus documentos del proceso.</p>
           </li>
         </ol>
         <div className="ea-sec-cta">
           <button onClick={handleDiagnostico} className="ea-btn-primary">
-            Obtener mi diagnóstico — {precioTexto}
+            Empezar con Plan Pro — {precioTexto}
             <span className="ea-arrow" aria-hidden="true">→</span>
           </button>
-          <div className="ea-sec-cta-note">Pago único · Acceso inmediato</div>
+          <div className="ea-sec-cta-note">Diagnóstico incluido · Sin permanencia · Acceso inmediato</div>
         </div>
       </div>
     </section>

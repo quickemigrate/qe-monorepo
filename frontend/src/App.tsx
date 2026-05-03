@@ -21,6 +21,7 @@ import ClientDashboard from './pages/client/ClientDashboard';
 import Inicio from './pages/client/Inicio';
 import Perfil from './pages/client/Perfil';
 import Plan from './pages/client/Plan';
+import SuscripcionPro from './pages/client/SuscripcionPro';
 import Documentos from './pages/client/Documentos';
 import Expediente from './pages/client/Expediente';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
@@ -68,6 +69,7 @@ function AppShell() {
         <Route path="/cliente/inicio" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/perfil" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/plan" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+        <Route path="/cliente/suscripcion-pro" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><SuscripcionPro /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/documentos" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />

@@ -73,11 +73,11 @@ Paths: /admin/login · /cliente/login · /diagnostico · /admin/conocimiento
 FE components: frontend/src/components/{admin/AdminLayout,client/ClientLayout}.tsx
 FE landing: Navbar,Hero,Problem,Solution,HowItWorks,Services,Trust,FAQ,Contact,Footer
 FE pages admin: frontend/src/pages/admin/{Dashboard,Leads,Expedientes,Blog,Conocimiento}
-FE pages client: frontend/src/pages/client/{Login,Dashboard} · auth: ProtectedRoute+ClientProtectedRoute
+FE pages client: frontend/src/pages/client/{ClientLogin,Inicio,Chat,Perfil,Expediente,Plan,Documentos} · auth: ProtectedRoute+ClientProtectedRoute
 FE pages extra: /sobre-nosotros · /blog/:slug · /diagnostico/exito · Vercel Analytics+SpeedInsights
 BE config: backend/src/config/{firebase,paypal,pinecone}.ts
 BE services: backend/src/services/{embeddings←VoyageAI, rag←ingestar/buscar/contexto}.ts
-BE routes: backend/src/routes/{contact,diagnostico,expedientes,leads,articles,conocimiento}.ts
+BE routes: backend/src/routes/{contact,diagnostico,expedientes,leads,articles,conocimiento,documentos,chat,usuarios,config,metricas}.ts
 
 ## ENV BACKEND (Railway)
 PORT=3001 · FRONTEND_URL · RESEND_{API_KEY,FROM_EMAIL} · CONTACT_EMAIL
@@ -107,6 +107,9 @@ VITE_ADMIN_EMAIL_{1,2} · VITE_PAYPAL_CLIENT_ID
 | POST | /api/conocimiento/sincronizar-pinecone | admin | sync Firestore→Pinecone |
 | POST | /api/usuarios/registro | — | crea doc Firestore |
 | GET/PUT | /api/usuarios/perfil | cliente | onboarding+perfil |
+| GET | /api/documentos | cliente | listar docs subidos |
+| POST | /api/documentos | cliente | subir PDF/TXT (multer+OCR) |
+| DELETE | /api/documentos/:id | cliente | eliminar doc |
 
 ## FIRESTORE
 - leads: nombre,email,pais,interes,mensaje,estado
@@ -114,6 +117,7 @@ VITE_ADMIN_EMAIL_{1,2} · VITE_PAYPAL_CLIENT_ID
 - articles: title,slug,excerpt,content,country,status,metaDescription · índice: status ASC+publishedAt DESC
 - diagnosticos: respuestas,estado,informe,pdfBase64,completadoEn
 - conocimiento: titulo,contenido,fuente,categoria,pais,url,fechaPublicacion,fechaIngesta
+- usuarios/{email}/documentos: nombre,etiqueta,tipo,tamaño,textoExtraido,creadoEn · Pro: max 5, Premium: max 10
 
 ## RAG
 Pinecone(quickemigrate-legal, 1024d, cosine, us-east-1) + voyageai SDK voyage-3 + Firestore(conocimiento)
@@ -149,13 +153,15 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 - [ ] Bug PDF: "Semana 2-3:" se corta en próximos pasos
 - [ ] Scraper BOE automático (cron Railway)
 - [ ] PayPal live (PAYPAL_MODE=live)
-- [ ] Google Search Console: verificar dominio
+- [x] Google Search Console favicon: eliminado favicon.svg roto, JSON-LD apunta a favicon-48x48.png
 - [ ] BD scraping Manu → Pinecone
 - [ ] Migrar PDFs a Firebase Storage
+- [ ] Commit + deploy backend (documentos OCR via Claude Haiku)
+- [ ] Re-subir documentos existentes para que pasen por OCR pipeline
 
 ---
 
-## ESTADO ACTUAL — 2026-05-01
+## ESTADO ACTUAL — 2026-05-03
 
 ### Stack confirmado en producción
 
@@ -174,7 +180,8 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | @google/generative-ai | ^0.24.1 (instalado, no usado) |
 | openai | ^6.34.0 (instalado, no usado activamente) |
 | node-cron | ^4.2.1 |
-| multer | ^2.1.1 |
+| multer | ^2.1.1 · activo en /api/documentos |
+| pdf-parse | activo en /api/documentos (extracción texto nativo) |
 | cheerio | ^1.2.0 |
 | nodemailer | ^8.0.5 (instalado, no usado — usar Resend) |
 | axios | ^1.15.2 |
@@ -209,6 +216,7 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | `diagnosticos` | Informes IA: respuestas, estado, informe, pdfBase64, completadoEn |
 | `usuarios` | Perfiles clientes (email=docId), plan, perfilCompleto, onboarding |
 | `usuarios/{email}/chat` | Subcolección: historial mensajes por usuario |
+| `usuarios/{email}/documentos` | Subcolección: docs subidos (nombre, etiqueta, tipo, tamaño, textoExtraido, creadoEn) |
 | `config` | Config runtime: planes (precios), chat (límites, sistema prompt) |
 
 **quick-emigrate-conocimiento (RAG — proyecto Firebase separado via FIREBASE_SERVICE_ACCOUNT_CONOCIMIENTO):**
@@ -270,6 +278,9 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | GET | /api/config/chat | admin | Config chat (prompt, límites) |
 | PATCH | /api/config/chat | admin | Actualizar config chat |
 | GET | /api/metricas | admin | Dashboard métricas (full scans — ver problemas) |
+| GET | /api/documentos | cliente | Listar documentos propios |
+| POST | /api/documentos | cliente | Subir PDF/TXT → pdf-parse + Claude Haiku OCR fallback |
+| DELETE | /api/documentos/:id | cliente | Eliminar documento |
 
 ### Variables de entorno requeridas
 
@@ -369,11 +380,17 @@ VITE_PAYPAL_CLIENT_ID=<id>
 - **Plan-gating en backend** — Frontend oculta UI pero backend es la única enforcement real para `/api/chat/mensaje`. Correcto.
 - **localStorage para estado sidebar y caché planes** — `qe_sidebar_collapsed`, `qe_planes_cache` (TTL 5min). Intencional para UX.
 - **Resend como proveedor email** — `nodemailer` instalado pero no usar. Siempre usar Resend.
+- **Documentos como texto extraído, no binarios** — No se guarda el archivo en Firestore/Storage. Solo `textoExtraido` (max 50k chars). Binario disponible solo en el buffer de upload. No hay re-procesado retroactivo.
+- **OCR via Claude Haiku** — pdf-parse para PDFs nativos (gratis). Si texto < 50 chars, fallback a claude-haiku-4-5-20251001 como OCR vía document block. ~$0.001/PDF escaneado. Sin dependencias del sistema (no ImageMagick, no poppler).
+- **Documentos en chat context** — chat.ts inyecta hasta 10 docs (4000 chars/doc) en system prompt antes de llamar a Claude. Instrucción explícita para usar el contenido. Scope ampliado: Mia puede responder preguntas sobre documentos propios del usuario.
+- **Dark theme uniforme en panel cliente** — Todas las páginas /cliente/* usan #0A0A0A bg, #111111 cards, white/* opacity. Misma paleta que landing/admin. TEMAS en usePreferencias aplican solo al sidebar color, main siempre dark.
 
 ### Mejoras pendientes priorizadas
 
 🔴 **Alta prioridad:**
-- Reparar búsqueda KB (`q + ''`)
+- Commit + deploy backend (documentos.ts OCR, chat.ts scope fix) → Railway
+- Re-subir documentos existentes tras deploy (OCR solo corre en upload, no retroactivo)
+- Reparar búsqueda KB (upper bound: `q + ''`)
 - Añadir auth a `capture-order` o validar PayPal order status antes de procesar
 - Añadir whitelist a todos los PATCH/PUT endpoints (expedientes, articles, usuarios/perfil)
 - Conectar admin KB UI con el sistema RAG (unificar proyectos Firebase o sincronizar colecciones)
@@ -386,7 +403,7 @@ VITE_PAYPAL_CLIENT_ID=<id>
 - Añadir job queue persistente para diagnósticos (o al menos polling de estado con retry)
 - Eliminar re-fetch de perfil en `OnboardingGuard` (usar contexto compartido)
 - Unificar `normalizarObjetivo` en utils
-- Migrar PDFs a Firebase Storage (activar plan Blaze)
+- Migrar PDFs a Firebase Storage (activar plan Blaze) + re-procesado OCR retroactivo
 - Añadir paginación a `listUsers()` en sincronizar endpoint
 
 🟢 **Baja prioridad / backlog:**
@@ -397,6 +414,8 @@ VITE_PAYPAL_CLIENT_ID=<id>
 - Mover CORS config a `cors.ts` y eliminar inline en `index.ts`
 - Definir índices Firestore correctos para queries activos
 - Reemplazar CDN unpkg worker con copia local para react-pdf
+- SVG logo real en emails
+- Bug PDF diagnóstico: "Semana 2-3:" se corta en próximos pasos
 
 ### Archivos críticos — mapa de dependencias
 

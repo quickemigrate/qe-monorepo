@@ -74,10 +74,10 @@ interface HeroGeometricProps {
 }
 
 function HeroGeometric({
-  badge = "Early Access · Solo 19€ · Plazas limitadas",
+  badge = "Early Access · Plan Pro · Solo 39€/mes",
   title1 = "Tu ruta para emigrar",
   title2 = "a España, clara.",
-  description = "Diagnóstico migratorio. Visado exacto, checklist de documentos y probabilidad de éxito real. En minutos.",
+  description = "Asistente IA, diagnóstico personalizado y gestión de documentos. Todo lo que necesitas para emigrar a España.",
 }: HeroGeometricProps) {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
@@ -177,12 +177,12 @@ function HeroGeometric({
             </p>
 
             <div className="flex flex-col items-center gap-4">
-              <Link to="/diagnostico" className="ea-btn-primary">
-                Obtener mi diagnóstico — 19€
+              <Link to="/cliente/suscripcion-pro" className="ea-btn-primary">
+                Empezar con Plan Pro — 39€/mes
                 <span className="ea-arrow" aria-hidden="true">→</span>
               </Link>
               <span className="text-sm text-white/50 tracking-wide">
-                Pago único · Sin suscripción · Acceso inmediato
+                Diagnóstico incluido · Sin permanencia · Cancela cuando quieras
               </span>
             </div>
           </motion.div>

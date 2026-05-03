@@ -8,7 +8,7 @@ interface Props { precioTexto: string; precioViejo: string }
 export default function PricingSection({ precioTexto, precioViejo }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const handleDiagnostico = () => user ? navigate('/diagnostico') : navigate('/cliente/login', { state: { redirect: '/diagnostico' } });
+  const handleDiagnostico = () => user ? navigate('/cliente/suscripcion-pro') : navigate('/cliente/login', { state: { redirect: '/cliente/suscripcion-pro' } });
 
   useEffect(() => {
     const el = document.getElementById('ea-price-card');

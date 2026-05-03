@@ -13,6 +13,7 @@ import chatRouter from './routes/chat';
 import configRouter from './routes/config';
 import metricasRouter from './routes/metricas';
 import documentosRouter from './routes/documentos';
+import suscripcionRouter from './routes/suscripcion';
 import { db } from './firebase';
 
 dotenv.config();
@@ -58,6 +59,7 @@ app.use('/api/chat', chatRouter);
 app.use('/api/config', configRouter);
 app.use('/api/metricas', metricasRouter);
 app.use('/api/documentos', documentosRouter);
+app.use('/api/suscripcion', suscripcionRouter);
 
 async function initConfig() {
   const configRef = db.collection('config').doc('chat');
