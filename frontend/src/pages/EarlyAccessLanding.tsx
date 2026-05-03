@@ -18,7 +18,7 @@ export default function EarlyAccessLanding() {
   return (
     <div className="ea-root">
       <Navbar />
-      <HeroGeometric />
+      <HeroGeometric precioTexto={precioTexto} />
       <DiagnosticPreviewSection />
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />

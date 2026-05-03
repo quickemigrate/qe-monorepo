@@ -7,6 +7,7 @@ import ClientLayout from '../../components/client/ClientLayout';
 import StripeCheckoutForm from '../../components/StripeCheckoutForm';
 import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
+import { usePlanes } from '../../hooks/usePlanes';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -21,10 +22,15 @@ const PRO_FEATURES = [
 export default function SuscripcionPro() {
   const { getToken } = useAuth();
   const { plan, loading: loadingPlan } = useClientePlan();
+  const { planes } = usePlanes();
   const navigate = useNavigate();
 
+  const proPlan = planes.find(p => p.id === 'pro');
+  const precioDisplay = proPlan?.precioTexto ?? '39€/mes';
+  const precioNum = proPlan?.precio ?? 39;
+
   const [clientSecret, setClientSecret] = useState('');
-  const [precioTexto, setPrecioTexto] = useState('39€/mes');
+  const [precioTexto, setPrecioTexto] = useState('');
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [error, setError] = useState('');
 
@@ -121,7 +127,7 @@ export default function SuscripcionPro() {
         {/* Price + payment */}
         <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-[40px] font-bold text-white leading-none">39€</span>
+            <span className="text-[40px] font-bold text-white leading-none">{precioNum}€</span>
             <span className="text-[14px] text-white/40">/mes</span>
           </div>
           <p className="text-[12.5px] text-white/30 mb-6">Pago único mensual. Cancela cuando quieras contactando con soporte.</p>
@@ -134,13 +140,13 @@ export default function SuscripcionPro() {
                          hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loadingIntent && <Loader2 size={16} className="animate-spin" />}
-              {loadingIntent ? 'Cargando...' : `Suscribirse — ${precioTexto}`}
+              {loadingIntent ? 'Cargando...' : `Suscribirse — ${precioDisplay}`}
             </button>
           ) : (
             <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
               <StripeCheckoutForm
-                precioTexto={precioTexto}
-                submitLabel={`Activar Plan Pro — ${precioTexto}`}
+                precioTexto={precioTexto || precioDisplay}
+                submitLabel={`Activar Plan Pro — ${precioTexto || precioDisplay}`}
                 onConfirm={handleConfirm}
                 onSuccess={() => navigate('/cliente/inicio')}
                 onError={(msg) => setError(msg)}

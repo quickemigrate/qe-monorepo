@@ -71,14 +71,17 @@ interface HeroGeometricProps {
   title1?: string
   title2?: string
   description?: string
+  precioTexto?: string
 }
 
 function HeroGeometric({
-  badge = "Early Access · Plan Pro · Solo 39€/mes",
+  badge,
   title1 = "Tu ruta para emigrar",
   title2 = "a España, clara.",
   description = "Asistente IA, diagnóstico personalizado y gestión de documentos. Todo lo que necesitas para emigrar a España.",
+  precioTexto = "39€/mes",
 }: HeroGeometricProps) {
+  const badgeText = badge ?? `Early Access · Plan Pro · Solo ${precioTexto}`;
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
       <div className="absolute inset-0 bg-gradient-to-br from-[#25D366]/[0.05] via-transparent to-[#25D366]/[0.03]" />
@@ -139,7 +142,7 @@ function HeroGeometric({
           >
             <Circle className="h-2 w-2 fill-[#25D366] animate-pulse flex-shrink-0" />
             <span className="text-sm text-white/60 tracking-wide leading-none">
-              {badge}
+              {badgeText}
             </span>
           </motion.div>
 
@@ -178,7 +181,7 @@ function HeroGeometric({
 
             <div className="flex flex-col items-center gap-4">
               <Link to="/cliente/suscripcion-pro" className="ea-btn-primary">
-                Empezar con Plan Pro — 39€/mes
+                Empezar con Plan Pro — {precioTexto}
                 <span className="ea-arrow" aria-hidden="true">→</span>
               </Link>
               <span className="text-sm text-white/50 tracking-wide">
