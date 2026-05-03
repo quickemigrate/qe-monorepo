@@ -31,7 +31,7 @@ export default function PricingSection({ precioTexto, precioViejo }: Props) {
           <div className="ea-price-now">{precioTexto}</div>
           <div className="ea-price-desc">Suscripción mensual. Cancela cuando quieras.</div>
           <ul className="ea-price-list">
-            <li><span className="ea-check">✓</span>Diagnóstico Migratorio IA incluido</li>
+            <li><span className="ea-check">✓</span>Diagnóstico Migratorio incluido</li>
             <li><span className="ea-check">✓</span>Informe PDF personalizado</li>
             <li><span className="ea-check">✓</span>Vía migratoria recomendada</li>
             <li><span className="ea-check">✓</span>Checklist de documentos</li>
