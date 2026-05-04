@@ -1,9 +1,24 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Plus, Pencil, Trash2, Globe, Bold, Italic, List, ListOrdered, Heading2, Heading3, ArrowLeft } from 'lucide-react';
+import LinkExtension from '@tiptap/extension-link';
+import { Plus, Pencil, Trash2, Globe, Bold, Italic, List, ListOrdered, Heading2, Heading3, ArrowLeft, Link2, Link2Off } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
+
+const INTERNAL_DOMAINS = ['quickemigrate.com', 'www.quickemigrate.com'];
+
+function isExternalUrl(href: string): boolean {
+  if (!href) return false;
+  if (href.startsWith('/') || href.startsWith('#')) return false;
+  if (href.startsWith('mailto:') || href.startsWith('tel:')) return false;
+  try {
+    const url = new URL(href, 'https://quickemigrate.com');
+    return !INTERNAL_DOMAINS.includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -53,28 +68,68 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   const btnCls = (active: boolean) =>
     `p-1.5 rounded-lg transition-colors ${active ? 'bg-white/15 text-white' : 'text-white/50 hover:bg-white/8 hover:text-white'}`;
 
+  const handleSetLink = () => {
+    const previous = editor.getAttributes('link').href as string | undefined;
+    const input = window.prompt('URL del enlace (vacío = quitar enlace):', previous || 'https://');
+    if (input === null) return; // cancelled
+
+    const href = input.trim();
+    if (href === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+
+    const external = isExternalUrl(href);
+    editor.chain().focus().extendMarkRange('link').setLink({
+      href,
+      target: external ? '_blank' : null,
+      rel: external ? 'noopener noreferrer' : null,
+    }).run();
+  };
+
+  const handleUnlink = () => editor.chain().focus().extendMarkRange('link').unsetLink().run();
+
   return (
     <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-white/10 bg-[#0A0A0A] rounded-t-xl">
-      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnCls(editor.isActive('bold'))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btnCls(editor.isActive('bold'))} title="Negrita (Ctrl+B)">
         <Bold size={15} />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnCls(editor.isActive('italic'))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btnCls(editor.isActive('italic'))} title="Cursiva (Ctrl+I)">
         <Italic size={15} />
       </button>
       <div className="w-px h-4 bg-white/10 mx-1" />
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnCls(editor.isActive('heading', { level: 2 }))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnCls(editor.isActive('heading', { level: 2 }))} title="Encabezado H2">
         <Heading2 size={15} />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnCls(editor.isActive('heading', { level: 3 }))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnCls(editor.isActive('heading', { level: 3 }))} title="Encabezado H3">
         <Heading3 size={15} />
       </button>
       <div className="w-px h-4 bg-white/10 mx-1" />
-      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnCls(editor.isActive('bulletList'))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnCls(editor.isActive('bulletList'))} title="Lista">
         <List size={15} />
       </button>
-      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnCls(editor.isActive('orderedList'))}>
+      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnCls(editor.isActive('orderedList'))} title="Lista numerada">
         <ListOrdered size={15} />
       </button>
+      <div className="w-px h-4 bg-white/10 mx-1" />
+      <button
+        type="button"
+        onClick={handleSetLink}
+        className={btnCls(editor.isActive('link'))}
+        title="Insertar / editar enlace"
+      >
+        <Link2 size={15} />
+      </button>
+      {editor.isActive('link') && (
+        <button
+          type="button"
+          onClick={handleUnlink}
+          className={btnCls(false)}
+          title="Quitar enlace"
+        >
+          <Link2Off size={15} />
+        </button>
+      )}
     </div>
   );
 }
@@ -94,7 +149,18 @@ function ArticleEditor({
   const [saving, setSaving] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit.configure({ link: false }),
+      LinkExtension.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        protocols: ['http', 'https', 'mailto', 'tel'],
+        HTMLAttributes: {
+          class: 'text-[#25D366] underline underline-offset-2 hover:opacity-80',
+        },
+      }),
+    ],
     content: initial?.content || '',
     editorProps: {
       attributes: {

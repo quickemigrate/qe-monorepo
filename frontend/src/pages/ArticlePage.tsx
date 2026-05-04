@@ -4,6 +4,88 @@ import { motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Globe, Calendar } from 'lucide-react';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const SITE_URL = 'https://quickemigrate.com';
+
+/** Inserta o actualiza un <meta> en <head> y lo limpia al desmontar. */
+function useMeta(article: Article | null) {
+  useEffect(() => {
+    if (!article) return;
+
+    const desc = article.metaDescription || article.excerpt || '';
+    const url = `${SITE_URL}/blog/${article.slug}`;
+    const date = article.publishedAt || article.createdAt;
+
+    const setTag = (selector: string, attrs: Record<string, string>): HTMLMetaElement => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        Object.entries(attrs).forEach(([k, v]) => el!.setAttribute(k, v));
+        document.head.appendChild(el);
+      } else {
+        Object.entries(attrs).forEach(([k, v]) => el!.setAttribute(k, v));
+      }
+      return el;
+    };
+
+    const setLink = (rel: string, href: string): HTMLLinkElement => {
+      let el = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('href', href);
+      return el;
+    };
+
+    const previousTitle = document.title;
+    document.title = `${article.title} · Quick Emigrate`;
+
+    const metas = [
+      setTag('meta[name="description"]',          { name: 'description', content: desc }),
+      setTag('meta[property="og:title"]',         { property: 'og:title', content: article.title }),
+      setTag('meta[property="og:description"]',   { property: 'og:description', content: desc }),
+      setTag('meta[property="og:type"]',          { property: 'og:type', content: 'article' }),
+      setTag('meta[property="og:url"]',           { property: 'og:url', content: url }),
+      setTag('meta[property="article:published_time"]', { property: 'article:published_time', content: new Date(date).toISOString() }),
+      setTag('meta[name="twitter:card"]',         { name: 'twitter:card', content: 'summary_large_image' }),
+      setTag('meta[name="twitter:title"]',        { name: 'twitter:title', content: article.title }),
+      setTag('meta[name="twitter:description"]',  { name: 'twitter:description', content: desc }),
+    ];
+
+    const canonical = setLink('canonical', url);
+
+    // JSON-LD Article schema
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.id = 'qe-article-jsonld';
+    ld.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: article.title,
+      description: desc,
+      datePublished: new Date(date).toISOString(),
+      dateModified: new Date(date).toISOString(),
+      author: { '@type': 'Organization', name: 'Quick Emigrate', url: SITE_URL },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Quick Emigrate',
+        logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo-dark.png` },
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      inLanguage: 'es',
+      about: article.country,
+    });
+    document.head.appendChild(ld);
+
+    return () => {
+      document.title = previousTitle;
+      metas.forEach(m => m.remove());
+      canonical.remove();
+      document.getElementById('qe-article-jsonld')?.remove();
+    };
+  }, [article]);
+}
 
 interface Article {
   id: string;
@@ -31,6 +113,14 @@ const ProseStyles = () => (
     .prose-qe li { margin-bottom: 0.4rem; font-size: 16.5px; line-height: 1.7; color: rgba(255,255,255,0.65); }
     .prose-qe strong { font-weight: 600; color: #ffffff; }
     .prose-qe em { font-style: italic; }
+    .prose-qe a {
+      color: #25D366;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+      transition: opacity 0.15s;
+    }
+    .prose-qe a:hover { opacity: 0.8; }
   `}</style>
 );
 
@@ -67,6 +157,8 @@ export default function ArticlePage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  useMeta(article);
 
   if (loading) return <Skeleton />;
 
