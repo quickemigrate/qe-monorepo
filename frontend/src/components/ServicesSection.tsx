@@ -37,7 +37,7 @@ const ServicesSection = () => {
         });
 
   return (
-  <section id="servicios" className="py-24 px-6 bg-on-background text-white">
+  <section id="servicios" className="py-16 md:py-24 px-5 md:px-6 bg-on-background text-white">
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
@@ -45,12 +45,12 @@ const ServicesSection = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-16"
+        className="text-center mb-10 md:mb-16"
       >
         <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.02em] mb-4">
           Elige tu plan
         </h2>
-        <p className="text-white/50 text-lg font-medium">
+        <p className="text-white/50 text-base md:text-lg font-medium">
           Transparencia desde el primer día. Sin letra pequeña.
         </p>
       </motion.div>
@@ -64,7 +64,7 @@ const ServicesSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: i * 0.08 }}
-            className={`relative flex flex-col rounded-[20px] p-7 transition-all
+            className={`relative flex flex-col rounded-[20px] p-6 md:p-7 transition-all
               ${plan.isPopular
                 ? 'border-2 bg-white/6'
                 : plan.isFree
@@ -93,7 +93,7 @@ const ServicesSection = () => {
 
             {/* Price */}
             <div className="mb-1">
-              <span className="text-[42px] font-extrabold tracking-[-0.03em] leading-none">
+              <span className="text-4xl md:text-[42px] font-extrabold tracking-[-0.03em] leading-none">
                 {plan.price}
               </span>
             </div>

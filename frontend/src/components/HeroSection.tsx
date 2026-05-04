@@ -4,8 +4,8 @@ import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 const HeroSection = () => (
-  <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+  <section className="relative pt-28 pb-14 md:pt-48 md:pb-32 px-5 md:px-6 overflow-hidden">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -15,7 +15,7 @@ const HeroSection = () => (
           <span className="w-2 h-2 rounded-full bg-primary-container"></span>
           <span className="text-xs font-bold uppercase tracking-widest text-on-background/60">Primera fase: visados para España</span>
         </div>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-on-background leading-[1.1] mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-on-background leading-[1.1] mb-5 md:mb-6">
           Tu visado para España,{' '}
           <span className="text-primary-container relative">
             más claro y guiado
@@ -32,7 +32,7 @@ const HeroSection = () => (
           </span>
           .
         </h1>
-        <p className="text-lg md:text-xl text-on-background/60 mb-10 max-w-xl leading-relaxed font-medium">
+        <p className="text-base md:text-xl text-on-background/60 mb-8 md:mb-10 max-w-xl leading-relaxed font-medium">
           Asistencia digital para hispanoamericanos. Sin promesas falsas, solo un camino estructurado hacia tu nueva vida en España.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -50,7 +50,7 @@ const HeroSection = () => (
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, delay: 0.2 }}
-        className="relative hidden md:block"
+        className="relative"
       >
         <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative">
           <img

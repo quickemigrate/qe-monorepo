@@ -2,8 +2,8 @@ import React from 'react';
 import { ShieldCheck, Clock, FileText } from 'lucide-react';
 
 const TrustSection = () => (
-  <section className="py-24 px-6">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+  <section className="py-16 md:py-24 px-5 md:px-6">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
       <div className="order-2 md:order-1">
         <div className="grid grid-cols-2 gap-4">
           <div className="aspect-square rounded-3xl overflow-hidden shadow-lg">
@@ -34,20 +34,20 @@ const TrustSection = () => (
       </div>
 
       <div className="order-1 md:order-2">
-        <h2 className="text-3xl md:text-5xl font-bold text-on-background mb-8 leading-tight">Tu tranquilidad no tiene precio, pero sí un método.</h2>
-        <div className="space-y-8">
+        <h2 className="text-3xl md:text-5xl font-bold text-on-background mb-6 md:mb-8 leading-tight">Tu tranquilidad no tiene precio, pero sí un método.</h2>
+        <div className="space-y-6 md:space-y-8">
           {[
             { icon: <ShieldCheck className="text-primary-container" />, title: 'Seguridad Legal', desc: 'No somos intermediarios dudosos. Trabajamos con transparencia total.' },
             { icon: <Clock className="text-primary-container" />, title: 'Ahorro de Tiempo', desc: 'Evitamos que pierdas meses por errores evitables en tu documentación.' },
             { icon: <FileText className="text-primary-container" />, title: 'Orden Predictivo', desc: 'Sabrás qué esperar en cada etapa, sin sustos de última hora.' },
           ].map((item, i) => (
-            <div key={i} className="flex gap-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center">
+            <div key={i} className="flex gap-4 md:gap-6">
+              <div className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 bg-primary-container/10 rounded-xl flex items-center justify-center">
                 {item.icon}
               </div>
               <div>
-                <h4 className="text-xl font-bold text-on-background mb-2">{item.title}</h4>
-                <p className="text-on-background/60 font-medium">{item.desc}</p>
+                <h4 className="text-lg md:text-xl font-bold text-on-background mb-1.5 md:mb-2">{item.title}</h4>
+                <p className="text-on-background/60 font-medium text-[15px] md:text-base">{item.desc}</p>
               </div>
             </div>
           ))}

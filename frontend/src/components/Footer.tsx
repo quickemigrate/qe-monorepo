@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 
 const Footer = () => (
-  <footer className="bg-[#0A0A0A] border-t border-white/10 pt-20 pb-10 px-6">
+  <footer className="bg-[#0A0A0A] border-t border-white/10 pt-12 md:pt-20 pb-10 px-5 md:px-6">
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-10 md:gap-12 mb-12 md:mb-20">
         <div className="max-w-xs">
           <Link to="/" className="flex items-center gap-2 mb-6">
             <img src="/logo-dark.png" alt="Quick Emigrate" className="h-8 w-auto" />

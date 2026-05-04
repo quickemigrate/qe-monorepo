@@ -41,12 +41,12 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contacto" className="py-24 px-6">
+    <section id="contacto" className="py-16 md:py-24 px-5 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-[2rem] overflow-hidden tonal-lift flex flex-col md:flex-row">
-          <div className="bg-on-background p-12 text-surface-container-lowest md:w-2/5">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8">¿Hablamos?</h2>
-            <p className="text-surface-container-lowest/60 mb-12 text-lg">
+        <div className="bg-white rounded-2xl md:rounded-[2rem] overflow-hidden tonal-lift flex flex-col md:flex-row">
+          <div className="bg-on-background p-6 md:p-12 text-surface-container-lowest md:w-2/5">
+            <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">¿Hablamos?</h2>
+            <p className="text-surface-container-lowest/60 mb-8 md:mb-12 text-base md:text-lg">
               Si tienes dudas antes de empezar, déjanos un mensaje. Te responderemos en menos de 24 horas laborables.
             </p>
             <div className="space-y-6">
@@ -65,7 +65,7 @@ const ContactSection = () => {
             </div>
           </div>
 
-          <div className="p-12 md:flex-1">
+          <div className="p-6 md:p-12 md:flex-1">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">

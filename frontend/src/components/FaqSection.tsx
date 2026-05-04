@@ -33,9 +33,9 @@ const FaqItem: React.FC<Faq> = ({ question, answer }) => {
 };
 
 const FaqSection = () => (
-  <section className="py-24 px-6 bg-surface-container-low">
+  <section className="py-16 md:py-24 px-5 md:px-6 bg-surface-container-low">
     <div className="max-w-3xl mx-auto">
-      <h2 className="text-3xl md:text-5xl font-bold text-on-background mb-12 text-center">Dudas frecuentes</h2>
+      <h2 className="text-3xl md:text-5xl font-bold text-on-background mb-8 md:mb-12 text-center">Dudas frecuentes</h2>
       <div className="space-y-2">
         {FAQS.map((faq, i) => (
           <FaqItem key={i} question={faq.question} answer={faq.answer} />

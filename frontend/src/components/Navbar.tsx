@@ -48,12 +48,12 @@ const Navbar = () => {
           : 'bg-transparent py-[18px]'
       }`}
     >
-      <div className="w-full px-6 md:px-8 grid grid-cols-3 items-center">
+      <div className="w-full px-4 md:px-8 flex md:grid md:grid-cols-3 items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-[9px]">
-          <img src="/logo-dark.png" alt="Quick Emigrate" className="h-[26px] w-auto" />
-          <span className="text-[17px] font-extrabold tracking-[-0.02em] text-white">Quick Emigrate</span>
+        <Link to="/" className="flex items-center gap-[9px] min-w-0">
+          <img src="/logo-dark.png" alt="Quick Emigrate" className="h-[24px] md:h-[26px] w-auto shrink-0" />
+          <span className="text-[15px] md:text-[17px] font-extrabold tracking-[-0.02em] text-white truncate">Quick Emigrate</span>
         </Link>
 
         {/* Desktop center nav */}
