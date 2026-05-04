@@ -58,7 +58,11 @@ function slugify(text: string) {
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-');
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/, '');
 }
 
 /* ─── TipTap Toolbar ─────────────────────────────────────── */
@@ -69,8 +73,13 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
     `p-1.5 rounded-lg transition-colors ${active ? 'bg-white/15 text-white' : 'text-white/50 hover:bg-white/8 hover:text-white'}`;
 
   const handleSetLink = () => {
-    const previous = editor.getAttributes('link').href as string | undefined;
-    const input = window.prompt('URL del enlace (vacío = quitar enlace):', previous || 'https://');
+    const { from, to, empty } = editor.state.selection;
+    const previousHref = editor.getAttributes('link').href as string | undefined;
+
+    const input = window.prompt(
+      'URL del enlace (vacío = quitar enlace):',
+      previousHref || 'https://',
+    );
     if (input === null) return; // cancelled
 
     const href = input.trim();
@@ -80,11 +89,33 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
     }
 
     const external = isExternalUrl(href);
-    editor.chain().focus().extendMarkRange('link').setLink({
+    const linkAttrs = {
       href,
       target: external ? '_blank' : null,
       rel: external ? 'noopener noreferrer' : null,
-    }).run();
+    };
+
+    // Sin selección + sin link previo: pedir texto del enlace e insertar
+    if (empty && !editor.isActive('link')) {
+      const anchorText = window.prompt('Texto visible del enlace:', '');
+      if (anchorText === null) return;
+      const text = anchorText.trim();
+      if (text === '') return;
+      editor.chain().focus().insertContent([
+        {
+          type: 'text',
+          text,
+          marks: [{ type: 'link', attrs: linkAttrs }],
+        },
+      ]).run();
+      return;
+    }
+
+    // Selección presente o cursor sobre link existente: aplicar/editar mark
+    editor.chain().focus().extendMarkRange('link').setLink(linkAttrs).run();
+    // ensure caret stays at end of edited link to keep typing outside link
+    if (!empty) editor.commands.setTextSelection(to);
+    void from;
   };
 
   const handleUnlink = () => editor.chain().focus().extendMarkRange('link').unsetLink().run();
@@ -217,6 +248,9 @@ function ArticleEditor({
             className={inputCls}
             placeholder="Cómo emigrar desde Argentina a España en 2026"
           />
+          <p className={`text-[11.5px] mt-1 ${form.title.length > 60 ? 'text-amber-400' : 'text-white/30'}`}>
+            {form.title.length}/60 — Google trunca títulos largos en resultados
+          </p>
         </div>
 
         <div>
@@ -261,7 +295,9 @@ function ArticleEditor({
             className={`${inputCls} resize-none`}
             placeholder="Descripción para buscadores, max 160 caracteres..."
           />
-          <p className="text-[11.5px] text-white/30 mt-1">{form.metaDescription.length}/160</p>
+          <p className={`text-[11.5px] mt-1 ${form.metaDescription.length > 160 ? 'text-amber-400' : 'text-white/30'}`}>
+            {form.metaDescription.length}/160 — descripción para Google (CTR alto = SEO alto)
+          </p>
         </div>
 
         <div>

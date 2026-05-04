@@ -6,6 +6,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://qe-production.up.railway.app/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

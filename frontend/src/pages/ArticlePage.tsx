@@ -41,41 +41,63 @@ function useMeta(article: Article | null) {
     const previousTitle = document.title;
     document.title = `${article.title} · Quick Emigrate`;
 
+    const ogImage = `${SITE_URL}/og-image.png`;
+
     const metas = [
       setTag('meta[name="description"]',          { name: 'description', content: desc }),
       setTag('meta[property="og:title"]',         { property: 'og:title', content: article.title }),
       setTag('meta[property="og:description"]',   { property: 'og:description', content: desc }),
       setTag('meta[property="og:type"]',          { property: 'og:type', content: 'article' }),
       setTag('meta[property="og:url"]',           { property: 'og:url', content: url }),
+      setTag('meta[property="og:image"]',         { property: 'og:image', content: ogImage }),
+      setTag('meta[property="og:image:width"]',   { property: 'og:image:width', content: '1200' }),
+      setTag('meta[property="og:image:height"]',  { property: 'og:image:height', content: '630' }),
+      setTag('meta[property="og:locale"]',        { property: 'og:locale', content: 'es_ES' }),
+      setTag('meta[property="og:site_name"]',     { property: 'og:site_name', content: 'Quick Emigrate' }),
       setTag('meta[property="article:published_time"]', { property: 'article:published_time', content: new Date(date).toISOString() }),
+      setTag('meta[property="article:section"]',  { property: 'article:section', content: article.country }),
       setTag('meta[name="twitter:card"]',         { name: 'twitter:card', content: 'summary_large_image' }),
       setTag('meta[name="twitter:title"]',        { name: 'twitter:title', content: article.title }),
       setTag('meta[name="twitter:description"]',  { name: 'twitter:description', content: desc }),
+      setTag('meta[name="twitter:image"]',        { name: 'twitter:image', content: ogImage }),
     ];
 
     const canonical = setLink('canonical', url);
 
-    // JSON-LD Article schema
+    // JSON-LD Article + BreadcrumbList
     const ld = document.createElement('script');
     ld.type = 'application/ld+json';
     ld.id = 'qe-article-jsonld';
-    ld.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: article.title,
-      description: desc,
-      datePublished: new Date(date).toISOString(),
-      dateModified: new Date(date).toISOString(),
-      author: { '@type': 'Organization', name: 'Quick Emigrate', url: SITE_URL },
-      publisher: {
-        '@type': 'Organization',
-        name: 'Quick Emigrate',
-        logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo-dark.png` },
+    ld.text = JSON.stringify([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: article.title,
+        description: desc,
+        image: [ogImage],
+        datePublished: new Date(date).toISOString(),
+        dateModified: new Date(date).toISOString(),
+        author: { '@type': 'Organization', name: 'Quick Emigrate', url: SITE_URL },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Quick Emigrate',
+          logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo-dark.png` },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+        inLanguage: 'es',
+        about: article.country,
+        keywords: [article.country, 'emigración', 'visado España', 'inmigración'].filter(Boolean).join(', '),
       },
-      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      inLanguage: 'es',
-      about: article.country,
-    });
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Blog',   item: `${SITE_URL}/blog` },
+          { '@type': 'ListItem', position: 3, name: article.title, item: url },
+        ],
+      },
+    ]);
     document.head.appendChild(ld);
 
     return () => {
