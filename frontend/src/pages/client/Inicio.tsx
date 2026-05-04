@@ -231,15 +231,15 @@ export default function Inicio() {
         }
       `}</style>
 
-      <div className="w-full h-full p-4 lg:p-6">
+      <div className="w-full h-full p-4 md:p-6 lg:p-8">
 
         {/* Saludo */}
-        <div className="mb-8">
-          <h1 className="text-[32px] font-semibold tracking-[-0.03em] text-white">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-[28px] lg:text-[32px] font-semibold tracking-[-0.03em] text-white">
             Bienvenido/a, {nombre}
           </h1>
-          <div className="flex items-center gap-3 mt-2">
-            <p className="text-[14px] text-white/50">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
+            <p className="text-[13.5px] md:text-[14px] text-white/50">
               {(!plan || plan === 'free') ? 'Tu ruta hacia España empieza aquí' : 'Tu área privada de Quick Emigrate'}
             </p>
             {!loading && plan && (
@@ -278,11 +278,11 @@ export default function Inicio() {
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
             ) : diagnosticoEstado === 'completado' ? ( // already dark-styled
-              /* ── COMPLETADO: flex-row 50% + 50% ── */
-              <div className="w-full flex flex-col md:flex-row gap-6" style={{ height: 'calc(100vh - 120px)' }}>
+              /* ── COMPLETADO: flex-row 50% + 50% (lg+); stack vertical mobile/tablet ── */
+              <div className="w-full flex flex-col lg:flex-row gap-4 md:gap-6 lg:h-[calc(100dvh-160px)]">
 
-                {/* COLUMNA IZQUIERDA — 50% — cards una debajo de otra */}
-                <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
+                {/* COLUMNA IZQUIERDA — 50% lg, full mobile/tablet */}
+                <div className="w-full lg:w-1/2 flex flex-col gap-4 lg:overflow-y-auto">
 
                   {/* Card 1: resumen diagnóstico */}
                   <div className="qe-card rounded-xl p-5">
@@ -353,8 +353,8 @@ export default function Inicio() {
 
                 </div>
 
-                {/* COLUMNA DERECHA — 50% — solo el PDF */}
-                <div className="hidden md:flex w-1/2 flex-col qe-card rounded-xl overflow-hidden">
+                {/* COLUMNA DERECHA — 50% lg+ — PDF preview (hidden mobile/tablet) */}
+                <div className="hidden lg:flex w-1/2 flex-col qe-card rounded-xl overflow-hidden">
                   {loadingPdf && (
                     <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
                       <Loader2 size={16} className="animate-spin" />
@@ -413,7 +413,7 @@ export default function Inicio() {
                 {/* Columna izquierda: estado actual + acceso rápido */}
                 {diagnosticoEstado === 'procesando' ? (
                   /* Procesando ocupa 2 columnas en desktop */
-                  <div className="md:col-span-2 qe-card rounded-2xl p-8">
+                  <div className="md:col-span-2 qe-card rounded-2xl p-5 md:p-8">
                     <div className="flex items-center gap-3 mb-3">
                       <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
                       <span className="text-[17px] font-semibold text-white">

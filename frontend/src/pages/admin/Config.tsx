@@ -6,8 +6,8 @@ import type { PlanCMS } from '../../hooks/usePlanes';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-const inputCls = `w-full rounded-xl border border-white/15 px-4 py-3 text-[14.5px] text-white
-                  bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 transition placeholder-white/25`;
+const inputCls = `qe-input w-full rounded-xl px-4 py-3 text-[14.5px] text-white
+                  transition placeholder-white/25`;
 const labelCls = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5';
 
 const DEFAULT_PLANES: PlanCMS[] = [
@@ -122,7 +122,7 @@ export default function Config() {
       <div className="p-4 md:p-6 lg:p-8">
         <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Configuración</h1>
 
-        <div className="qe-card rounded-2xl p-6 max-w-[500px]">
+        <div className="qe-card rounded-2xl p-5 md:p-6 max-w-[560px]">
           <h2 className="text-[16px] font-semibold text-white mb-5">Límites del Chat IA</h2>
 
           {loading ? (
@@ -179,7 +179,7 @@ export default function Config() {
         </div>
 
         {/* Planes */}
-        <div className="mt-8 qe-card rounded-2xl p-6 max-w-[900px]">
+        <div className="mt-6 md:mt-8 qe-card rounded-2xl p-5 md:p-6 max-w-[960px]">
           <h2 className="text-[16px] font-semibold text-white mb-5">Gestión de Planes</h2>
 
           {loadingPlanes ? (
@@ -197,9 +197,9 @@ export default function Config() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 {planes.map((plan, idx) => (
-                  <div key={plan.id} className="border border-white/10 rounded-xl p-4 space-y-3">
+                  <div key={plan.id} className="qe-card rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[12px] font-bold uppercase tracking-widest text-white/40">{plan.id}</span>
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -218,7 +218,7 @@ export default function Config() {
                       <input type="text" value={plan.nombre} onChange={e => updatePlan(idx, 'nombre', e.target.value)} className={inputCls} />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className={labelCls}>Precio (€)</label>
                         <input
@@ -278,7 +278,7 @@ export default function Config() {
               <button
                 onClick={handleGuardarPlanes}
                 disabled={savingPlanes}
-                className="rounded-xl bg-[#25D366] text-[#062810] font-semibold px-6 py-3.5 text-[15px]
+                className="w-full sm:w-auto rounded-xl bg-[#25D366] text-[#062810] font-semibold px-6 py-3.5 text-[15px]
                            hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
               >
                 {savingPlanes ? 'Guardando...' : 'Guardar planes'}
