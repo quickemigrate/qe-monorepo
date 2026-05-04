@@ -10,7 +10,8 @@ import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 

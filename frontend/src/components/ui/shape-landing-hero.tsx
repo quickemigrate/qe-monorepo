@@ -83,7 +83,7 @@ function HeroGeometric({
 }: HeroGeometricProps) {
   const badgeText = badge ?? `Early Access · Plan Pro · Solo ${precioTexto}`;
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
+    <div className="relative min-h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-[#0A0A0A] px-5 md:px-6 pt-24 pb-16 md:py-0">
       <div className="absolute inset-0 bg-gradient-to-br from-[#25D366]/[0.05] via-transparent to-[#25D366]/[0.03]" />
 
       <div className="absolute inset-0 overflow-hidden">
@@ -131,17 +131,17 @@ function HeroGeometric({
 
       <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/80" />
 
-      <div className="relative z-10 w-full flex flex-col items-center  md:px-6 ">
-        <div className="w-full max-w-3xl text-center flex flex-col items-center gap-2">
+      <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="w-full max-w-3xl text-center flex flex-col items-center gap-3 md:gap-2">
           <motion.div
             custom={0}
             variants={fadeUpVariants}
             initial="hidden"
             animate="visible"
-            className="inline-flex items-center justify-center gap-2 p-4 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 px-3 py-2 md:p-4 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm whitespace-nowrap text-[12px] md:text-sm"
           >
             <Circle className="h-2 w-2 fill-[#25D366] animate-pulse flex-shrink-0" />
-            <span className="text-sm text-white/60 tracking-wide leading-none">
+            <span className="text-white/60 tracking-wide leading-none">
               {badgeText}
             </span>
           </motion.div>
@@ -152,7 +152,7 @@ function HeroGeometric({
             initial="hidden"
             animate="visible"
           >
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-14 md:mb-16 tracking-tight">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 md:mb-12 tracking-tight leading-[1.05]">
               <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
                 {title1}
               </span>
@@ -175,7 +175,7 @@ function HeroGeometric({
             animate="visible"
             className="flex flex-col items-center "
           >
-            <p className="text-base sm:text-lg md:text-xl text-white/70 mb-10 leading-relaxed font-light tracking-wide max-w-lg text-center">
+            <p className="text-[15px] sm:text-lg md:text-xl text-white/70 mb-6 md:mb-10 leading-relaxed font-light tracking-wide max-w-lg text-center">
               {description}
             </p>
 
@@ -184,7 +184,7 @@ function HeroGeometric({
                 Empezar con Plan Pro — {precioTexto}
                 <span className="ea-arrow" aria-hidden="true">→</span>
               </Link>
-              <span className="text-sm text-white/50 tracking-wide">
+              <span className="text-[12.5px] md:text-sm text-white/50 tracking-wide text-center px-2">
                 Diagnóstico incluido · Sin permanencia · Cancela cuando quieras
               </span>
             </div>

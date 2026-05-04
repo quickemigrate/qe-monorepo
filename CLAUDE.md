@@ -61,7 +61,7 @@ LegalTech SaaS: latinoamericanos→España. Pablo=CTO · Manu=CEO
 
 ## STACK
 FE: React+TS+Vite+Tailwind+motion/react+lucide+Firebase Auth
-BE: Node+Express+TS+firebase-admin+Resend+PayPal+Anthropic+PDFKit+Pinecone+VoyageAI
+BE: Node+Express+TS+firebase-admin+Resend+Stripe+Anthropic+PDFKit+Pinecone+VoyageAI
 DB: Firestore(quick-emigrate) + Pinecone(quickemigrate-legal)
 Deploy: Vercel(FE)+Railway(BE) · dominio: quickemigrate.com · repo: github.com/quickemigrate/qe-monorepo
 
@@ -75,20 +75,20 @@ FE landing: Navbar,Hero,Problem,Solution,HowItWorks,Services,Trust,FAQ,Contact,F
 FE pages admin: frontend/src/pages/admin/{Dashboard,Leads,Expedientes,Blog,Conocimiento}
 FE pages client: frontend/src/pages/client/{ClientLogin,Inicio,Chat,Perfil,Expediente,Plan,Documentos} · auth: ProtectedRoute+ClientProtectedRoute
 FE pages extra: /sobre-nosotros · /blog/:slug · /diagnostico/exito · Vercel Analytics+SpeedInsights
-BE config: backend/src/config/{firebase,paypal,pinecone}.ts
+BE config: backend/src/config/{firebase,stripe,pinecone}.ts
 BE services: backend/src/services/{embeddings←VoyageAI, rag←ingestar/buscar/contexto}.ts
 BE routes: backend/src/routes/{contact,diagnostico,expedientes,leads,articles,conocimiento,documentos,chat,usuarios,config,metricas}.ts
 
 ## ENV BACKEND (Railway)
 PORT=3001 · FRONTEND_URL · RESEND_{API_KEY,FROM_EMAIL} · CONTACT_EMAIL
 FIREBASE_SERVICE_ACCOUNT · ADMIN_EMAIL_{1,2}
-PAYPAL_{CLIENT_ID,CLIENT_SECRET} · PAYPAL_MODE=sandbox→live cuando empresa
+STRIPE_{SECRET_KEY,PUBLISHABLE_KEY} · modo test/live según key
 ANTHROPIC_API_KEY · PINECONE_{API_KEY,INDEX_NAME=quickemigrate-legal,INDEX_HOST=quickemigrate-legal-crf2ocj.svc.aped-4627-b74a.pinecone.io}
 VOYAGE_API_KEY
 
 ## ENV FRONTEND (Vercel)
 VITE_BACKEND_URL · VITE_FIREBASE_{API_KEY,AUTH_DOMAIN,PROJECT_ID,STORAGE_BUCKET,MESSAGING_SENDER_ID,APP_ID}
-VITE_ADMIN_EMAIL_{1,2} · VITE_PAYPAL_CLIENT_ID
+VITE_ADMIN_EMAIL_{1,2} · VITE_STRIPE_PUBLISHABLE_KEY
 
 ## RUTAS BACKEND
 | Método | Ruta | Auth | Acción |
@@ -98,8 +98,8 @@ VITE_ADMIN_EMAIL_{1,2} · VITE_PAYPAL_CLIENT_ID
 | GET/POST/PATCH | /api/expedientes | admin | CRUD expedientes |
 | GET | /api/client/expediente | cliente | timeline cliente |
 | GET/POST/PATCH | /api/articles | mixto | CMS blog |
-| POST | /api/diagnostico/create-order | — | Firestore+PayPal orden |
-| POST | /api/diagnostico/capture-order | — | PayPal→RAG→Claude→PDF→Resend |
+| POST | /api/diagnostico/create-payment-intent | — | Firestore+Stripe PaymentIntent |
+| POST | /api/diagnostico/confirm-payment | — | Stripe→RAG→Claude→PDF→Resend |
 | GET | /api/diagnostico/:id | — | estado |
 | GET | /api/diagnostico/:id/pdf | cliente | descarga PDF (solo propietario) |
 | GET/POST/DELETE | /api/conocimiento | admin | CRUD KB |
@@ -144,7 +144,7 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 ## NOTAS TÉCNICAS
 - CORS: localhost:3000,5173 · quickemigrate.com · www.quickemigrate.com · *.vercel.app
 - Railway: port 3001
-- PayPal: client-side (create-order→popup→capture-order, no webhook) · sandbox: developer.paypal.com
+- Stripe: PaymentIntents + Stripe Elements (frontend) · test/live según key · sin webhook
 - Voyage AI: SDK `voyageai` (NO anthropic.embeddings — no disponible en v0.90.0)
 - Logo PDFKit: backend/src/assets/ (no raíz monorepo)
 
@@ -152,7 +152,7 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 - [ ] SVG logo real en emails
 - [ ] Bug PDF: "Semana 2-3:" se corta en próximos pasos
 - [ ] Scraper BOE automático (cron Railway)
-- [ ] PayPal live (PAYPAL_MODE=live)
+- [ ] Stripe live keys cuando empresa constituida
 - [x] Google Search Console favicon: eliminado favicon.svg roto, JSON-LD apunta a favicon-48x48.png
 - [ ] BD scraping Manu → Pinecone
 - [ ] Migrar PDFs a Firebase Storage
@@ -175,7 +175,7 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | voyageai | ^0.2.1 (PAUSADO) |
 | pdfkit | ^0.18.0 |
 | resend | ^3.2.0 |
-| @paypal/checkout-server-sdk | ^1.0.3 |
+| stripe | (Stripe Node SDK) |
 | @pinecone-database/pinecone | ^7.2.0 (PAUSADO) |
 | @google/generative-ai | ^0.24.1 (instalado, no usado) |
 | openai | ^6.34.0 (instalado, no usado activamente) |
@@ -197,7 +197,7 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | react-router-dom | ^7.14.1 |
 | motion | ^12.23.24 |
 | lucide-react | ^0.546.0 |
-| @paypal/react-paypal-js | ^9.1.1 |
+| @stripe/stripe-js + @stripe/react-stripe-js | activos en checkout |
 | @tiptap/react | ^3.22.4 |
 | react-markdown | ^10.1.0 |
 | react-pdf | ^10.4.1 |
@@ -251,8 +251,8 @@ pdfBase64 en diagnosticos/{id}.pdfBase64 · límite 1MB Firestore (migrar a Stor
 | PATCH | /api/articles/:id | admin | Actualizar artículo (sin whitelist) |
 | DELETE | /api/articles/:id | admin | Eliminar artículo |
 | GET | /api/articles/:slug | — | Artículo por slug |
-| POST | /api/diagnostico/create-order | — (opcional Bearer) | Crear orden PayPal + Firestore |
-| POST | /api/diagnostico/capture-order | — | Capturar pago → IA → PDF → Email |
+| POST | /api/diagnostico/create-payment-intent | — (opcional Bearer) | Crear Stripe PaymentIntent + Firestore |
+| POST | /api/diagnostico/confirm-payment | — | Confirmar pago Stripe → IA → PDF → Email |
 | GET | /api/diagnostico/:id/pdf | cliente | Descargar PDF (solo propietario) |
 | GET | /api/diagnostico/:id | cliente | Estado diagnóstico |
 | GET | /api/conocimiento | admin | Listar KB por colección |
@@ -294,9 +294,8 @@ ADMIN_EMAIL_2=<email admin 2>
 RESEND_API_KEY=<key>
 RESEND_FROM_EMAIL=hola@quickemigrate.com
 CONTACT_EMAIL=<destinatario contacto>
-PAYPAL_CLIENT_ID=<id>
-PAYPAL_CLIENT_SECRET=<secret>
-PAYPAL_MODE=sandbox|live
+STRIPE_SECRET_KEY=<sk_test_... o sk_live_...>
+STRIPE_PUBLISHABLE_KEY=<pk_test_... o pk_live_...>
 ANTHROPIC_API_KEY=<key>
 PINECONE_API_KEY=<key — pausado>
 PINECONE_INDEX_NAME=quickemigrate-legal
@@ -315,7 +314,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=<id>
 VITE_FIREBASE_APP_ID=<id>
 VITE_ADMIN_EMAIL_1=<email admin 1>
 VITE_ADMIN_EMAIL_2=<email admin 2>
-VITE_PAYPAL_CLIENT_ID=<id>
+VITE_STRIPE_PUBLISHABLE_KEY=<pk_test_... o pk_live_...>
 ```
 
 ### Problemas conocidos activos
@@ -372,11 +371,11 @@ VITE_PAYPAL_CLIENT_ID=<id>
 
 - **RAG sobre Firestore** — Pinecone/VoyageAI pausados hasta tener ingresos. `rag.ts` funciona con Firestore puro. Reconectar cuando haya volumen.
 - **PDF como base64 en Firestore** — Firebase Storage requiere plan Blaze (pago). Migrar cuando se active la cuenta de facturación.
-- **PayPal live sobre cuenta particular** — Empresa pendiente constitución. Cambiar `PAYPAL_MODE=live` cuando esté constituida.
+- **Stripe test sobre cuenta particular** — Empresa pendiente constitución. Cambiar a Stripe live keys cuando esté constituida.
 - **Dos proyectos Firebase separados** — `quick-emigrate` (negocio) y `quick-emigrate-conocimiento` (RAG/KB). Separación por seguridad y facturación. El admin UI y el RAG deben unificarse o conectarse (problema activo).
 - **Email como Firestore document ID en `usuarios`** — Simple y queryable. Migrar email = migrar documento.
 - **Admin auth por whitelist de emails** — Env vars `ADMIN_EMAIL_{1,2}` en backend y frontend por separado. Sin Firebase Custom Claims. Añadir un 3er admin requiere deploy.
-- **fire-and-forget en capture-order** — Intencional: evita timeout en respuesta PayPal. Trade-off: sin job queue persistente.
+- **fire-and-forget en confirm-payment** — Intencional: evita timeout tras Stripe confirm. Trade-off: sin job queue persistente.
 - **Plan-gating en backend** — Frontend oculta UI pero backend es la única enforcement real para `/api/chat/mensaje`. Correcto.
 - **localStorage para estado sidebar y caché planes** — `qe_sidebar_collapsed`, `qe_planes_cache` (TTL 5min). Intencional para UX.
 - **Resend como proveedor email** — `nodemailer` instalado pero no usar. Siempre usar Resend.
@@ -391,7 +390,7 @@ VITE_PAYPAL_CLIENT_ID=<id>
 - Commit + deploy backend (documentos.ts OCR, chat.ts scope fix) → Railway
 - Re-subir documentos existentes tras deploy (OCR solo corre en upload, no retroactivo)
 - Reparar búsqueda KB (upper bound: `q + ''`)
-- Añadir auth a `capture-order` o validar PayPal order status antes de procesar
+- Añadir auth a `confirm-payment` o validar Stripe payment status antes de procesar
 - Añadir whitelist a todos los PATCH/PUT endpoints (expedientes, articles, usuarios/perfil)
 - Conectar admin KB UI con el sistema RAG (unificar proyectos Firebase o sincronizar colecciones)
 - Añadir índice Firestore para `usuarios/{email}/chat` (timestamp ordering)
@@ -445,10 +444,13 @@ backend/src/assets/logo-dark-iso.png
 
 **Pagos:**
 ```
-backend/src/config/paypal.ts
-  ← backend/src/routes/diagnostico.ts (create-order + capture-order)
-frontend: @paypal/react-paypal-js
-  ← frontend/src/pages/DiagnosticoPage.tsx (PayPal popup)
+backend/src/config/stripe.ts
+  ← backend/src/routes/diagnostico.ts (create-payment-intent + confirm-payment)
+  ← backend/src/routes/suscripcion.ts (create-payment-intent + confirm-payment)
+frontend: @stripe/stripe-js + @stripe/react-stripe-js
+  ← frontend/src/pages/DiagnosticoPage.tsx (Stripe Elements)
+  ← frontend/src/pages/client/SuscripcionPro.tsx
+  ← frontend/src/components/StripeCheckoutForm.tsx
 ```
 
 **Config runtime:**

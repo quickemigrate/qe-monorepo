@@ -9,7 +9,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
 import { usePlanes } from '../../hooks/usePlanes';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PRO_FEATURES = [
