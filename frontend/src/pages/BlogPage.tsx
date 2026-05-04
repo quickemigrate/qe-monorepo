@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, Clock, Globe } from 'lucide-react';
+import { ArrowRight, Clock, Globe, Search, X, SlidersHorizontal } from 'lucide-react';
 import { AuroraBackground } from '../components/ui/aurora-background';
+
+type SortOrder = 'recent' | 'oldest';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -109,10 +111,120 @@ const ArticleCard = ({ article, index }: { article: Article; index: number }) =>
   );
 };
 
+/* ─── Filters Bar ────────────────────────────────────────── */
+interface FiltersProps {
+  query: string;
+  setQuery: (v: string) => void;
+  country: string;
+  setCountry: (v: string) => void;
+  sort: SortOrder;
+  setSort: (v: SortOrder) => void;
+  countries: string[];
+  total: number;
+  filteredCount: number;
+  onClear: () => void;
+  hasFilters: boolean;
+}
+
+const FiltersBar = ({
+  query, setQuery, country, setCountry, sort, setSort,
+  countries, total, filteredCount, onClear, hasFilters,
+}: FiltersProps) => (
+  <div className="mb-8 space-y-4">
+    {/* Search + sort row */}
+    <div className="flex flex-col sm:flex-row gap-3">
+      <div className="relative flex-1">
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Buscar artículos por título o contenido..."
+          className="qe-input w-full rounded-xl pl-11 pr-10 py-3 text-[14px] text-white placeholder:text-white/35 transition"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white transition"
+            aria-label="Limpiar búsqueda"
+          >
+            <X size={15} />
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <SlidersHorizontal size={15} className="text-white/35 hidden sm:block" />
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value as SortOrder)}
+          className="qe-input rounded-xl px-4 py-3 text-[13.5px] text-white transition cursor-pointer min-w-[180px]"
+        >
+          <option value="recent">Más recientes</option>
+          <option value="oldest">Más antiguos</option>
+        </select>
+      </div>
+    </div>
+
+    {/* Country chips */}
+    {countries.length > 0 && (
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setCountry('')}
+          className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold transition-all
+            ${country === ''
+              ? 'bg-[#25D366] text-[#062810]'
+              : 'qe-card qe-card-hover text-white/60 hover:text-white'
+            }`}
+        >
+          Todos los países
+        </button>
+        {countries.map(c => (
+          <button
+            key={c}
+            onClick={() => setCountry(c === country ? '' : c)}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold transition-all
+              ${country === c
+                ? 'bg-[#25D366] text-[#062810]'
+                : 'qe-card qe-card-hover text-white/60 hover:text-white'
+              }`}
+          >
+            <Globe size={11} />
+            {c}
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* Result count + clear */}
+    <div className="flex items-center justify-between text-[13px] text-white/45 pt-1">
+      <span>
+        {hasFilters
+          ? <><span className="text-white font-semibold">{filteredCount}</span> de {total} artículos</>
+          : <><span className="text-white font-semibold">{total}</span> {total === 1 ? 'artículo' : 'artículos'}</>
+        }
+      </span>
+      {hasFilters && (
+        <button
+          onClick={onClear}
+          className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#25D366] hover:opacity-80 transition"
+        >
+          <X size={13} />
+          Limpiar filtros
+        </button>
+      )}
+    </div>
+  </div>
+);
+
 /* ─── Blog List ──────────────────────────────────────────── */
 const BlogList = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [query, setQuery] = useState('');
+  const [country, setCountry] = useState('');
+  const [sort, setSort] = useState<SortOrder>('recent');
 
   useEffect(() => {
     fetch(`${API}/api/articles`)
@@ -122,24 +234,99 @@ const BlogList = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const countries = useMemo(() => {
+    const set = new Set<string>();
+    articles.forEach(a => { if (a.country) set.add(a.country); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [articles]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = articles.filter(a => {
+      if (country && a.country !== country) return false;
+      if (q) {
+        const hay = `${a.title} ${a.excerpt}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    list.sort((a, b) => {
+      const da = new Date(a.publishedAt || a.createdAt).getTime();
+      const db = new Date(b.publishedAt || b.createdAt).getTime();
+      return sort === 'recent' ? db - da : da - db;
+    });
+    return list;
+  }, [articles, query, country, sort]);
+
+  const hasFilters = query.trim() !== '' || country !== '' || sort !== 'recent';
+  const handleClear = () => { setQuery(''); setCountry(''); setSort('recent'); };
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen font-sans">
       <BlogHero />
-      <section className="mx-auto max-w-[1200px] px-6 py-16">
+      <section className="mx-auto max-w-[1200px] px-5 md:px-6 py-12 md:py-16">
         {loading ? (
-          <div className="grid md:grid-cols-2 gap-5">
-            {[0, 1, 2, 3].map(i => <SkeletonCard key={i} />)}
-          </div>
+          <>
+            <div className="mb-8 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="qe-card rounded-xl h-12 flex-1 animate-pulse" />
+                <div className="qe-card rounded-xl h-12 w-full sm:w-[200px] animate-pulse" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[60, 80, 100, 70, 90].map((w, i) => (
+                  <div key={i} className="qe-card rounded-full h-8 animate-pulse" style={{ width: w }} />
+                ))}
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-5">
+              {[0, 1, 2, 3].map(i => <SkeletonCard key={i} />)}
+            </div>
+          </>
         ) : articles.length === 0 ? (
           <div className="text-center py-16 text-white/40 text-[16px]">
             Próximamente publicaremos guías y recursos.
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-5">
-            {articles.map((article, i) => (
-              <ArticleCard key={article.id} article={article} index={i} />
-            ))}
-          </div>
+          <>
+            <FiltersBar
+              query={query} setQuery={setQuery}
+              country={country} setCountry={setCountry}
+              sort={sort} setSort={setSort}
+              countries={countries}
+              total={articles.length}
+              filteredCount={filtered.length}
+              onClear={handleClear}
+              hasFilters={hasFilters}
+            />
+
+            {filtered.length === 0 ? (
+              <div className="qe-card rounded-2xl py-16 px-6 text-center">
+                <div className="text-[15px] text-white/60 mb-3 font-medium">
+                  Sin resultados
+                </div>
+                <p className="text-[13.5px] text-white/40 mb-5 max-w-[380px] mx-auto">
+                  No encontramos artículos que coincidan con
+                  {query && <> "<span className="text-white/70 font-medium">{query}</span>"</>}
+                  {query && country && ' en '}
+                  {country && <> <span className="text-white/70 font-medium">{country}</span></>}
+                  .
+                </p>
+                <button
+                  onClick={handleClear}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#25D366] hover:opacity-80 transition"
+                >
+                  <X size={14} />
+                  Limpiar filtros
+                </button>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-5">
+                {filtered.map((article, i) => (
+                  <ArticleCard key={article.id} article={article} index={i} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
