@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, Globe, Search, X, SlidersHorizontal } from 'lucide-react';
 import { AuroraBackground } from '../components/ui/aurora-background';
@@ -221,10 +221,19 @@ const FiltersBar = ({
 const BlogList = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [query, setQuery] = useState('');
-  const [country, setCountry] = useState('');
+  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [country, setCountry] = useState(searchParams.get('pais') || '');
   const [sort, setSort] = useState<SortOrder>('recent');
+
+  // Sync state → URL (shareable, sitelinks searchbox compatible)
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (query.trim()) next.set('q', query.trim());
+    if (country) next.set('pais', country);
+    setSearchParams(next, { replace: true });
+  }, [query, country, setSearchParams]);
 
   useEffect(() => {
     fetch(`${API}/api/articles`)
