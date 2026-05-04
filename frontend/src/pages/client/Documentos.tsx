@@ -133,7 +133,7 @@ export default function Documentos() {
     <ClientLayout>
       <div className="p-4 lg:p-8 max-w-[680px]">
         <div className="mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Mis Documentos</h1>
+          <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">Mis Documentos</h1>
           <p className="text-[14px] text-white/50 mt-1">
             Sube tus documentos para que la IA los tenga en cuenta al responder.
           </p>
@@ -141,7 +141,7 @@ export default function Documentos() {
 
         {/* Upload form */}
         {!limite && (
-          <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 mb-6">
+          <div className="qe-card rounded-2xl p-6 mb-6">
             <h2 className="text-[14px] font-semibold text-white mb-4">Subir documento</h2>
 
             {error && (
@@ -231,7 +231,7 @@ export default function Documentos() {
         )}
 
         {/* Document list */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 overflow-hidden">
+        <div className="qe-card rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <h2 className="text-[14px] font-semibold text-white">Documentos subidos</h2>
             <span className="text-[12px] text-white/40">{docs.length} / {maxDocs}</span>

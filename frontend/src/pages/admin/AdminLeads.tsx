@@ -141,10 +141,10 @@ export default function AdminLeads() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Leads</h1>
+      <div className="p-4 md:p-6 lg:p-8">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Leads</h1>
 
-        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
+        <div className="qe-card rounded-2xl overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando leads...</div>
           ) : leads.length === 0 ? (
@@ -208,7 +208,7 @@ export default function AdminLeads() {
       {selected && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={() => setSelected(null)} />
-          <div className="w-[420px] bg-[#111111] border-l border-white/10 h-full shadow-2xl flex flex-col overflow-y-auto">
+          <div className="w-full sm:w-[420px] qe-card-strong border-l border-white/10 h-full shadow-2xl flex flex-col overflow-y-auto" style={{ borderRadius: 0 }}>
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
               <h2 className="text-[17px] font-semibold text-white">Detalle del lead</h2>
               <button onClick={() => setSelected(null)} className="text-white/40 hover:text-white transition-colors">
@@ -278,7 +278,7 @@ export default function AdminLeads() {
       {convertLead && convertForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { if (!converting) { setConvertLead(null); setConvertForm(null); } }} />
-          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <div className="relative qe-card-strong rounded-[24px] shadow-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
               <h2 className="text-[18px] font-semibold text-white">Convertir a expediente</h2>
               <button
@@ -303,7 +303,7 @@ export default function AdminLeads() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Nombre *</label>
                   <input

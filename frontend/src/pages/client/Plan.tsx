@@ -51,12 +51,12 @@ export default function Plan() {
   return (
     <ClientLayout>
       <div className="p-8 max-w-[700px]">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">
           Mi Plan
         </h1>
 
         {/* Plan actual */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 mb-6">
+        <div className="qe-card rounded-2xl p-6 mb-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Plan actual</h2>
           {loading ? (
             <div className="text-[14px] text-white/40">Cargando...</div>
@@ -83,7 +83,7 @@ export default function Plan() {
         </div>
 
         {/* Tabla comparativa */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 overflow-hidden mb-6">
+        <div className="qe-card rounded-2xl overflow-hidden mb-6">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/8">
@@ -122,7 +122,7 @@ export default function Plan() {
         </div>
 
         {/* CTA cambio de plan */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           {plan === 'starter' ? (
             <>
               <h2 className="text-[15px] font-semibold text-white mb-1">Actualiza al Plan Pro</h2>

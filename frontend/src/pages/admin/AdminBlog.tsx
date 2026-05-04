@@ -316,9 +316,9 @@ export default function AdminBlog() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Blog</h1>
+          <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">Blog</h1>
           <button
             onClick={() => setEditing('new')}
             className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] text-[#062810] font-semibold
@@ -329,7 +329,7 @@ export default function AdminBlog() {
           </button>
         </div>
 
-        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
+        <div className="qe-card rounded-2xl overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando artículos...</div>
           ) : articles.length === 0 ? (

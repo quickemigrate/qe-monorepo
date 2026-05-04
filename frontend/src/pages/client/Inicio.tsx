@@ -48,8 +48,7 @@ function QuickCard({ icon: Icon, title, description, to, accent }: CardProps) {
   return (
     <Link
       to={to}
-      className={`group flex flex-col gap-3 p-5 rounded-2xl border transition-all hover:border-white/15 hover:-translate-y-0.5
-        ${accent ? 'bg-[#111111] border-white/8 text-white' : 'bg-[#111111] border-white/8 text-white'}`}
+      className="group flex flex-col gap-3 p-5 rounded-2xl qe-card qe-card-hover transition-all hover:-translate-y-0.5 text-white"
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center
         ${accent ? 'bg-white/10' : 'bg-white/8'}`}>
@@ -253,7 +252,7 @@ export default function Inicio() {
 
         {/* PRO / PREMIUM: barra de mensajes */}
         {!loading && isPro && mensajesLimit > 0 && (
-          <div className="bg-[#111111] rounded-2xl border border-white/8 p-5 mb-6 flex items-center gap-4">
+          <div className="qe-card rounded-2xl p-5 mb-6 flex items-center gap-4">
             <div className="flex-1">
               <div className="text-[13px] text-white/50 mb-1.5">Mensajes del Asistente IA este mes</div>
               <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
@@ -274,7 +273,7 @@ export default function Inicio() {
         {!loading && (
           <div className="mb-8">
             {loadingUser ? (
-              <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 flex items-center gap-3 text-white/40">
+              <div className="qe-card rounded-2xl p-6 flex items-center gap-3 text-white/40">
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
@@ -286,7 +285,7 @@ export default function Inicio() {
                 <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-y-auto">
 
                   {/* Card 1: resumen diagnóstico */}
-                  <div className="bg-[#111111] border border-white/8 rounded-xl p-5">
+                  <div className="qe-card rounded-xl p-5">
                     <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 mb-3">
                       Diagnóstico completado ✓
                     </span>
@@ -325,7 +324,7 @@ export default function Inicio() {
 
                   {/* Card 2: upgrade — solo para Starter */}
                   {!isPro && (
-                  <div className="bg-[#111111] border border-white/8 rounded-xl p-5 flex flex-col">
+                  <div className="qe-card rounded-xl p-5 flex flex-col">
                     <h3 className="text-[14px] font-semibold text-white mb-3">¿Quieres más ayuda?</h3>
                     <ul className="text-[13px] text-white/50 space-y-2">
                       <li className="flex items-start gap-2">
@@ -355,7 +354,7 @@ export default function Inicio() {
                 </div>
 
                 {/* COLUMNA DERECHA — 50% — solo el PDF */}
-                <div className="hidden md:flex w-1/2 flex-col bg-[#111111] border border-white/8 rounded-xl overflow-hidden">
+                <div className="hidden md:flex w-1/2 flex-col qe-card rounded-xl overflow-hidden">
                   {loadingPdf && (
                     <div className="flex-1 flex items-center justify-center gap-2 text-white/30">
                       <Loader2 size={16} className="animate-spin" />
@@ -414,7 +413,7 @@ export default function Inicio() {
                 {/* Columna izquierda: estado actual + acceso rápido */}
                 {diagnosticoEstado === 'procesando' ? (
                   /* Procesando ocupa 2 columnas en desktop */
-                  <div className="md:col-span-2 bg-[#111111] rounded-2xl border border-white/8 p-8">
+                  <div className="md:col-span-2 qe-card rounded-2xl p-8">
                     <div className="flex items-center gap-3 mb-3">
                       <Loader2 size={22} className="animate-spin text-[#25D366] shrink-0" />
                       <span className="text-[17px] font-semibold text-white">
@@ -435,7 +434,7 @@ export default function Inicio() {
                   /* Sin diagnóstico o pendiente pago — columna izquierda */
                   <div className="flex flex-col gap-4">
                     {!diagnosticoId ? (
-                      <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 text-white flex flex-col">
+                      <div className="qe-card rounded-2xl p-6 text-white flex flex-col">
                         <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">
                           {isPro ? 'Incluido en tu plan' : 'Paso 1 recomendado'}
                         </div>
@@ -455,7 +454,7 @@ export default function Inicio() {
                         </Link>
                       </div>
                     ) : (
-                      <div className="bg-[#111111] rounded-2xl border border-white/8 p-5 flex items-center gap-3">
+                      <div className="qe-card rounded-2xl p-5 flex items-center gap-3">
                         <span className="inline-flex px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-500/15 text-orange-300">
                           Pago pendiente
                         </span>
@@ -469,7 +468,7 @@ export default function Inicio() {
                 {/* Columna derecha: beneficios o upgrade (solo si no está procesando) */}
                 {diagnosticoEstado !== 'procesando' && (
                   !diagnosticoId ? (
-                    <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+                    <div className="qe-card rounded-2xl p-6">
                       <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-4">
                         ¿Qué incluye tu diagnóstico?
                       </div>
@@ -485,7 +484,7 @@ export default function Inicio() {
                       </ul>
                     </div>
                   ) : !isPro ? (
-                    <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 flex flex-col">
+                    <div className="qe-card rounded-2xl p-6 flex flex-col">
                       <h3 className="text-[15px] font-semibold text-white mb-3">
                         ¿Quieres más ayuda con tu proceso?
                       </h3>

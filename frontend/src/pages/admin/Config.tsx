@@ -119,10 +119,10 @@ export default function Config() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Configuración</h1>
+      <div className="p-4 md:p-6 lg:p-8">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Configuración</h1>
 
-        <div className="bg-[#111111] rounded-2xl border border-white/10 p-6 max-w-[500px]">
+        <div className="qe-card rounded-2xl p-6 max-w-[500px]">
           <h2 className="text-[16px] font-semibold text-white mb-5">Límites del Chat IA</h2>
 
           {loading ? (
@@ -179,7 +179,7 @@ export default function Config() {
         </div>
 
         {/* Planes */}
-        <div className="mt-8 bg-[#111111] rounded-2xl border border-white/10 p-6 max-w-[900px]">
+        <div className="mt-8 qe-card rounded-2xl p-6 max-w-[900px]">
           <h2 className="text-[16px] font-semibold text-white mb-5">Gestión de Planes</h2>
 
           {loadingPlanes ? (

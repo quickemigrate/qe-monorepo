@@ -47,6 +47,81 @@
   box-shadow: 0 32px 64px -16px rgba(26, 28, 28, 0.04);
 }
 
+/* ──────────────────────────────────────────────────────────
+   Liquid Glass — paneles admin/cliente (dark)
+   Brand: #25D366 verde · Ink: #1A1C1C
+   ────────────────────────────────────────────────────────── */
+@layer utilities {
+  .qe-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    transition: background-color .2s ease, border-color .2s ease;
+  }
+
+  .qe-card-hover:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .qe-card-strong {
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 16px 40px -16px rgba(0, 0, 0, 0.6);
+  }
+
+  .qe-input {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .qe-input:focus,
+  .qe-input:focus-within {
+    border-color: rgba(37, 211, 102, 0.45);
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.12);
+    outline: none;
+  }
+
+  /* Aurora bg — gradient blobs detrás del main */
+  .qe-aurora-bg {
+    position: relative;
+    isolation: isolate;
+  }
+  .qe-aurora-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(55% 45% at 12% 8%,  rgba(37, 211, 102, 0.18), transparent 65%),
+      radial-gradient(45% 40% at 92% 92%, rgba(56, 189, 248, 0.10), transparent 65%),
+      radial-gradient(40% 35% at 60% 50%, rgba(167, 139, 250, 0.06), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  /* Light variant para tema 'minimal' */
+  .qe-aurora-bg-light::before {
+    background:
+      radial-gradient(55% 45% at 12% 8%,  rgba(37, 211, 102, 0.12), transparent 65%),
+      radial-gradient(45% 40% at 92% 92%, rgba(59, 130, 246, 0.08), transparent 65%),
+      radial-gradient(40% 35% at 60% 50%, rgba(167, 139, 250, 0.05), transparent 70%);
+  }
+
+  /* Hairline divider sobre glass */
+  .qe-divider {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
 @keyframes aurora {
   from { background-position: 50% 50%, 50% 50%; }
   to   { background-position: 350% 50%, 350% 50%; }

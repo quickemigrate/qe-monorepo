@@ -85,12 +85,12 @@ export default function Expediente() {
   return (
     <ClientLayout>
       <div className="p-8 space-y-6 max-w-[700px]">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">
           Mi Expediente
         </h1>
 
         {/* Estado del expediente */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[16px] font-semibold text-white mb-4">Estado de tu expediente</h2>
 
           {loading ? (
@@ -126,7 +126,7 @@ export default function Expediente() {
 
         {/* Timeline */}
         {expediente && (
-          <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+          <div className="qe-card rounded-2xl p-6">
             <h2 className="text-[16px] font-semibold text-white mb-5">Progreso de tu proceso</h2>
             <div className="space-y-0">
               {ESTADOS.map((estado, i) => {
@@ -171,7 +171,7 @@ export default function Expediente() {
         )}
 
         {/* Documentos */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-2">
             <FileText size={18} className="text-white/30" />
             <h2 className="text-[16px] font-semibold text-white">Documentos</h2>
@@ -182,7 +182,7 @@ export default function Expediente() {
         </div>
 
         {/* Ayuda */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[16px] font-semibold text-white mb-1">¿Necesitas ayuda?</h2>
           <p className="text-[13.5px] text-white/50 mb-4">
             Nuestro equipo está disponible para resolver cualquier duda sobre tu proceso.

@@ -98,12 +98,12 @@ export default function Perfil() {
   return (
     <ClientLayout>
       <div className="p-8 max-w-[640px] space-y-6">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">
           Mi Perfil
         </h1>
 
         {/* Datos de cuenta */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Datos de cuenta</h2>
           <div className="space-y-4">
             <div>
@@ -122,7 +122,7 @@ export default function Perfil() {
         </div>
 
         {/* Tema del panel */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[15px] font-semibold text-white mb-1">Apariencia</h2>
           <p className="text-[13px] text-white/40 mb-5">Elige el tema de tu panel</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
@@ -172,7 +172,7 @@ export default function Perfil() {
         </div>
 
         {/* Personalización IA */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[15px] font-semibold text-white mb-1">Asistente IA</h2>
           <p className="text-[13px] text-white/40 mb-6">Ajusta cómo responde Mia a tus preguntas</p>
 
@@ -227,7 +227,7 @@ export default function Perfil() {
         </div>
 
         {/* Cambiar contraseña */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Cambiar contraseña</h2>
           <div className="space-y-4">
             {resultado && (

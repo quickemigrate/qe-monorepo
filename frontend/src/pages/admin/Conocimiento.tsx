@@ -195,13 +195,13 @@ export default function Conocimiento() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white mb-6">
+      <div className="p-4 md:p-6 lg:p-8">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-6">
           Base de Conocimiento Legal
         </h1>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-[#111111] border border-white/10 rounded-2xl p-1 w-fit">
+        <div className="flex gap-1 mb-6 qe-card rounded-2xl p-1 w-fit">
           {(['documentos', 'buscador'] as const).map(t => (
             <button
               key={t}
@@ -260,7 +260,7 @@ export default function Conocimiento() {
               </button>
             </div>
 
-            <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
+            <div className="qe-card rounded-2xl overflow-hidden">
               {loadingDocs ? (
                 <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando documentos...</div>
               ) : docs.length === 0 ? (
@@ -321,7 +321,7 @@ export default function Conocimiento() {
         {/* ── TAB 2: BUSCADOR ── */}
         {tab === 'buscador' && (
           <div>
-            <div className="bg-[#111111] rounded-2xl border border-white/10 p-6 mb-6">
+            <div className="qe-card rounded-2xl p-6 mb-6">
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div>
                   <label className={labelCls}>Consulta *</label>
@@ -333,7 +333,7 @@ export default function Conocimiento() {
                     className={inputCls}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className={labelCls}>Colección (opcional)</label>
                     <select
@@ -383,12 +383,12 @@ export default function Conocimiento() {
             {searchDone && (
               <div className="space-y-3">
                 {resultados.length === 0 ? (
-                  <div className="bg-[#111111] rounded-2xl border border-white/10 px-6 py-10 text-center text-white/40 text-[14px]">
+                  <div className="qe-card rounded-2xl px-6 py-10 text-center text-white/40 text-[14px]">
                     Sin resultados para esta consulta.
                   </div>
                 ) : (
                   resultados.map((r, i) => (
-                    <div key={r.id} className="bg-[#111111] rounded-2xl border border-white/10 p-5">
+                    <div key={r.id} className="qe-card rounded-2xl p-5">
                       <div className="flex items-start gap-3 mb-3">
                         <span className="text-[11px] font-bold text-white/30 w-5 shrink-0 pt-0.5">{i + 1}</span>
                         <h3 className="text-[15px] font-semibold text-white">{r.titulo}</h3>
@@ -433,7 +433,7 @@ export default function Conocimiento() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <div className="relative qe-card-strong rounded-[24px] shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
               <h2 className="text-[18px] font-semibold text-white">Añadir Documento</h2>
               <button onClick={closeModal} className="text-white/40 hover:text-white transition-colors">

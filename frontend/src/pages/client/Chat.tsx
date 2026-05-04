@@ -251,7 +251,7 @@ export default function Chat() {
   if (errorEstado || !estado) {
     return (
       <ClientLayout>
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-8 text-center">
+        <div className="qe-card rounded-2xl p-8 text-center">
           <p className="text-[14px] text-white/50">
             No se pudo cargar el estado del asistente. Inténtalo de nuevo más tarde.
           </p>
@@ -315,7 +315,7 @@ export default function Chat() {
 
         {/* Search bar */}
         {searchOpen && (
-          <div className="flex items-center gap-2 bg-[#111111] rounded-2xl border border-white/8 px-4 py-2.5 mb-3">
+          <div className="flex items-center gap-2 qe-card rounded-2xl px-4 py-2.5 mb-3">
             <Search size={14} className="text-white/30 shrink-0" />
             <input
               ref={searchRef}
@@ -337,7 +337,7 @@ export default function Chat() {
 
         {/* Consentimiento */}
         {consentimientoPendiente && (
-          <div className="bg-[#111111] border border-white/8 rounded-2xl p-4 mb-4 text-white">
+          <div className="qe-card rounded-2xl p-4 mb-4 text-white">
             <p className="text-[13.5px] font-medium mb-3">
               ¿Quieres que el asistente tenga acceso a tu diagnóstico previo para darte respuestas más personalizadas?
             </p>
@@ -362,7 +362,7 @@ export default function Chat() {
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex-1 bg-[#111111] rounded-2xl border border-white/8 overflow-y-auto p-5 space-y-4 mb-3 mt-4"
+          className="flex-1 qe-card rounded-2xl overflow-y-auto p-5 space-y-4 mb-3 mt-4"
         >
           {loadingMas && (
             <div className="flex justify-center py-2">
@@ -464,11 +464,11 @@ export default function Chat() {
 
         {/* Input */}
         {limiteAlcanzado ? (
-          <div className="bg-[#111111] rounded-2xl border border-white/8 px-4 py-3 text-center text-[13.5px] text-white/50">
+          <div className="qe-card rounded-2xl px-4 py-3 text-center text-[13.5px] text-white/50">
             Has alcanzado el límite de {estado.mensajesLimit} mensajes de tu plan.
           </div>
         ) : (
-          <div className="flex gap-2 bg-[#111111] rounded-2xl border border-white/8 p-2">
+          <div className="flex gap-2 qe-card rounded-2xl p-2">
             <textarea
               ref={inputRef}
               value={input}

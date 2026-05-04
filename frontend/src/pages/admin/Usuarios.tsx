@@ -210,7 +210,7 @@ export default function Usuarios() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Toast */}
         {toast && (
           <div className={`fixed top-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg text-[13.5px] font-medium
@@ -224,7 +224,7 @@ export default function Usuarios() {
         )}
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">Usuarios</h1>
+          <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">Usuarios</h1>
           <div className="flex gap-2">
             <button
               onClick={handleSincronizar}
@@ -246,7 +246,7 @@ export default function Usuarios() {
           </div>
         </div>
 
-        <div className="bg-[#111111] rounded-2xl border border-white/10 overflow-hidden">
+        <div className="qe-card rounded-2xl overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando usuarios...</div>
           ) : usuarios.length === 0 ? (
@@ -332,7 +332,7 @@ export default function Usuarios() {
       {detalle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDetalle(null)} />
-          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[580px] max-h-[85vh] flex flex-col">
+          <div className="relative qe-card-strong rounded-[24px] shadow-2xl w-full max-w-[580px] max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
               <div>
                 <h2 className="text-[18px] font-semibold text-white">{detalle.nombre || detalle.email}</h2>
@@ -346,7 +346,7 @@ export default function Usuarios() {
             <div className="overflow-y-auto px-7 py-6 space-y-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">Cuenta</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InfoRow label="Plan" value={detalle.plan} />
                   <InfoRow label="Mensajes usados" value={String(detalle.mensajesUsados || 0)} />
                   <InfoRow label="Registro" value={detalle.creadoEn ? new Date(detalle.creadoEn).toLocaleDateString('es-ES') : '—'} />
@@ -357,7 +357,7 @@ export default function Usuarios() {
               {detalle.perfil && (
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-3">Perfil migratorio</p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <InfoRow label="País / Nacionalidad" value={detalle.perfil.pais} />
                     <InfoRow label="Edad" value={detalle.perfil.edad} />
                     <InfoRow label="Sector" value={detalle.perfil.sector} />
@@ -405,7 +405,7 @@ export default function Usuarios() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[440px]">
+          <div className="relative qe-card-strong rounded-[24px] shadow-2xl w-full max-w-[440px]">
             <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
               <h2 className="text-[18px] font-semibold text-white">Crear Usuario</h2>
               <button onClick={closeModal} className="text-white/40 hover:text-white transition-colors">
@@ -492,7 +492,7 @@ export default function Usuarios() {
       {confirmEliminar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !eliminando && setConfirmEliminar(null)} />
-          <div className="relative bg-[#111111] border border-white/10 rounded-[24px] shadow-2xl w-full max-w-[400px] px-7 py-6">
+          <div className="relative qe-card-strong rounded-[24px] shadow-2xl w-full max-w-[400px] px-7 py-6">
             <div className="flex items-start gap-4 mb-5">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
                 <Trash2 size={18} className="text-red-400" />

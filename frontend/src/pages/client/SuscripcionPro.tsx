@@ -88,7 +88,7 @@ export default function SuscripcionPro() {
             <Sparkles size={12} />
             Plan Pro
           </div>
-          <h1 className="text-[28px] font-semibold tracking-[-0.025em] text-white">
+          <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">
             Actualizar a Pro
           </h1>
           <p className="text-[14px] text-white/50 mt-1">
@@ -107,7 +107,7 @@ export default function SuscripcionPro() {
         )}
 
         {/* Features card */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6 mb-4">
+        <div className="qe-card rounded-2xl p-6 mb-4">
           <h2 className="text-[13px] font-semibold text-white/50 uppercase tracking-[0.08em] mb-4">
             Incluido en Pro
           </h2>
@@ -125,7 +125,7 @@ export default function SuscripcionPro() {
         </div>
 
         {/* Price + payment */}
-        <div className="bg-[#111111] rounded-2xl border border-white/8 p-6">
+        <div className="qe-card rounded-2xl p-6">
           <div className="flex items-baseline gap-2 mb-1">
             <span className="text-[40px] font-bold text-white leading-none">{precioNum}€</span>
             <span className="text-[14px] text-white/40">/mes</span>
