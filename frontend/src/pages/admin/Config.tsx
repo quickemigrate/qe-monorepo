@@ -119,10 +119,12 @@ export default function Config() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-6 lg:p-8">
-        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Configuración</h1>
+      <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-6 md:mb-8">Configuración</h1>
 
-        <div className="qe-card rounded-2xl p-5 md:p-6 max-w-[560px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
+
+        <div className="qe-card rounded-2xl p-5 md:p-6 lg:col-span-4">
           <h2 className="text-[16px] font-semibold text-white mb-5">Límites del Chat IA</h2>
 
           {loading ? (
@@ -179,7 +181,7 @@ export default function Config() {
         </div>
 
         {/* Planes */}
-        <div className="mt-6 md:mt-8 qe-card rounded-2xl p-5 md:p-6 max-w-[960px]">
+        <div className="qe-card rounded-2xl p-5 md:p-6 lg:col-span-8">
           <h2 className="text-[16px] font-semibold text-white mb-5">Gestión de Planes</h2>
 
           {loadingPlanes ? (
@@ -197,7 +199,7 @@ export default function Config() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5">
                 {planes.map((plan, idx) => (
                   <div key={plan.id} className="qe-card rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between mb-1">
@@ -285,6 +287,7 @@ export default function Config() {
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </AdminLayout>

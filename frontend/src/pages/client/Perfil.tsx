@@ -97,11 +97,12 @@ export default function Perfil() {
 
   return (
     <ClientLayout>
-      <div className="p-4 md:p-6 lg:p-8 max-w-[680px] space-y-5 md:space-y-6">
-        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white">
+      <div className="p-4 md:p-6 lg:p-8 max-w-[1280px] mx-auto">
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-5 md:mb-6">
           Mi Perfil
         </h1>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 items-start">
         {/* Datos de cuenta */}
         <div className="qe-card rounded-2xl p-5 md:p-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Datos de cuenta</h2>
@@ -135,26 +136,49 @@ export default function Perfil() {
                 <button
                   key={t.id}
                   onClick={() => setPendingTema(t.id as TemaId)}
-                  className={`relative rounded-xl overflow-hidden border transition-colors text-left
+                  className={`relative rounded-xl overflow-hidden border transition-all text-left
                     ${isPending
-                      ? 'border-[#25D366] ring-2 ring-[#25D366]/30'
+                      ? 'border-[#25D366] ring-2 ring-[#25D366]/40 shadow-lg shadow-[#25D366]/10'
                       : 'border-white/10 hover:border-white/25'
                     }`}
+                  style={{ backgroundColor: t.main }}
                 >
-                  <div className="h-14 w-full" style={{ background: t.preview }} />
-                  <div
-                    className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full ring-2 ring-black/40"
-                    style={{ backgroundColor: t.accent }}
-                  />
+                  {/* Mini mockup: sidebar barra izq + main area */}
+                  <div className="relative h-20 w-full flex">
+                    {/* Sidebar */}
+                    <div
+                      className="w-[34%] h-full flex flex-col items-center justify-start pt-2 gap-1.5 border-r"
+                      style={{ background: t.sidebar, borderColor: t.sidebarBorder }}
+                    >
+                      <span className="w-3 h-3 rounded" style={{ backgroundColor: t.accent }} />
+                      <span className="w-5 h-1 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.18)' }} />
+                      <span className="w-5 h-1 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }} />
+                      <span className="w-5 h-1 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }} />
+                    </div>
+                    {/* Main area */}
+                    <div className="flex-1 h-full p-2 flex flex-col gap-1.5" style={{ background: t.main }}>
+                      <span className="block w-3/4 h-1.5 rounded" style={{ backgroundColor: t.isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' }} />
+                      <span className="block w-1/2 h-1 rounded" style={{ backgroundColor: t.isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)' }} />
+                      <div className="mt-auto flex gap-1">
+                        <span className="block flex-1 h-3 rounded" style={{ backgroundColor: t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+                        <span className="block flex-1 h-3 rounded" style={{ backgroundColor: t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+                      </div>
+                    </div>
+                  </div>
                   {isPending && (
-                    <div className="absolute top-2 left-2 w-5 h-5 bg-[#25D366] rounded-full flex items-center justify-center shadow">
-                      <CheckCircle2 size={12} className="text-[#062810]" />
+                    <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-[#25D366] rounded-full flex items-center justify-center shadow-md z-10">
+                      <CheckCircle2 size={12} className="text-[#062810]" strokeWidth={3} />
                     </div>
                   )}
-                  <div className="px-3 py-2 bg-black/30 backdrop-blur-sm flex items-center gap-1.5">
-                    <p className="text-[12.5px] font-semibold text-white flex-1 truncate">{t.name}</p>
+                  <div className="px-3 py-2 flex items-center gap-1.5"
+                    style={{
+                      borderTop: `1px solid ${t.sidebarBorder}`,
+                      background: t.isDark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.45)',
+                      backdropFilter: 'blur(10px)',
+                    }}>
+                    <p className={`text-[12.5px] font-semibold flex-1 truncate ${t.isDark ? 'text-white' : 'text-slate-900'}`}>{t.name}</p>
                     {isApplied && !isPending && (
-                      <span className="text-[10px] text-emerald-400 font-medium shrink-0">activo</span>
+                      <span className="text-[10px] text-emerald-400 font-medium shrink-0 uppercase tracking-wide">activo</span>
                     )}
                   </div>
                 </button>
@@ -265,6 +289,7 @@ export default function Perfil() {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </ClientLayout>
