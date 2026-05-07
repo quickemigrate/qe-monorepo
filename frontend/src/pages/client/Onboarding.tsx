@@ -13,6 +13,10 @@ export default function Onboarding() {
 
     const familiaresEnEspana = answers.family_in_spain_or_eu && answers.family_in_spain_or_eu !== 'no' ? 'Sí' : 'No';
 
+    const idiomasRaw = (answers as any).languages || (answers as any).other_languages || (answers as any).idiomas || '';
+    const otrosIdiomas = idiomasRaw && String(idiomasRaw).trim() && String(idiomasRaw).toLowerCase() !== 'no' ? 'Sí' : '';
+    const cualesIdiomas = otrosIdiomas === 'Sí' ? String(idiomasRaw) : '';
+
     await fetch(`${API}/api/usuarios/perfil`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -28,8 +32,8 @@ export default function Onboarding() {
         objetivo: answers.migration_goal || '',
         plazo: answers.urgency || '',
         familiaresEnEspana,
-        otrosIdiomas: 'No',
-        cualesIdiomas: '',
+        otrosIdiomas,
+        cualesIdiomas,
         respuestas: answers,
         diagnosticoMeta: meta,
       }),

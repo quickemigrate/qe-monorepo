@@ -29,6 +29,7 @@ import OnboardingGuard from './components/OnboardingGuard';
 import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
+import LegalPage from './pages/LegalPage';
 import { PreferenciasProvider } from './context/PreferenciasContext';
 
 function ScrollToTop() {
@@ -61,6 +62,7 @@ function AppShell() {
         <Route path="/admin/conocimiento" element={<ProtectedRoute><Conocimiento /></ProtectedRoute>} />
         <Route path="/admin/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
         <Route path="/admin/config" element={<ProtectedRoute><Config /></ProtectedRoute>} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
         <Route path="/diagnostico" element={<DiagnosticoPage />} />
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />

@@ -24,6 +24,13 @@ function formatBytes(bytes: number): string {
 }
 
 const MAX_DOCS: Record<string, number> = { pro: 5, premium: 10 };
+const MAX_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_EXT = ['.pdf', '.txt'];
+
+function isExtAccepted(name: string): boolean {
+  const lower = name.toLowerCase();
+  return ACCEPTED_EXT.some(ext => lower.endsWith(ext));
+}
 
 export default function Documentos() {
   const { plan, loading: loadingPlan } = useClientePlan();
@@ -32,6 +39,7 @@ export default function Documentos() {
 
   const [docs, setDocs] = useState<Documento[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
+  const [loadDocsError, setLoadDocsError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -52,20 +60,34 @@ export default function Documentos() {
 
   const fetchDocs = async () => {
     setLoadingDocs(true);
+    setLoadDocsError(false);
     try {
       const token = await getToken();
       const res = await fetch(`${API}/api/documentos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setDocs(data.data);
-      }
+      if (!res.ok) { setLoadDocsError(true); return; }
+      const data = await res.json();
+      setDocs(data.data);
     } catch {
-      // silently ignore
+      setLoadDocsError(true);
     } finally {
       setLoadingDocs(false);
     }
+  };
+
+  const validarArchivo = (f: File): string => {
+    if (!isExtAccepted(f.name)) return 'Formato no soportado. Solo PDF o TXT.';
+    if (f.size > MAX_BYTES) return `Archivo demasiado grande (${(f.size / 1024 / 1024).toFixed(1)} MB). Máx 5 MB.`;
+    return '';
+  };
+
+  const seleccionarArchivo = (f: File | null) => {
+    if (!f) { setArchivo(null); return; }
+    const err = validarArchivo(f);
+    if (err) { setError(err); setArchivo(null); if (fileInputRef.current) fileInputRef.current.value = ''; return; }
+    setError('');
+    setArchivo(f);
   };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -121,7 +143,7 @@ export default function Documentos() {
     e.preventDefault();
     setDragging(false);
     const f = e.dataTransfer.files[0];
-    if (f) setArchivo(f);
+    if (f) seleccionarArchivo(f);
   };
 
   if (loadingPlan || (plan && plan === 'starter')) return null;
@@ -161,12 +183,17 @@ export default function Documentos() {
             <form onSubmit={handleUpload} className="space-y-4">
               {/* Drop zone */}
               <div
+                role="button"
+                tabIndex={0}
+                aria-label="Subir documento PDF o TXT, máximo 5 MB"
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
                 className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed
                   cursor-pointer transition-colors py-8 px-4 text-center
+                  focus:outline-none focus:ring-2 focus:ring-[#25D366]/40
                   ${dragging ? 'border-[#25D366]/60 bg-[#25D366]/5' : 'border-white/10 hover:border-white/20 bg-white/3'}`}
               >
                 <input
@@ -174,7 +201,7 @@ export default function Documentos() {
                   type="file"
                   accept=".pdf,.txt"
                   className="hidden"
-                  onChange={e => setArchivo(e.target.files?.[0] || null)}
+                  onChange={e => seleccionarArchivo(e.target.files?.[0] || null)}
                 />
                 {archivo ? (
                   <>
@@ -195,7 +222,7 @@ export default function Documentos() {
                     <p className="text-[13.5px] text-white/50">
                       Arrastra un archivo aquí o <span className="text-[#25D366] font-medium">haz click</span>
                     </p>
-                    <p className="text-[12px] text-white/30">PDF o TXT · máx. 5 MB</p>
+                    <p className="text-[12px] text-white/30">Solo PDF o TXT · máx. 5 MB</p>
                   </>
                 )}
               </div>
@@ -241,6 +268,17 @@ export default function Documentos() {
             <div className="flex items-center justify-center gap-2 py-10 text-white/30">
               <Loader2 size={16} className="animate-spin" />
               <span className="text-[13px]">Cargando...</span>
+            </div>
+          ) : loadDocsError ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-center px-6">
+              <AlertCircle size={20} className="text-red-400" />
+              <p className="text-[13.5px] text-white/50">No se pudieron cargar tus documentos.</p>
+              <button
+                onClick={fetchDocs}
+                className="text-[12.5px] font-semibold text-[#25D366] hover:opacity-80"
+              >
+                Reintentar
+              </button>
             </div>
           ) : docs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-6">

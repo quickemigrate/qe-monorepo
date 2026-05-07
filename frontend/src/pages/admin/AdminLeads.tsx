@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRightCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, ArrowRightCircle, CheckCircle2, AlertCircle, Search } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -63,6 +63,9 @@ export default function AdminLeads() {
   const [convertForm, setConvertForm] = useState<ConvertForm | null>(null);
   const [converting, setConverting] = useState(false);
   const [convertResult, setConvertResult] = useState<'success' | 'error' | null>(null);
+
+  const [search, setSearch] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState<string>('todos');
 
   const fetchLeads = async () => {
     const token = await getToken();
@@ -142,13 +145,51 @@ export default function AdminLeads() {
   return (
     <AdminLayout>
       <div className="p-4 md:p-6 lg:p-8">
-        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-8">Leads</h1>
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.025em] text-white mb-6">Leads</h1>
 
+        {/* Filtros */}
+        {!loading && leads.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-5">
+            <div className="flex-1 flex items-center gap-2 qe-card rounded-xl px-3.5 py-2.5">
+              <Search size={14} className="text-white/30 shrink-0" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar por nombre o email..."
+                className="flex-1 bg-transparent text-[13.5px] text-white placeholder:text-white/30 focus:outline-none"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-white/30 hover:text-white">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <select
+              value={filtroEstado}
+              onChange={e => setFiltroEstado(e.target.value)}
+              className="qe-card rounded-xl px-3.5 py-2.5 text-[13.5px] text-white bg-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#25D366]/30"
+            >
+              <option value="todos">Todos los estados</option>
+              {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </div>
+        )}
+
+        {(() => {
+          const q = search.trim().toLowerCase();
+          const leadsFiltrados = leads.filter(l => {
+            if (filtroEstado !== 'todos' && l.estado !== filtroEstado) return false;
+            if (q && !`${l.nombre} ${l.email}`.toLowerCase().includes(q)) return false;
+            return true;
+          });
+          return (
         <div className="qe-card rounded-2xl overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando leads...</div>
           ) : leads.length === 0 ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Sin leads aún.</div>
+          ) : leadsFiltrados.length === 0 ? (
+            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Sin resultados para los filtros aplicados.</div>
           ) : (
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[600px] text-[13.5px]">
@@ -162,7 +203,7 @@ export default function AdminLeads() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leads.map((lead, i) => (
+                  {leadsFiltrados.map((lead, i) => (
                     <tr
                       key={lead.id}
                       onClick={() => openPanel(lead)}
@@ -202,6 +243,8 @@ export default function AdminLeads() {
             </div>
           )}
         </div>
+          );
+        })()}
       </div>
 
       {/* Side panel */}

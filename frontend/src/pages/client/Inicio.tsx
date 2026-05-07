@@ -76,6 +76,8 @@ export default function Inicio() {
   const [userData, setUserData] = useState<any>(null);
   const [diagnostico, setDiagnostico] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [pollStuck, setPollStuck] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -93,24 +95,24 @@ export default function Inicio() {
   // Initial load
   useEffect(() => {
     const load = async () => {
+      setLoadError(false);
       try {
         const token = await getAuth().currentUser?.getIdToken();
-        if (!token) return;
+        if (!token) { setLoadError(true); return; }
         const res = await fetch(`${API}/api/usuarios/perfil`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) {
-          const data = await res.json();
-          setUserData(data.data);
-          if (data.data?.diagnosticoId) {
-            const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (diagRes.ok) setDiagnostico(await diagRes.json());
-          }
+        if (!res.ok) { setLoadError(true); return; }
+        const data = await res.json();
+        setUserData(data.data);
+        if (data.data?.diagnosticoId) {
+          const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (diagRes.ok) setDiagnostico(await diagRes.json());
         }
       } catch {
-        // silently ignore
+        setLoadError(true);
       } finally {
         setLoadingUser(false);
       }
@@ -118,10 +120,19 @@ export default function Inicio() {
     load();
   }, []);
 
-  // Polling while procesando — se detiene automáticamente al completar
+  // Polling while procesando — se detiene automáticamente al completar o tras 30 intentos (~2.5min)
   useEffect(() => {
     if (diagnosticoEstado !== 'procesando' || !diagnosticoId) return;
+    setPollStuck(false);
+    let intentos = 0;
+    const MAX = 30;
     const interval = setInterval(async () => {
+      intentos++;
+      if (intentos > MAX) {
+        setPollStuck(true);
+        clearInterval(interval);
+        return;
+      }
       try {
         const token = await getAuth().currentUser?.getIdToken();
         const res = await fetch(`${API}/api/diagnostico/${diagnosticoId}`, {
@@ -277,6 +288,17 @@ export default function Inicio() {
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-[14px]">Cargando tu diagnóstico...</span>
               </div>
+            ) : loadError ? (
+              <div className="qe-card rounded-2xl p-6 border border-red-500/20 bg-red-500/5">
+                <div className="text-[14px] text-red-300 font-semibold mb-1">No se pudo cargar tu información</div>
+                <p className="text-[13px] text-white/50 mb-4">Comprueba tu conexión y reintenta. Si persiste, contacta hola@quickemigrate.com.</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="rounded-full bg-[#25D366] text-[#062810] font-bold px-5 py-2 text-[13px] hover:bg-[#2adc6c] transition"
+                >
+                  Reintentar
+                </button>
+              </div>
             ) : diagnosticoEstado === 'completado' ? ( // already dark-styled
               /* ── COMPLETADO: flex-row 50% + 50% (lg+); stack vertical mobile/tablet ── */
               <div className="w-full flex flex-col lg:flex-row gap-4 md:gap-6 lg:h-[calc(100dvh-160px)]">
@@ -429,6 +451,12 @@ export default function Inicio() {
                         style={{ animation: 'progress-slide 1.5s ease-in-out infinite' }}
                       />
                     </div>
+                    {pollStuck && (
+                      <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/8 px-4 py-3 text-[13px] text-amber-300">
+                        Está tardando más de lo habitual. Recibirás el informe por email cuando termine.
+                        Si en 30 minutos no llega, escribe a hola@quickemigrate.com.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* Sin diagnóstico o pendiente pago — columna izquierda */

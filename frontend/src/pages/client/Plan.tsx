@@ -66,16 +66,19 @@ export default function Plan() {
                 {PLAN_LABEL[plan || 'free']}
               </span>
               {(plan === 'pro' || plan === 'premium') && mensajesLimit > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-[13.5px] text-white/50">
-                    Mensajes IA: <strong className="text-white">{mensajesUsados}</strong> / {mensajesLimit}
-                  </span>
-                  <div className="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#25D366] transition-all"
-                      style={{ width: `${Math.min((mensajesUsados / mensajesLimit) * 100, 100)}%` }}
-                    />
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[13.5px] text-white/50">
+                      Mensajes IA: <strong className="text-white">{mensajesUsados}</strong> / {mensajesLimit}
+                    </span>
+                    <div className="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#25D366] transition-all"
+                        style={{ width: `${Math.min((mensajesUsados / mensajesLimit) * 100, 100)}%` }}
+                      />
+                    </div>
                   </div>
+                  <span className="text-[11.5px] text-white/35">Resetea el día 1 de cada mes</span>
                 </div>
               )}
             </div>
@@ -108,10 +111,10 @@ export default function Plan() {
               <Fila caracteristica="Diagnóstico IA" starter={<Si />} pro={<Si />} premium={<Si />} actual={plan} />
               <Fila caracteristica="PDF personalizado" starter={<Si />} pro={<Si />} premium={<Si />} actual={plan} />
               <Fila
-                caracteristica="Asistente IA"
+                caracteristica="Asistente IA (resetea día 1 cada mes)"
                 starter={<No />}
-                pro={<span className="text-emerald-400 font-semibold">50 msgs</span>}
-                premium={<span className="text-emerald-400 font-semibold">200 msgs</span>}
+                pro={<span className="text-emerald-400 font-semibold">50 msgs/mes</span>}
+                premium={<span className="text-emerald-400 font-semibold">200 msgs/mes</span>}
                 actual={plan}
               />
               <Fila caracteristica="Mis Documentos" starter={<No />} pro={<Si />} premium={<Si />} actual={plan} />

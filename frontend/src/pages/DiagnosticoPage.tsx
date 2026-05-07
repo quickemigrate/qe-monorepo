@@ -293,6 +293,7 @@ export default function DiagnosticoPage() {
                 });
                 const data = await res.json();
                 if (!data.success) { setError(data.error || 'Error al generar el diagnóstico.'); return; }
+                if (userEmail) localStorage.setItem('diagnostico_email', userEmail);
                 navigate('/diagnostico/exito');
               } catch {
                 setError('Error al generar el diagnóstico. Inténtalo de nuevo.');
@@ -348,7 +349,10 @@ export default function DiagnosticoPage() {
                 });
                 return res.json();
               }}
-              onSuccess={() => navigate('/diagnostico/exito')}
+              onSuccess={() => {
+                if (userEmail) localStorage.setItem('diagnostico_email', userEmail);
+                navigate('/diagnostico/exito');
+              }}
               onError={(msg) => setError(msg)}
             />
           </Elements>

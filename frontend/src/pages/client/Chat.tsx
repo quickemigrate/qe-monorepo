@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Loader2, Copy, Check, Search, X } from 'lucide-react';
+import { Send, Loader2, Copy, Check, Search, X, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClientLayout from '../../components/client/ClientLayout';
@@ -261,8 +261,25 @@ export default function Chat() {
   }
 
   if (estado.plan === 'starter') {
-    navigate('/cliente/plan', { replace: true });
-    return null;
+    return (
+      <ClientLayout>
+        <div className="qe-card rounded-2xl p-8 text-center max-w-[480px] mx-auto mt-10">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-[#25D366]/15 flex items-center justify-center">
+            <Sparkles size={20} className="text-[#25D366]" />
+          </div>
+          <h2 className="text-[18px] font-semibold text-white mb-2">El asistente IA es exclusivo del Plan Pro</h2>
+          <p className="text-[13.5px] text-white/55 mb-6 leading-[1.6]">
+            Actualiza para chatear con la IA especializada en inmigración y obtener respuestas personalizadas a tu caso.
+          </p>
+          <button
+            onClick={() => navigate('/cliente/plan')}
+            className="rounded-full bg-[#25D366] text-[#062810] font-bold px-6 py-3 text-[14px] hover:bg-[#2adc6c] transition"
+          >
+            Ver planes
+          </button>
+        </div>
+      </ClientLayout>
+    );
   }
 
   const limiteAlcanzado = estado.mensajesUsados >= estado.mensajesLimit;
@@ -464,8 +481,20 @@ export default function Chat() {
 
         {/* Input */}
         {limiteAlcanzado ? (
-          <div className="qe-card rounded-2xl px-4 py-3 text-center text-[13.5px] text-white/50">
-            Has alcanzado el límite de {estado.mensajesLimit} mensajes de tu plan.
+          <div className="qe-card rounded-2xl px-4 py-3.5 flex flex-col sm:flex-row items-center gap-3 sm:justify-between">
+            <span className="text-[13px] text-white/55 text-center sm:text-left">
+              Has alcanzado el límite de {estado.mensajesLimit} mensajes este mes.
+            </span>
+            {estado.plan === 'pro' ? (
+              <button
+                onClick={() => navigate('/cliente/plan')}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] text-[#062810] font-bold px-4 py-2 text-[12.5px] hover:bg-[#2adc6c] transition shrink-0"
+              >
+                <Sparkles size={13} /> Subir a Premium
+              </button>
+            ) : (
+              <span className="text-[12px] text-white/35 shrink-0">Resetea el día 1 de cada mes</span>
+            )}
           </div>
         ) : (
           <div className="flex gap-2 qe-card rounded-2xl p-2">
