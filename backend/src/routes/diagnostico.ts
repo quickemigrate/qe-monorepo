@@ -124,20 +124,45 @@ router.post('/confirm-payment', async (req: Request, res: Response) => {
   try {
     const { paymentIntentId, diagnosticoId } = req.body;
 
+    if (!paymentIntentId || !diagnosticoId) {
+      return res.status(400).json({ success: false, error: 'Faltan datos del pago' });
+    }
+
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status !== 'succeeded') {
       return res.status(400).json({ success: false, error: 'Pago no completado' });
     }
 
-    await db.collection('diagnosticos').doc(diagnosticoId).update({
+    // Ownership: el PaymentIntent debe haberse creado para este diagnosticoId
+    if (paymentIntent.metadata?.diagnosticoId !== diagnosticoId) {
+      return res.status(403).json({ success: false, error: 'Pago no corresponde al diagnóstico' });
+    }
+
+    const diagRef = db.collection('diagnosticos').doc(diagnosticoId);
+    const diagSnap = await diagRef.get();
+    if (!diagSnap.exists) {
+      return res.status(404).json({ success: false, error: 'Diagnóstico no encontrado' });
+    }
+
+    const existing = diagSnap.data()!;
+
+    // Idempotencia: si ya está procesando/completado/error con el mismo PI, devolver éxito sin reprocesar
+    if (
+      existing.stripePaymentIntentId === paymentIntentId &&
+      ['procesando', 'completado', 'error'].includes(existing.estado)
+    ) {
+      return res.json({ success: true, diagnosticoId, alreadyProcessed: true });
+    }
+
+    await diagRef.update({
       estado: 'procesando',
       stripePaymentIntentId: paymentIntentId,
       pagadoEn: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
-    const diagDoc = await db.collection('diagnosticos').doc(diagnosticoId).get();
+    const diagDoc = await diagRef.get();
     const diagData = diagDoc.data()!;
 
     if (diagData.email) {

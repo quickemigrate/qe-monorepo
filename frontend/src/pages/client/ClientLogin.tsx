@@ -25,6 +25,8 @@ export default function ClientLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.trim());
+
   const toggleMode = () => {
     setTransitioning(true);
     setError('');
@@ -37,6 +39,7 @@ export default function ClientLogin() {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!isValidEmail(email)) { setError('Email no válido. Revisa el formato.'); return; }
     setIsLoading(true);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
@@ -66,6 +69,10 @@ export default function ClientLogin() {
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!isValidEmail(email)) {
+      setError('Email no válido. Revisa el formato.');
+      return;
+    }
     if (password.length < 6) {
       setError('La contraseña debe tener mínimo 6 caracteres.');
       return;
@@ -129,13 +136,15 @@ export default function ClientLogin() {
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <label className={labelCls}>Email</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  <label className={labelCls} htmlFor="login-email">Email</label>
+                  <input id="login-email" name="email" type="email" autoComplete="email" inputMode="email" maxLength={254}
+                    value={email} onChange={e => setEmail(e.target.value)}
                     required className={inputCls} placeholder="tu@email.com" />
                 </div>
                 <div>
-                  <label className={labelCls}>Contraseña</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  <label className={labelCls} htmlFor="login-password">Contraseña</label>
+                  <input id="login-password" name="password" type="password" autoComplete="current-password"
+                    value={password} onChange={e => setPassword(e.target.value)}
                     required className={inputCls} placeholder="••••••••" />
                 </div>
                 <button type="submit" disabled={isLoading}
@@ -170,18 +179,21 @@ export default function ClientLogin() {
 
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
-                  <label className={labelCls}>Email</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  <label className={labelCls} htmlFor="reg-email">Email</label>
+                  <input id="reg-email" name="email" type="email" autoComplete="email" inputMode="email" maxLength={254}
+                    value={email} onChange={e => setEmail(e.target.value)}
                     required className={inputCls} placeholder="tu@email.com" />
                 </div>
                 <div>
-                  <label className={labelCls}>Contraseña</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  <label className={labelCls} htmlFor="reg-password">Contraseña</label>
+                  <input id="reg-password" name="new-password" type="password" autoComplete="new-password" minLength={6}
+                    value={password} onChange={e => setPassword(e.target.value)}
                     required className={inputCls} placeholder="Mínimo 6 caracteres" />
                 </div>
                 <div>
-                  <label className={labelCls}>Confirmar contraseña</label>
-                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                  <label className={labelCls} htmlFor="reg-confirm">Confirmar contraseña</label>
+                  <input id="reg-confirm" name="confirm-password" type="password" autoComplete="new-password" minLength={6}
+                    value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                     required className={inputCls} placeholder="Repite la contraseña" />
                 </div>
                 <button type="submit" disabled={isLoading}

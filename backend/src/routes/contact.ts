@@ -1,10 +1,18 @@
 import { Router, Request, Response } from 'express';
 import { Resend } from 'resend';
 import { db } from '../firebase';
+import { rateLimit } from '../middleware/rateLimit';
 
 const router = Router();
 
-router.post('/', async (req: Request, res: Response) => {
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyName: 'contact',
+  message: 'Demasiados mensajes desde tu IP. Espera 1 hora antes de reintentar.',
+});
+
+router.post('/', contactLimiter, async (req: Request, res: Response) => {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { nombre, email, pais, interes, mensaje } = req.body;
 

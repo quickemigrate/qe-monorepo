@@ -80,11 +80,23 @@ router.post('/', verifyToken, async (req: Request, res: Response) => {
   }
 });
 
+const ARTICLE_ALLOWED_FIELDS = ['title', 'slug', 'excerpt', 'content', 'country', 'status', 'metaDescription'] as const;
+
 // Admin: update article
 router.patch('/:id', verifyToken, async (req: Request, res: Response) => {
   const { id } = req.params;
-  const updates = req.body;
   const now = new Date().toISOString();
+
+  const updates: Record<string, unknown> = {};
+  for (const k of ARTICLE_ALLOWED_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(req.body, k)) updates[k] = req.body[k];
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: 'Sin campos válidos para actualizar' });
+  }
+  if (updates.status && !['draft', 'published'].includes(updates.status as string)) {
+    return res.status(400).json({ error: 'Estado inválido' });
+  }
 
   try {
     const docRef = db.collection('articles').doc(id);

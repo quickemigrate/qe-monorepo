@@ -87,6 +87,11 @@ export default function PerfilWizard({
   };
 
   const handleSubmit = async () => {
+    if (!form.nombre.trim() || !form.pais) {
+      setStep(1);
+      setError('Completa nombre y país en el paso 1.');
+      return;
+    }
     if (!form.objetivo) {
       setError('El objetivo principal es obligatorio.');
       return;

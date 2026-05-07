@@ -19,6 +19,35 @@ const upload = multer({
   },
 });
 
+// PDF magic bytes: %PDF (0x25 0x50 0x44 0x46)
+function isPdfBuffer(buf: Buffer): boolean {
+  return buf.length >= 4 && buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46;
+}
+
+// TXT: must be valid UTF-8 (or ASCII) and contain no NUL bytes in first 1KB
+function isTxtBuffer(buf: Buffer): boolean {
+  const sample = buf.subarray(0, Math.min(buf.length, 1024));
+  if (sample.includes(0)) return false;
+  try {
+    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(sample);
+    return decoded.length > 0 || buf.length === 0;
+  } catch {
+    return false;
+  }
+}
+
+function validarContenido(buf: Buffer, mimetype: string): string | null {
+  if (mimetype === 'application/pdf') {
+    if (!isPdfBuffer(buf)) return 'El archivo no es un PDF válido.';
+    return null;
+  }
+  if (mimetype === 'text/plain') {
+    if (!isTxtBuffer(buf)) return 'El archivo no es un TXT válido (encoding no permitido).';
+    return null;
+  }
+  return 'Formato no soportado.';
+}
+
 const MAX_DOCS_PRO = 5;
 const MAX_DOCS_PREMIUM = 10;
 const MAX_TEXT_CHARS = 50_000;
@@ -110,6 +139,11 @@ router.post('/', verifyClientToken, upload.single('archivo'), async (req: Reques
 
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Archivo requerido (PDF o TXT, máx. 5MB)' });
+    }
+
+    const validationError = validarContenido(req.file.buffer, req.file.mimetype);
+    if (validationError) {
+      return res.status(400).json({ success: false, error: validationError });
     }
 
     const maxDocs = plan === 'premium' ? MAX_DOCS_PREMIUM : MAX_DOCS_PRO;

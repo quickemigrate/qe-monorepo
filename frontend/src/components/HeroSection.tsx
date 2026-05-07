@@ -1,9 +1,37 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
-const HeroSection = () => (
+const HeroSection = () => {
+  const navigate = useNavigate();
+  const [authReady, setAuthReady] = useState(false);
+  const [hasUser, setHasUser] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(getAuth(), (u) => {
+      setHasUser(!!u);
+      setAuthReady(true);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleDiagnostico = (e: React.MouseEvent) => {
+    if (!authReady) return;
+    if (!hasUser) {
+      e.preventDefault();
+      navigate('/cliente/login', {
+        state: {
+          mensaje: 'Crea una cuenta o accede para empezar tu diagnóstico',
+          mode: 'register',
+          redirect: '/diagnostico',
+        },
+      });
+    }
+  };
+
+  return (
   <section className="relative pt-28 pb-14 md:pt-48 md:pb-32 px-5 md:px-6 overflow-hidden">
     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
       <motion.div
@@ -36,7 +64,7 @@ const HeroSection = () => (
           Asistencia digital para hispanoamericanos. Sin promesas falsas, solo un camino estructurado hacia tu nueva vida en España.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link to="/diagnostico" className="group bg-primary-container text-on-background px-8 py-4 rounded-full font-bold text-center flex items-center justify-center gap-2 hover:bg-primary-container/90 transition-colors shadow-lg">
+          <Link to="/diagnostico" onClick={handleDiagnostico} className="group bg-primary-container text-on-background px-8 py-4 rounded-full font-bold text-center flex items-center justify-center gap-2 hover:bg-primary-container/90 transition-colors shadow-lg">
             Reservar diagnóstico
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -82,6 +110,7 @@ const HeroSection = () => (
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 export default HeroSection;

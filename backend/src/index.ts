@@ -29,13 +29,27 @@ const allowedOrigins = [
   'https://www.quickemigrate.com',
 ];
 
+const VERCEL_PREVIEW_ALLOWED = (process.env.ALLOW_VERCEL_PREVIEWS || '').toLowerCase() === 'true';
+const VERCEL_PROJECT_PREFIX = process.env.VERCEL_PROJECT_PREFIX || 'qe-monorepo';
+
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    if (VERCEL_PREVIEW_ALLOWED) {
+      try {
+        const url = new URL(origin);
+        if (
+          url.protocol === 'https:' &&
+          url.hostname.endsWith('.vercel.app') &&
+          url.hostname.startsWith(`${VERCEL_PROJECT_PREFIX}-`)
+        ) {
+          return callback(null, true);
+        }
+      } catch { /* invalid origin URL */ }
+    }
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

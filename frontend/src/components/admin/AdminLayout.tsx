@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden bg-[#0A0A0A]">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#0A0A0A]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

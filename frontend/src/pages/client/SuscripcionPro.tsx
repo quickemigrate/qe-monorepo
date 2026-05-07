@@ -71,7 +71,7 @@ export default function SuscripcionPro() {
     return res.json();
   };
 
-  if (loadingPlan) {
+  if (loadingPlan || plan === 'pro' || plan === 'premium') {
     return (
       <ClientLayout>
         <div className="flex items-center justify-center h-64">

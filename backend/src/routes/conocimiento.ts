@@ -121,6 +121,10 @@ router.delete('/:coleccion/:id', verifyToken, async (req: Request, res: Response
   }
 });
 
+const KB_ALLOWED_FIELDS = [
+  'titulo', 'contenido', 'fuente', 'categoria', 'pais', 'url', 'fechaPublicacion', 'activo', 'tags',
+] as const;
+
 // PATCH /api/conocimiento/:coleccion/:id
 router.patch('/:coleccion/:id', verifyToken, async (req: Request, res: Response) => {
   if (!dbKnowledge) return res.status(503).json({ success: false, error: 'Base de conocimiento no disponible' });
@@ -128,9 +132,18 @@ router.patch('/:coleccion/:id', verifyToken, async (req: Request, res: Response)
   if (!COLECCIONES_VALIDAS.has(coleccion)) {
     return res.status(400).json({ success: false, error: 'Colección inválida' });
   }
+
+  const updates: Record<string, unknown> = {};
+  for (const k of KB_ALLOWED_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(req.body, k)) updates[k] = req.body[k];
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ success: false, error: 'Sin campos válidos para actualizar' });
+  }
+
   try {
     await dbKnowledge.collection(coleccion).doc(id).update({
-      ...req.body,
+      ...updates,
       fechaActualizacion: Timestamp.now(),
     });
     res.json({ success: true });

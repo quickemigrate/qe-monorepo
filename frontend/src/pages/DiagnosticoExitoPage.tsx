@@ -15,7 +15,7 @@ export default function DiagnosticoExitoPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const email = typeof window !== 'undefined'
-    ? localStorage.getItem('diagnostico_email') || ''
+    ? sessionStorage.getItem('diagnostico_email') || ''
     : '';
 
   return (

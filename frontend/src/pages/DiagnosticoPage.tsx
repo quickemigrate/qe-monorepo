@@ -293,7 +293,7 @@ export default function DiagnosticoPage() {
                 });
                 const data = await res.json();
                 if (!data.success) { setError(data.error || 'Error al generar el diagnóstico.'); return; }
-                if (userEmail) localStorage.setItem('diagnostico_email', userEmail);
+                if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
                 navigate('/diagnostico/exito');
               } catch {
                 setError('Error al generar el diagnóstico. Inténtalo de nuevo.');
@@ -303,8 +303,9 @@ export default function DiagnosticoPage() {
             }}
             disabled={loadingPayment}
             className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
-                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
+            {loadingPayment && <Loader2 size={16} className="animate-spin" />}
             {loadingPayment ? 'Generando...' : 'Generar mi diagnóstico'}
           </button>
         ) : !clientSecret ? (
@@ -331,8 +332,9 @@ export default function DiagnosticoPage() {
             }}
             disabled={loadingPayment}
             className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
-                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
+            {loadingPayment && <Loader2 size={16} className="animate-spin" />}
             {loadingPayment ? 'Cargando...' : `Pagar ${starterPrecioTexto}`}
           </button>
         ) : (
@@ -350,7 +352,7 @@ export default function DiagnosticoPage() {
                 return res.json();
               }}
               onSuccess={() => {
-                if (userEmail) localStorage.setItem('diagnostico_email', userEmail);
+                if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
                 navigate('/diagnostico/exito');
               }}
               onError={(msg) => setError(msg)}

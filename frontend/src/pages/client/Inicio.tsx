@@ -92,31 +92,32 @@ export default function Inicio() {
   const diagnosticoId = userData?.diagnosticoId;
   const diagnosticoEstado = diagnostico?.estado;
 
-  // Initial load
-  useEffect(() => {
-    const load = async () => {
-      setLoadError(false);
-      try {
-        const token = await getAuth().currentUser?.getIdToken();
-        if (!token) { setLoadError(true); return; }
-        const res = await fetch(`${API}/api/usuarios/perfil`, {
+  const load = async () => {
+    setLoadingUser(true);
+    setLoadError(false);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      if (!token) { setLoadError(true); return; }
+      const res = await fetch(`${API}/api/usuarios/perfil`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { setLoadError(true); return; }
+      const data = await res.json();
+      setUserData(data.data);
+      if (data.data?.diagnosticoId) {
+        const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setLoadError(true); return; }
-        const data = await res.json();
-        setUserData(data.data);
-        if (data.data?.diagnosticoId) {
-          const diagRes = await fetch(`${API}/api/diagnostico/${data.data.diagnosticoId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (diagRes.ok) setDiagnostico(await diagRes.json());
-        }
-      } catch {
-        setLoadError(true);
-      } finally {
-        setLoadingUser(false);
+        if (diagRes.ok) setDiagnostico(await diagRes.json());
       }
-    };
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  useEffect(() => {
     load();
   }, []);
 
@@ -293,7 +294,7 @@ export default function Inicio() {
                 <div className="text-[14px] text-red-300 font-semibold mb-1">No se pudo cargar tu información</div>
                 <p className="text-[13px] text-white/50 mb-4">Comprueba tu conexión y reintenta. Si persiste, contacta hola@quickemigrate.com.</p>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={load}
                   className="rounded-full bg-[#25D366] text-[#062810] font-bold px-5 py-2 text-[13px] hover:bg-[#2adc6c] transition"
                 >
                   Reintentar

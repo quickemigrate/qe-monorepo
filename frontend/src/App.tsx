@@ -30,6 +30,7 @@ import Onboarding from './pages/client/Onboarding';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 import LegalPage from './pages/LegalPage';
+import CookieBanner from './components/CookieBanner';
 import { PreferenciasProvider } from './context/PreferenciasContext';
 
 function ScrollToTop() {
@@ -77,6 +78,7 @@ function AppShell() {
         <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
       </Routes>
       {!isLandingRoute && <Footer />}
+      <CookieBanner />
     </div>
   );
 }

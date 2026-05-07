@@ -4,12 +4,58 @@ import { db } from '../firebase';
 
 const router = Router();
 
+// MAX_SCAN evita full-scan ilimitado: solo se analizan los últimos N completados
+// para ingresos, top países y "este mes". Recientes ya cubre la actividad relevante.
+const MAX_SCAN = 1000;
+
 router.get('/', verifyToken, async (_req, res) => {
   try {
-    const [diagnosticosSnap, usuariosSnap, leadsSnap, configDoc] = await Promise.all([
-      db.collection('diagnosticos').get(),
-      db.collection('usuarios').get(),
-      db.collection('leads').get(),
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    inicioMes.setHours(0, 0, 0, 0);
+    const inicioMesIso = inicioMes.toISOString();
+
+    const diagnosticosCol = db.collection('diagnosticos');
+    const usuariosCol = db.collection('usuarios');
+    const leadsCol = db.collection('leads');
+
+    const [
+      diagTotalAgg,
+      usuariosTotalAgg,
+      leadsTotalAgg,
+      planStarterAgg,
+      planProAgg,
+      planPremiumAgg,
+      leadsPendAgg,
+      diagCompletadosSnap,
+      diagEsteMesSnap,
+      ultimosDiagnosticosSnap,
+      ultimosLeadsSnap,
+      configDoc,
+    ] = await Promise.all([
+      (diagnosticosCol as any).count().get(),
+      (usuariosCol as any).count().get(),
+      (leadsCol as any).count().get(),
+      (usuariosCol.where('plan', '==', 'starter') as any).count().get(),
+      (usuariosCol.where('plan', '==', 'pro') as any).count().get(),
+      (usuariosCol.where('plan', '==', 'premium') as any).count().get(),
+      (leadsCol.where('estado', '==', 'nuevo') as any).count().get(),
+      diagnosticosCol
+        .where('estado', '==', 'completado')
+        .orderBy('completadoEn', 'desc')
+        .limit(MAX_SCAN)
+        .get(),
+      diagnosticosCol
+        .where('estado', '==', 'completado')
+        .where('completadoEn', '>=', inicioMesIso)
+        .limit(MAX_SCAN)
+        .get(),
+      diagnosticosCol
+        .where('estado', '==', 'completado')
+        .orderBy('completadoEn', 'desc')
+        .limit(5)
+        .get(),
+      leadsCol.orderBy('createdAt', 'desc').limit(5).get(),
       db.collection('config').doc('planes').get(),
     ]);
 
@@ -17,27 +63,10 @@ router.get('/', verifyToken, async (_req, res) => {
     const precioStarter: number = configData?.planes
       ?.find((p: any) => p.id === 'starter')?.precio ?? 59;
 
-    const diagnosticos = diagnosticosSnap.docs.map(d => d.data());
-    const completados = diagnosticos.filter(d => d.estado === 'completado');
+    const completados = diagCompletadosSnap.docs.map(d => d.data());
+    const esteMes = diagEsteMesSnap.docs.map(d => d.data());
 
-    const inicioMes = new Date();
-    inicioMes.setDate(1);
-    inicioMes.setHours(0, 0, 0, 0);
-    const esteMes = completados.filter(d =>
-      new Date(d.completadoEn || d.creadoEn) >= inicioMes
-    );
-
-    const usuarios = usuariosSnap.docs.map(d => d.data());
-    const porPlan = {
-      starter: usuarios.filter(u => u.plan === 'starter').length,
-      pro:     usuarios.filter(u => u.plan === 'pro').length,
-      premium: usuarios.filter(u => u.plan === 'premium').length,
-    };
-
-    const leads = leadsSnap.docs.map(d => d.data());
-    const leadsPendientes = leads.filter(l => l.estado === 'nuevo').length;
-
-    const paisesDiag = completados.reduce((acc: Record<string, number>, d) => {
+    const paisesDiag = completados.reduce((acc: Record<string, number>, d: any) => {
       const pais = d.pais || 'Desconocido';
       acc[pais] = (acc[pais] || 0) + 1;
       return acc;
@@ -46,23 +75,6 @@ router.get('/', verifyToken, async (_req, res) => {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([pais, count]) => ({ pais, count }));
-
-    const ultimosDiagnosticos = diagnosticosSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter((d: any) => d.estado === 'completado')
-      .sort((a: any, b: any) =>
-        new Date(b.completadoEn || b.creadoEn).getTime() -
-        new Date(a.completadoEn || a.creadoEn).getTime()
-      )
-      .slice(0, 5);
-
-    const ultimosLeads = leadsSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a: any, b: any) =>
-        new Date(b.creadoEn || b.createdAt || 0).getTime() -
-        new Date(a.creadoEn || a.createdAt || 0).getTime()
-      )
-      .slice(0, 5);
 
     res.json({
       success: true,
@@ -74,16 +86,22 @@ router.get('/', verifyToken, async (_req, res) => {
           ingresosMes: esteMes.reduce((sum: number, d: any) => sum + (d.precio ?? precioStarter), 0),
         },
         usuarios: {
-          total: usuarios.length,
-          porPlan,
+          total: usuariosTotalAgg.data().count,
+          porPlan: {
+            starter: planStarterAgg.data().count,
+            pro: planProAgg.data().count,
+            premium: planPremiumAgg.data().count,
+          },
         },
         leads: {
-          total: leads.length,
-          pendientes: leadsPendientes,
+          total: leadsTotalAgg.data().count,
+          pendientes: leadsPendAgg.data().count,
         },
         topPaises,
-        ultimosDiagnosticos,
-        ultimosLeads,
+        ultimosDiagnosticos: ultimosDiagnosticosSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        ultimosLeads: ultimosLeadsSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        // Total reportado puede excluir docs sin completadoEn — solo usar diagnosticosCount como referencia
+        diagnosticosCount: diagTotalAgg.data().count,
       },
     });
   } catch (error) {

@@ -107,7 +107,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     : { background: 'rgba(0,0,0,0.06)', color: 'rgba(15,23,42,0.5)' };
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden" style={{ backgroundColor: t.main }}>
+    <div className="flex h-[100dvh] w-full overflow-hidden" style={{ backgroundColor: t.main }}>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
       {/* Mobile overlay (md+ no overlay porque rail visible) */}
