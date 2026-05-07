@@ -14,8 +14,11 @@ import configRouter from './routes/config';
 import metricasRouter from './routes/metricas';
 import documentosRouter from './routes/documentos';
 import suscripcionRouter from './routes/suscripcion';
+import notificacionesRouter from './routes/notificaciones';
 import sitemapRouter from './routes/sitemap';
 import { db } from './firebase';
+import { startRecordatoriosCron, procesarRecordatorios } from './services/recordatorios';
+import { verifyToken } from './middleware/auth';
 
 dotenv.config();
 
@@ -62,6 +65,17 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+// Admin: trigger manual recordatorios (testing)
+app.post('/api/admin/recordatorios/run', verifyToken, async (_req, res) => {
+  try {
+    const result = await procesarRecordatorios();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('Error procesando recordatorios:', err);
+    res.status(500).json({ success: false, error: 'Error procesando recordatorios' });
+  }
+});
 app.use('/api/contact', contactRouter);
 app.use('/api/leads', leadsRouter);
 app.use('/api/expedientes', expedientesRouter);
@@ -75,6 +89,7 @@ app.use('/api/config', configRouter);
 app.use('/api/metricas', metricasRouter);
 app.use('/api/documentos', documentosRouter);
 app.use('/api/suscripcion', suscripcionRouter);
+app.use('/api/notificaciones', notificacionesRouter);
 app.use('/sitemap.xml', sitemapRouter);
 
 async function initConfig() {
@@ -89,4 +104,5 @@ async function initConfig() {
 app.listen(PORT, () => {
   console.log(`Backend Quick Emigrate corriendo en http://localhost:${PORT}`);
   initConfig().catch(err => console.error('Error initConfig:', err));
+  startRecordatoriosCron();
 });

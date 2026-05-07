@@ -200,6 +200,43 @@ async function deleteSubcollection(docPath: string, sub: string) {
   return totalDeleted;
 }
 
+// Public: opt-out recordatorios via token de un diagnóstico (link en email)
+router.get('/recordatorios/optout/:diagnosticoId', async (req: Request, res: Response) => {
+  try {
+    const { diagnosticoId } = req.params;
+    const docRef = db.collection('diagnosticos').doc(diagnosticoId);
+    const snap = await docRef.get();
+    if (!snap.exists) {
+      return res.status(404).send('Diagnóstico no encontrado.');
+    }
+    await docRef.update({ recordatoriosOptOut: true });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<html><body style="font-family:Arial;background:#0A0A0A;color:#fff;padding:48px;text-align:center;">
+      <h1>Listo</h1>
+      <p>No volverás a recibir recordatorios sobre este diagnóstico.</p>
+      <p><a href="https://quickemigrate.com" style="color:#25D366;">Volver a Quick Emigrate</a></p>
+    </body></html>`);
+  } catch {
+    res.status(500).send('Error procesando solicitud.');
+  }
+});
+
+// Client: skip onboarding (perfil incompleto pero acceso permitido)
+router.post('/saltar-onboarding', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email as string;
+    await db.collection('usuarios').doc(userEmail).set({
+      onboardingSkipped: true,
+      onboardingSkippedAt: new Date().toISOString(),
+      actualizadoEn: new Date().toISOString(),
+    }, { merge: true });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saltando onboarding:', error);
+    res.status(500).json({ success: false, error: 'Error al saltar onboarding' });
+  }
+});
+
 // Admin: delete user from Firestore + Firebase Auth + cascade subcolecciones (RGPD)
 router.delete('/:id', verifyToken, async (req: Request, res: Response) => {
   try {

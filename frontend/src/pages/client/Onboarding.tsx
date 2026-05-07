@@ -42,13 +42,23 @@ export default function Onboarding() {
     navigate('/cliente/inicio');
   };
 
+  const handleSkip = async () => {
+    const token = await getAuth().currentUser?.getIdToken();
+    if (!token) throw new Error('No autenticado');
+    await fetch(`${API}/api/usuarios/saltar-onboarding`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    navigate('/cliente/inicio');
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-start py-12 px-4">
       <div className="flex items-center gap-2.5 mb-10">
         <img src="/logo-dark.png" alt="Quick Emigrate" className="h-9 w-auto" />
         <span className="text-[17px] font-bold tracking-tight text-white">Quick Emigrate</span>
       </div>
-      <QuickEmigrateWizardFormV2 onSubmit={handleSubmit} />
+      <QuickEmigrateWizardFormV2 onSubmit={handleSubmit} onSkip={handleSkip} />
     </div>
   );
 }

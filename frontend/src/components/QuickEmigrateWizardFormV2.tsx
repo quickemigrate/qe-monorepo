@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type Primitive = string | number | boolean | null | undefined
 type AnswerValue = Primitive | string[]
@@ -37,7 +37,13 @@ export type DiagnosticMeta = {
 }
 
 export type SubmitPayload = { answers: Answers; meta: DiagnosticMeta; submittedAt: string }
-type Props = { onSubmit?: (payload: SubmitPayload) => void | Promise<void> }
+type Props = {
+  onSubmit?: (payload: SubmitPayload) => void | Promise<void>
+  onSkip?: () => void | Promise<void>
+  draftKey?: string
+}
+
+const DEFAULT_DRAFT_KEY = "qe_onboarding_draft_v2"
 
 const latamCountries = [
   "Argentina", "Bolivia", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador",
@@ -555,12 +561,58 @@ const riskColor: Record<string, string> = {
   critical: "text-red-400",
 }
 
-export default function QuickEmigrateWizardFormV2({ onSubmit }: Props) {
-  const [answers, setAnswers] = useState<Answers>({})
-  const [stepIndex, setStepIndex] = useState(0)
-  const [includeOptional, setIncludeOptional] = useState(false)
+export default function QuickEmigrateWizardFormV2({ onSubmit, onSkip, draftKey }: Props) {
+  const storageKey = draftKey || DEFAULT_DRAFT_KEY
+  const draftRestored = useRef(false)
+
+  const initial = useMemo(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
+      if (!raw) return { answers: {} as Answers, stepIndex: 0, includeOptional: false }
+      const parsed = JSON.parse(raw) as { answers?: Answers; stepIndex?: number; includeOptional?: boolean }
+      draftRestored.current = !!parsed.answers && Object.keys(parsed.answers).length > 0
+      return {
+        answers: parsed.answers || {},
+        stepIndex: typeof parsed.stepIndex === "number" ? parsed.stepIndex : 0,
+        includeOptional: !!parsed.includeOptional,
+      }
+    } catch {
+      return { answers: {} as Answers, stepIndex: 0, includeOptional: false }
+    }
+  }, [storageKey])
+
+  const [answers, setAnswers] = useState<Answers>(initial.answers)
+  const [stepIndex, setStepIndex] = useState(initial.stepIndex)
+  const [includeOptional, setIncludeOptional] = useState(initial.includeOptional)
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [skipping, setSkipping] = useState(false)
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false)
+
+  // Auto-save (debounced 400ms) — protege batería móvil + perdón al cierre pestaña
+  useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ answers, stepIndex, includeOptional }))
+      } catch { /* quota / disabled — ignorar */ }
+    }, 400)
+    return () => clearTimeout(id)
+  }, [answers, stepIndex, includeOptional, storageKey])
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(storageKey) } catch { /* ignore */ }
+  }
+
+  const handleSkip = async () => {
+    if (!onSkip) return
+    setSkipping(true)
+    try {
+      await onSkip()
+      clearDraft()
+    } finally {
+      setSkipping(false)
+    }
+  }
 
   const steps = useMemo(() => {
     const s = [...coreSteps, ...getAdaptiveSteps(answers)]
@@ -598,6 +650,7 @@ export default function QuickEmigrateWizardFormV2({ onSubmit }: Props) {
     try {
       const payload: SubmitPayload = { answers, meta, submittedAt: new Date().toISOString() }
       if (onSubmit) await onSubmit(payload)
+      clearDraft()
     } finally {
       setSubmitting(false)
     }
@@ -689,6 +742,24 @@ export default function QuickEmigrateWizardFormV2({ onSubmit }: Props) {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+      {draftRestored.current && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 mb-3 text-[13px] text-emerald-300 flex items-center justify-between gap-3">
+          <span>Hemos restaurado tu progreso anterior. Sigue donde lo dejaste.</span>
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft()
+              setAnswers({})
+              setStepIndex(0)
+              setIncludeOptional(false)
+              draftRestored.current = false
+            }}
+            className="text-emerald-300/70 hover:text-emerald-200 underline underline-offset-2 shrink-0"
+          >
+            Empezar de cero
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="rounded-3xl bg-[#111111] border border-white/10 p-5 mb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -775,15 +846,26 @@ export default function QuickEmigrateWizardFormV2({ onSubmit }: Props) {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between gap-3 border-t border-white/10 pt-5">
-            <button
-              type="button"
-              onClick={back}
-              disabled={stepIndex === 0}
-              className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white/70 disabled:opacity-30 hover:border-white/40 hover:text-white transition-colors"
-            >
-              Atrás
-            </button>
+          <div className="mt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/10 pt-5">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={back}
+                disabled={stepIndex === 0}
+                className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white/70 disabled:opacity-30 hover:border-white/40 hover:text-white transition-colors"
+              >
+                Atrás
+              </button>
+              {onSkip ? (
+                <button
+                  type="button"
+                  onClick={() => setShowSkipConfirm(true)}
+                  className="rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-white/40 hover:text-white/70 transition-colors"
+                >
+                  Saltar por ahora
+                </button>
+              ) : null}
+            </div>
             {step.id !== "review" ? (
               <button
                 type="button"
@@ -794,6 +876,35 @@ export default function QuickEmigrateWizardFormV2({ onSubmit }: Props) {
               </button>
             ) : null}
           </div>
+
+          {showSkipConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <div className="w-full max-w-[420px] rounded-2xl border border-white/10 bg-[#111111] p-6">
+                <h3 className="text-[16px] font-semibold text-white mb-2">¿Saltar el cuestionario?</h3>
+                <p className="text-[13.5px] text-white/55 leading-[1.55] mb-5">
+                  Tus respuestas se guardan automáticamente. Puedes completarlo más tarde desde tu perfil.
+                  Algunas funciones (diagnóstico personalizado, asistente IA con tu contexto) tendrán menos información hasta que lo completes.
+                </p>
+                <div className="flex gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowSkipConfirm(false)}
+                    className="flex-1 rounded-xl border border-white/15 text-white/70 font-semibold py-2.5 text-[13.5px] hover:bg-white/5 transition"
+                  >
+                    Continuar cuestionario
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    disabled={skipping}
+                    className="flex-1 rounded-xl bg-white/10 text-white font-semibold py-2.5 text-[13.5px] hover:bg-white/15 transition disabled:opacity-50"
+                  >
+                    {skipping ? "Saltando..." : "Saltar por ahora"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
 
         {/* Sidebar */}

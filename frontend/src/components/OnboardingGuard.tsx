@@ -21,7 +21,8 @@ export default function OnboardingGuard({ children }: { children: React.ReactNod
       });
       if (res.ok) {
         const data = await res.json();
-        setStatus(data.data?.perfilCompleto ? 'complete' : 'incomplete');
+        const allowed = data.data?.perfilCompleto || data.data?.onboardingSkipped;
+        setStatus(allowed ? 'complete' : 'incomplete');
       } else if (res.status === 404) {
         setStatus('incomplete');
       } else {
