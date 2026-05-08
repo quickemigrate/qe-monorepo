@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Loader2, Edit2, ShieldCheck, Clock, Mail } from 'lucide-react';
+import { Loader2, Edit2, ShieldCheck, Clock, Mail, FileText, ExternalLink } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
@@ -198,6 +198,20 @@ export default function DiagnosticoPage() {
         >
           Basado en tu perfil. Revisa que todo es correcto antes de pagar.
         </motion.p>
+        <motion.a
+          href={`${API}/api/diagnostico/sample`}
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.7 }}
+          className="mt-5 inline-flex items-center gap-2 text-[13px] font-semibold text-white/70 hover:text-white
+                     border border-white/15 hover:border-white/30 rounded-full px-4 py-2 transition-colors"
+        >
+          <FileText size={14} />
+          Ver ejemplo de informe
+          <ExternalLink size={12} className="opacity-60" />
+        </motion.a>
       </AuroraBackground>
 
       {/* Contenido */}

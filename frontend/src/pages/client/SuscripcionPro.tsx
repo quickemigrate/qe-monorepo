@@ -46,14 +46,14 @@ export default function SuscripcionPro() {
     setLoadingIntent(true);
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/suscripcion/create-payment-intent`, {
+      const res = await fetch(`${API}/api/suscripcion/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
       setClientSecret(data.clientSecret);
-      setPrecioTexto(data.precioTexto);
+      setPrecioTexto(precioDisplay);
     } catch {
       setError('Error de conexión. Inténtalo de nuevo.');
     } finally {

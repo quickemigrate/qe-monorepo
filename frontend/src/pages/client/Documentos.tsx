@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FolderOpen, Upload, Trash2, FileText, File, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { FolderOpen, Upload, Trash2, FileText, File, Image, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
 import { useAuth } from '../../context/AuthContext';
@@ -25,7 +25,7 @@ function formatBytes(bytes: number): string {
 
 const MAX_DOCS: Record<string, number> = { pro: 5, premium: 10 };
 const MAX_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_EXT = ['.pdf', '.txt'];
+const ACCEPTED_EXT = ['.pdf', '.txt', '.jpg', '.jpeg', '.png', '.webp'];
 
 function isExtAccepted(name: string): boolean {
   const lower = name.toLowerCase();
@@ -77,7 +77,11 @@ export default function Documentos() {
   };
 
   const validarArchivo = (f: File): string => {
-    if (!isExtAccepted(f.name)) return 'Formato no soportado. Solo PDF o TXT.';
+    const lower = f.name.toLowerCase();
+    if (lower.endsWith('.heic') || lower.endsWith('.heif')) {
+      return 'Las fotos HEIC del iPhone no se soportan. Cambia el formato en Ajustes → Cámara → Formatos → "Más compatible" o exporta la foto como JPG.';
+    }
+    if (!isExtAccepted(f.name)) return 'Formato no soportado. Acepta PDF, TXT, JPG, PNG o WebP.';
     if (f.size > MAX_BYTES) return `Archivo demasiado grande (${(f.size / 1024 / 1024).toFixed(1)} MB). Máx 5 MB.`;
     return '';
   };
@@ -199,7 +203,7 @@ export default function Documentos() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.txt"
+                  accept=".pdf,.txt,.jpg,.jpeg,.png,.webp,application/pdf,text/plain,image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={e => seleccionarArchivo(e.target.files?.[0] || null)}
                 />
@@ -222,7 +226,7 @@ export default function Documentos() {
                     <p className="text-[13.5px] text-white/50">
                       Arrastra un archivo aquí o <span className="text-[#25D366] font-medium">haz click</span>
                     </p>
-                    <p className="text-[12px] text-white/30">Solo PDF o TXT · máx. 5 MB</p>
+                    <p className="text-[12px] text-white/30">PDF, TXT, JPG, PNG o WebP · máx. 5 MB</p>
                   </>
                 )}
               </div>
@@ -296,7 +300,9 @@ export default function Documentos() {
                   <div className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center shrink-0">
                     {doc.tipo === 'application/pdf'
                       ? <FileText size={15} className="text-white/50" />
-                      : <File size={15} className="text-white/50" />
+                      : doc.tipo?.startsWith('image/')
+                        ? <Image size={15} className="text-white/50" />
+                        : <File size={15} className="text-white/50" />
                     }
                   </div>
                   <div className="flex-1 min-w-0">

@@ -1,7 +1,11 @@
-import { Check, X, Mail, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Check, X, Mail, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
+
+const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PLAN_BADGE: Record<string, string> = {
   free:    'bg-white/10 text-white/50',
@@ -44,9 +48,96 @@ function Fila({ caracteristica, starter, pro, premium, actual }: FilaProps) {
   );
 }
 
+interface SubInfo {
+  stripeSubscriptionId?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
+  subscriptionCurrentPeriodEnd?: string | null;
+  subscriptionStatus?: string;
+}
+
 export default function Plan() {
   const { plan, mensajesUsados, mensajesLimit, loading } = useClientePlan();
   const navigate = useNavigate();
+
+  const [subInfo, setSubInfo] = useState<SubInfo>({});
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionMsg, setActionMsg] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+
+  const fetchPerfil = async () => {
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      if (!token) return;
+      const res = await fetch(`${API}/api/usuarios/perfil`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setSubInfo({
+        stripeSubscriptionId: data.data?.stripeSubscriptionId,
+        subscriptionCancelAtPeriodEnd: data.data?.subscriptionCancelAtPeriodEnd,
+        subscriptionCurrentPeriodEnd: data.data?.subscriptionCurrentPeriodEnd,
+        subscriptionStatus: data.data?.subscriptionStatus,
+      });
+    } catch { /* silently */ }
+  };
+
+  useEffect(() => { fetchPerfil(); }, []);
+
+  const handleCancelar = async () => {
+    setActionLoading(true);
+    setActionMsg(null);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      const res = await fetch(`${API}/api/suscripcion/cancelar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setActionMsg({ tipo: 'error', texto: data.error || 'Error al cancelar.' });
+      } else {
+        setActionMsg({
+          tipo: 'success',
+          texto: 'Cancelación programada. Mantienes el acceso hasta el fin del periodo actual.',
+        });
+        setConfirmCancelOpen(false);
+        await fetchPerfil();
+      }
+    } catch {
+      setActionMsg({ tipo: 'error', texto: 'Error de conexión. Inténtalo de nuevo.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReanudar = async () => {
+    setActionLoading(true);
+    setActionMsg(null);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      const res = await fetch(`${API}/api/suscripcion/reanudar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setActionMsg({ tipo: 'error', texto: data.error || 'Error al reanudar.' });
+      } else {
+        setActionMsg({ tipo: 'success', texto: 'Suscripción reanudada. Se renovará automáticamente.' });
+        await fetchPerfil();
+      }
+    } catch {
+      setActionMsg({ tipo: 'error', texto: 'Error de conexión.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const formatFecha = (iso?: string | null) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <ClientLayout>
@@ -80,6 +171,52 @@ export default function Plan() {
                   </div>
                   <span className="text-[11.5px] text-white/35">Resetea el día 1 de cada mes</span>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Subscription info + cancel/reanudar */}
+          {plan === 'pro' && subInfo.stripeSubscriptionId && (
+            <div className="mt-5 pt-5 border-t border-white/8 space-y-3">
+              {actionMsg && (
+                <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium border
+                  ${actionMsg.tipo === 'success'
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                  }`}>
+                  {actionMsg.tipo === 'success' ? <CheckCircle2 size={15} className="shrink-0 mt-0.5" /> : <AlertCircle size={15} className="shrink-0 mt-0.5" />}
+                  <span>{actionMsg.texto}</span>
+                </div>
+              )}
+
+              {subInfo.subscriptionCancelAtPeriodEnd ? (
+                <>
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-[13px] text-amber-300">
+                    Tu suscripción está cancelada. Mantienes acceso hasta{' '}
+                    <strong>{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>.
+                  </div>
+                  <button
+                    onClick={handleReanudar}
+                    disabled={actionLoading}
+                    className="rounded-xl bg-[#25D366] text-[#062810] font-semibold px-4 py-2.5 text-[13.5px]
+                               hover:bg-[#2adc6c] transition disabled:opacity-50"
+                  >
+                    {actionLoading ? 'Procesando...' : 'Reanudar suscripción'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-[13px] text-white/50">
+                    Próxima renovación:{' '}
+                    <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
+                  </div>
+                  <button
+                    onClick={() => { setConfirmCancelOpen(true); setActionMsg(null); }}
+                    className="text-[13px] font-medium text-white/50 hover:text-red-300 transition underline underline-offset-2"
+                  >
+                    Cancelar suscripción
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -174,6 +311,35 @@ export default function Plan() {
           )}
         </div>
       </div>
+
+      {confirmCancelOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-[440px] rounded-2xl border border-white/10 bg-[#111111] p-6">
+            <h3 className="text-[17px] font-semibold text-white mb-1">¿Cancelar suscripción Pro?</h3>
+            <p className="text-[13.5px] text-white/55 mb-5 leading-[1.6]">
+              Mantienes el acceso completo hasta{' '}
+              <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>.
+              Después pasarás a Free. Puedes reanudar en cualquier momento antes de esa fecha.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setConfirmCancelOpen(false)}
+                disabled={actionLoading}
+                className="flex-1 rounded-xl border border-white/15 text-white/70 font-semibold py-3 text-[13.5px] hover:bg-white/5 transition disabled:opacity-50"
+              >
+                Mantener Pro
+              </button>
+              <button
+                onClick={handleCancelar}
+                disabled={actionLoading}
+                className="flex-1 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 font-semibold py-3 text-[13.5px] hover:bg-red-500/25 transition disabled:opacity-50"
+              >
+                {actionLoading ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ClientLayout>
   );
 }

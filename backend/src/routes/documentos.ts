@@ -10,21 +10,53 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const router = Router();
 
+const ALLOWED_MIMES = [
+  'application/pdf',
+  'text/plain',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+];
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
-    const allowed = ['application/pdf', 'text/plain'];
-    cb(null, allowed.includes(file.mimetype));
+    cb(null, ALLOWED_MIMES.includes(file.mimetype));
   },
 });
 
-// PDF magic bytes: %PDF (0x25 0x50 0x44 0x46)
+// Magic byte signatures
 function isPdfBuffer(buf: Buffer): boolean {
   return buf.length >= 4 && buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46;
 }
 
-// TXT: must be valid UTF-8 (or ASCII) and contain no NUL bytes in first 1KB
+function isJpegBuffer(buf: Buffer): boolean {
+  return buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+}
+
+function isPngBuffer(buf: Buffer): boolean {
+  return buf.length >= 8 &&
+    buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47 &&
+    buf[4] === 0x0d && buf[5] === 0x0a && buf[6] === 0x1a && buf[7] === 0x0a;
+}
+
+function isWebpBuffer(buf: Buffer): boolean {
+  // RIFF....WEBP
+  return buf.length >= 12 &&
+    buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+    buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50;
+}
+
+// Detect HEIC for friendly error message
+function isHeicBuffer(buf: Buffer): boolean {
+  if (buf.length < 12) return false;
+  const ftyp = buf.subarray(4, 8).toString('ascii');
+  if (ftyp !== 'ftyp') return false;
+  const brand = buf.subarray(8, 12).toString('ascii');
+  return ['heic', 'heix', 'hevc', 'heim', 'heis', 'heif', 'mif1'].includes(brand);
+}
+
 function isTxtBuffer(buf: Buffer): boolean {
   const sample = buf.subarray(0, Math.min(buf.length, 1024));
   if (sample.includes(0)) return false;
@@ -45,12 +77,59 @@ function validarContenido(buf: Buffer, mimetype: string): string | null {
     if (!isTxtBuffer(buf)) return 'El archivo no es un TXT válido (encoding no permitido).';
     return null;
   }
+  if (mimetype === 'image/jpeg') {
+    if (!isJpegBuffer(buf)) return 'El archivo no es un JPG válido.';
+    return null;
+  }
+  if (mimetype === 'image/png') {
+    if (!isPngBuffer(buf)) return 'El archivo no es un PNG válido.';
+    return null;
+  }
+  if (mimetype === 'image/webp') {
+    if (!isWebpBuffer(buf)) return 'El archivo no es un WebP válido.';
+    return null;
+  }
+  if (isHeicBuffer(buf)) {
+    return 'Las fotos HEIC del iPhone no se soportan. En tu móvil ve a Ajustes → Cámara → Formatos → "Más compatible" para que las fotos se guarden como JPG.';
+  }
   return 'Formato no soportado.';
 }
 
 const MAX_DOCS_PRO = 5;
 const MAX_DOCS_PREMIUM = 10;
 const MAX_TEXT_CHARS = 50_000;
+
+async function extraerTextoImagen(buffer: Buffer, mediaType: 'image/jpeg' | 'image/png' | 'image/webp'): Promise<string> {
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType,
+              data: buffer.toString('base64'),
+            },
+          } as any,
+          {
+            type: 'text',
+            text: 'Transcribe todo el texto visible en esta imagen exactamente como aparece. Si hay datos clave (número de pasaporte, fechas, nombres, importes), inclúyelos. Solo el texto, sin comentarios ni explicaciones adicionales. Si la imagen no contiene texto legible, responde "(sin texto)".',
+          },
+        ],
+      }],
+    });
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    if (text.trim() === '(sin texto)') return '';
+    return text.substring(0, MAX_TEXT_CHARS);
+  } catch (err) {
+    console.error('Error OCR imagen:', err);
+    return '';
+  }
+}
 
 async function extraerTexto(buffer: Buffer, mimetype: string): Promise<string> {
   if (mimetype === 'application/pdf') {
@@ -94,6 +173,9 @@ async function extraerTexto(buffer: Buffer, mimetype: string): Promise<string> {
   }
   if (mimetype === 'text/plain') {
     return buffer.toString('utf-8').substring(0, MAX_TEXT_CHARS);
+  }
+  if (mimetype === 'image/jpeg' || mimetype === 'image/png' || mimetype === 'image/webp') {
+    return extraerTextoImagen(buffer, mimetype);
   }
   return '';
 }

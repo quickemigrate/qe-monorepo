@@ -15,6 +15,7 @@ import metricasRouter from './routes/metricas';
 import documentosRouter from './routes/documentos';
 import suscripcionRouter from './routes/suscripcion';
 import notificacionesRouter from './routes/notificaciones';
+import stripeWebhookRouter from './routes/stripeWebhook';
 import sitemapRouter from './routes/sitemap';
 import { db } from './firebase';
 import { startRecordatoriosCron, procesarRecordatorios } from './services/recordatorios';
@@ -61,6 +62,9 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// Stripe webhook DEBE registrarse ANTES de express.json — Stripe firma el raw body
+app.use('/api/stripe/webhook', stripeWebhookRouter);
 
 app.use(express.json());
 
