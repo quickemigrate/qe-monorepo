@@ -221,6 +221,10 @@ export default function Perfil() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 items-start">
+
+        {/* ── COLUMNA IZQUIERDA: cuenta + autenticación + datos ── */}
+        <div className="space-y-5 md:space-y-6">
+
         {/* Datos de cuenta */}
         <div className="qe-card rounded-2xl p-5 md:p-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Datos de cuenta</h2>
@@ -239,6 +243,117 @@ export default function Perfil() {
             </div>
           </div>
         </div>
+        {/* Cambiar email */}
+        <div className="qe-card rounded-2xl p-5 md:p-6">
+          <h2 className="text-[15px] font-semibold text-white mb-1 flex items-center gap-2">
+            <Mail size={15} className="text-white/50" />
+            Cambiar email
+          </h2>
+          <p className="text-[12.5px] text-white/40 mb-4">Te enviaremos un enlace al nuevo email para confirmar el cambio.</p>
+          <div className="space-y-4">
+            {emailResult && (
+              <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-[13.5px] font-medium border
+                ${emailResult.tipo === 'success'
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                  : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                {emailResult.tipo === 'success' ? <CheckCircle2 size={16} className="shrink-0 mt-0.5" /> : <AlertCircle size={16} className="shrink-0 mt-0.5" />}
+                <span>{emailResult.msg}</span>
+              </div>
+            )}
+            <div>
+              <label className={labelCls}>Nuevo email</label>
+              <input
+                type="email" autoComplete="email" maxLength={254}
+                value={nuevoEmail} onChange={e => setNuevoEmail(e.target.value)}
+                className={inputCls} placeholder="nuevo@email.com"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Contraseña actual</label>
+              <input
+                type="password" autoComplete="current-password"
+                value={passEmail} onChange={e => setPassEmail(e.target.value)}
+                className={inputCls} placeholder="••••••••"
+              />
+            </div>
+            <button
+              onClick={handleCambiarEmail}
+              disabled={cambiandoEmail}
+              className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
+                         hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+            >
+              {cambiandoEmail ? 'Enviando enlace...' : 'Enviar enlace de verificación'}
+            </button>
+          </div>
+        </div>
+
+        {/* Cambiar contraseña */}
+        <div className="qe-card rounded-2xl p-5 md:p-6">
+          <h2 className="text-[15px] font-semibold text-white mb-4">Cambiar contraseña</h2>
+          <div className="space-y-4">
+            {resultado && (
+              <div className={`flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13.5px] font-medium border
+                ${resultado.tipo === 'success'
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                  : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                {resultado.tipo === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                {resultado.msg}
+              </div>
+            )}
+            <div>
+              <label className={labelCls}>Contraseña actual</label>
+              <input type="password" value={actual} onChange={e => setActual(e.target.value)} className={inputCls} placeholder="••••••••" />
+            </div>
+            <div>
+              <label className={labelCls}>Nueva contraseña</label>
+              <input type="password" value={nueva} onChange={e => setNueva(e.target.value)} className={inputCls} placeholder="Mínimo 6 caracteres" />
+            </div>
+            <div>
+              <label className={labelCls}>Confirmar nueva contraseña</label>
+              <input type="password" value={confirmar} onChange={e => setConfirmar(e.target.value)} className={inputCls} placeholder="Repite la nueva contraseña" />
+            </div>
+            <div className="pt-1">
+              <button
+                onClick={handleCambiarPassword}
+                disabled={guardando}
+                className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
+                           hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
+              >
+                {guardando ? 'Actualizando...' : 'Actualizar contraseña'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Privacidad y datos */}
+        <div className="qe-card rounded-2xl p-5 md:p-6">
+          <h2 className="text-[15px] font-semibold text-white mb-1 flex items-center gap-2">
+            <Download size={15} className="text-white/50" />
+            Tus datos
+          </h2>
+          <p className="text-[12.5px] text-white/40 mb-4">
+            RGPD: descarga tus datos en JSON o solicita la eliminación de tu cuenta.
+          </p>
+          <button
+            onClick={handleExportar}
+            disabled={exportando}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/15 text-white/80 font-semibold py-3 text-[14px]
+                       hover:bg-white/5 transition disabled:opacity-50"
+          >
+            <Download size={15} />
+            {exportando ? 'Preparando descarga...' : 'Descargar mis datos (JSON)'}
+          </button>
+          <p className="text-[11.5px] text-white/30 mt-2.5 leading-[1.55]">
+            Incluye perfil, historial de chat, lista de documentos y diagnósticos. No incluye archivos PDF originales.
+          </p>
+        </div>
+
+        </div>
+
+        {/* ── COLUMNA DERECHA: preferencias + alertas ── */}
+        <div className="space-y-5 md:space-y-6">
 
         {/* Tema del panel */}
         <div className="qe-card rounded-2xl p-5 md:p-6">
@@ -370,117 +485,13 @@ export default function Perfil() {
           </div>
         </div>
 
-        {/* Cambiar email */}
-        <div className="qe-card rounded-2xl p-5 md:p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-1 flex items-center gap-2">
-            <Mail size={15} className="text-white/50" />
-            Cambiar email
-          </h2>
-          <p className="text-[12.5px] text-white/40 mb-4">Te enviaremos un enlace al nuevo email para confirmar el cambio.</p>
-          <div className="space-y-4">
-            {emailResult && (
-              <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-[13.5px] font-medium border
-                ${emailResult.tipo === 'success'
-                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                  : 'bg-red-500/10 border-red-500/20 text-red-400'
-                }`}>
-                {emailResult.tipo === 'success' ? <CheckCircle2 size={16} className="shrink-0 mt-0.5" /> : <AlertCircle size={16} className="shrink-0 mt-0.5" />}
-                <span>{emailResult.msg}</span>
-              </div>
-            )}
-            <div>
-              <label className={labelCls}>Nuevo email</label>
-              <input
-                type="email" autoComplete="email" maxLength={254}
-                value={nuevoEmail} onChange={e => setNuevoEmail(e.target.value)}
-                className={inputCls} placeholder="nuevo@email.com"
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Contraseña actual</label>
-              <input
-                type="password" autoComplete="current-password"
-                value={passEmail} onChange={e => setPassEmail(e.target.value)}
-                className={inputCls} placeholder="••••••••"
-              />
-            </div>
-            <button
-              onClick={handleCambiarEmail}
-              disabled={cambiandoEmail}
-              className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
-                         hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
-            >
-              {cambiandoEmail ? 'Enviando enlace...' : 'Enviar enlace de verificación'}
-            </button>
-          </div>
-        </div>
-
-        {/* Cambiar contraseña */}
-        <div className="qe-card rounded-2xl p-5 md:p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-4">Cambiar contraseña</h2>
-          <div className="space-y-4">
-            {resultado && (
-              <div className={`flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13.5px] font-medium border
-                ${resultado.tipo === 'success'
-                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                  : 'bg-red-500/10 border-red-500/20 text-red-400'
-                }`}>
-                {resultado.tipo === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-                {resultado.msg}
-              </div>
-            )}
-            <div>
-              <label className={labelCls}>Contraseña actual</label>
-              <input type="password" value={actual} onChange={e => setActual(e.target.value)} className={inputCls} placeholder="••••••••" />
-            </div>
-            <div>
-              <label className={labelCls}>Nueva contraseña</label>
-              <input type="password" value={nueva} onChange={e => setNueva(e.target.value)} className={inputCls} placeholder="Mínimo 6 caracteres" />
-            </div>
-            <div>
-              <label className={labelCls}>Confirmar nueva contraseña</label>
-              <input type="password" value={confirmar} onChange={e => setConfirmar(e.target.value)} className={inputCls} placeholder="Repite la nueva contraseña" />
-            </div>
-            <div className="pt-1">
-              <button
-                onClick={handleCambiarPassword}
-                disabled={guardando}
-                className="w-full rounded-xl bg-[#25D366] text-[#062810] font-semibold py-3.5 text-[15px]
-                           hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50"
-              >
-                {guardando ? 'Actualizando...' : 'Actualizar contraseña'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Privacidad y datos */}
-        <div className="qe-card rounded-2xl p-5 md:p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-1 flex items-center gap-2">
-            <Download size={15} className="text-white/50" />
-            Tus datos
-          </h2>
-          <p className="text-[12.5px] text-white/40 mb-4">
-            RGPD: descarga tus datos en JSON o solicita la eliminación de tu cuenta.
-          </p>
-          <button
-            onClick={handleExportar}
-            disabled={exportando}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/15 text-white/80 font-semibold py-3 text-[14px]
-                       hover:bg-white/5 transition disabled:opacity-50"
-          >
-            <Download size={15} />
-            {exportando ? 'Preparando descarga...' : 'Descargar mis datos (JSON)'}
-          </button>
-          <p className="text-[11.5px] text-white/30 mt-2.5 leading-[1.55]">
-            Incluye perfil, historial de chat, lista de documentos y diagnósticos. No incluye archivos PDF originales.
-          </p>
-        </div>
-
         <NotificacionesPanel />
 
-        {/* Zona de peligro */}
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 md:p-6 lg:col-span-2">
+        </div>
+        </div>
+
+        {/* Zona de peligro — full width, fuera del masonry */}
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 md:p-6 mt-5 md:mt-6">
           <h2 className="text-[15px] font-semibold text-red-300 mb-1 flex items-center gap-2">
             <Trash2 size={15} />
             Zona de peligro
@@ -496,7 +507,6 @@ export default function Perfil() {
           >
             Eliminar mi cuenta
           </button>
-        </div>
         </div>
       </div>
 
