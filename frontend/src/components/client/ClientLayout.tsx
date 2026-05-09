@@ -190,7 +190,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 } : {}}
               >
                 <Icon size={17} className="shrink-0" />
-                {!collapsed && label}
+                {!collapsed && (
+                  <>
+                    <span>{label}</span>
+                    {path === '/cliente/plan' && plan && (
+                      <span className="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-md" style={planBadgeStyle}>
+                        {PLAN_LABEL[plan] || plan}
+                      </span>
+                    )}
+                  </>
+                )}
               </Link>
             );
           })}
@@ -227,16 +236,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             } : {}}
           >
             <Settings size={17} className="shrink-0" />
-            {!collapsed && (
-              <>
-                <span>Mi Perfil</span>
-                {!loadingPlan && plan && (
-                  <span className="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-md" style={planBadgeStyle}>
-                    {PLAN_LABEL[plan]}
-                  </span>
-                )}
-              </>
-            )}
+            {!collapsed && <span>Mi Perfil</span>}
           </Link>
 
           <button
