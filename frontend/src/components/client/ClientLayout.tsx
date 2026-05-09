@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings, Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings, Menu, X, PanelLeftClose, PanelLeftOpen, CreditCard } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -70,6 +70,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { icon: MessageCircle, label: 'Asistente IA',   path: '/cliente/chat',       show: isPro },
     { icon: FolderOpen,    label: 'Mis Documentos', path: '/cliente/documentos', show: isPro },
     { icon: FileText,      label: 'Mi Expediente',  path: '/cliente/expediente', show: isPremium },
+    { icon: CreditCard,    label: 'Mi Plan',        path: '/cliente/plan',       show: true },
   ].filter(i => i.show || loadingPlan);
 
   const t = TEMAS[tema.id];

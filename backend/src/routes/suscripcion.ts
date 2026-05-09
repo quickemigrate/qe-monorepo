@@ -23,18 +23,23 @@ async function sendCancelEmail(to: string, nombre: string | undefined, periodEnd
   const baseUrl = process.env.FRONTEND_URL || 'https://quickemigrate.com';
   const resend = new Resend(apiKey);
 
-  const fechaFin = formatFechaES(periodEndIso);
   const saludo = nombre ? `Hola ${escapeHtml(nombre)},` : 'Hola,';
+  const immediate = !periodEndIso;
+  const titulo = immediate ? 'Tu Plan Pro ha sido cancelado' : 'Hemos programado la cancelación de tu Plan Pro';
+  const cuerpo = immediate
+    ? `<p>Tu plan ha pasado a Free. Has perdido el acceso a las funciones Pro. Si quieres volver, puedes <a href="${baseUrl}/cliente/plan" style="color: #25D366;">reactivar el Plan Pro</a> en cualquier momento.</p>`
+    : `<p>Tu suscripción no se renovará. Mantienes el acceso completo al Plan Pro hasta el <strong>${formatFechaES(periodEndIso)}</strong>. Después tu cuenta pasará a Free automáticamente.</p>
+       <p>Si cambias de opinión, puedes <a href="${baseUrl}/cliente/plan" style="color: #25D366;">reanudar la suscripción</a> antes de esa fecha sin perder nada.</p>`;
+
   const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f4f4f5; padding: 32px 16px;">
   <div style="background: #1A1C1C; border-radius: 16px; padding: 28px;">
     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Quick Emigrate</p>
     <h1 style="color: #fff; font-size: 22px; margin: 0;">${saludo}</h1>
-    <h2 style="color: #25D366; font-size: 18px; margin: 12px 0 0 0;">Hemos programado la cancelación de tu Plan Pro</h2>
+    <h2 style="color: #25D366; font-size: 18px; margin: 12px 0 0 0;">${titulo}</h2>
   </div>
   <div style="background: #fff; border-radius: 16px; padding: 28px; margin-top: 16px; color: #374151; line-height: 1.65; font-size: 14.5px;">
-    <p>Tu suscripción no se renovará. Mantienes el acceso completo al Plan Pro hasta el <strong>${fechaFin}</strong>. Después tu cuenta pasará a Free automáticamente.</p>
-    <p>Si cambias de opinión, puedes <a href="${baseUrl}/cliente/plan" style="color: #25D366;">reanudar la suscripción</a> antes de esa fecha sin perder nada.</p>
+    ${cuerpo}
     <p style="color: #6B7280; font-size: 12.5px; margin-top: 20px;">Si esto no fuiste tú, responde a este email y lo revisamos.</p>
   </div>
 </div>`.trim();
@@ -43,7 +48,7 @@ async function sendCancelEmail(to: string, nombre: string | undefined, periodEnd
     await resend.emails.send({
       from,
       to,
-      subject: 'Tu Plan Pro queda cancelado al final del periodo',
+      subject: immediate ? 'Tu Plan Pro ha sido cancelado' : 'Tu Plan Pro queda cancelado al final del periodo',
       html,
     });
   } catch (err) {
@@ -52,11 +57,11 @@ async function sendCancelEmail(to: string, nombre: string | undefined, periodEnd
 
   if (adminEmail) {
     const adminHtml = `
-<p>Cancelación Pro programada.</p>
+<p>Cancelación Pro ${immediate ? '<strong>(downgrade inmediato — legacy)</strong>' : 'programada'}.</p>
 <ul>
   <li><strong>Email:</strong> ${escapeHtml(to)}</li>
   <li><strong>Nombre:</strong> ${escapeHtml(nombre || '—')}</li>
-  <li><strong>Fin de periodo:</strong> ${fechaFin}</li>
+  <li><strong>Fin de periodo:</strong> ${immediate ? 'inmediato' : formatFechaES(periodEndIso)}</li>
   <li><strong>Razón:</strong> ${razon ? escapeHtml(razon) : '<em>(no indicada)</em>'}</li>
 </ul>`.trim();
     try {
@@ -154,29 +159,44 @@ router.post('/cancelar', verifyClientToken, async (req: Request, res: Response) 
     if (!userDoc.exists) return res.status(403).json({ success: false, error: 'Usuario no encontrado' });
 
     const userData = userDoc.data()!;
-    const subId = userData.stripeSubscriptionId;
-    if (!subId) {
-      return res.status(400).json({ success: false, error: 'No tienes una suscripción activa' });
+    if (userData.plan !== 'pro') {
+      return res.status(400).json({ success: false, error: 'No tienes un plan Pro activo' });
     }
 
-    const updated: any = await stripe.subscriptions.update(subId, { cancel_at_period_end: true });
-
-    const periodEnd = updated.current_period_end as number | undefined;
-    const periodEndIso = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+    const subId = userData.stripeSubscriptionId;
     const nowIso = new Date().toISOString();
+    let periodEndIso: string | null = null;
 
-    await db.collection('usuarios').doc(userEmail).update({
-      subscriptionCancelAtPeriodEnd: true,
-      subscriptionCurrentPeriodEnd: periodEndIso,
-      subscriptionCancelReason: razon || null,
-      subscriptionCanceledAt: nowIso,
-      actualizadoEn: nowIso,
-    });
+    if (subId) {
+      // Stripe subscription path → cancel at period end (mantiene acceso)
+      const updated: any = await stripe.subscriptions.update(subId, { cancel_at_period_end: true });
+      const periodEnd = updated.current_period_end as number | undefined;
+      periodEndIso = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+
+      await db.collection('usuarios').doc(userEmail).update({
+        subscriptionCancelAtPeriodEnd: true,
+        subscriptionCurrentPeriodEnd: periodEndIso,
+        subscriptionCancelReason: razon || null,
+        subscriptionCanceledAt: nowIso,
+        actualizadoEn: nowIso,
+      });
+    } else {
+      // Legacy PaymentIntent o upgrade manual → downgrade inmediato a free
+      await db.collection('usuarios').doc(userEmail).update({
+        plan: 'free',
+        subscriptionCancelAtPeriodEnd: false,
+        subscriptionCurrentPeriodEnd: null,
+        subscriptionCancelReason: razon || null,
+        subscriptionCanceledAt: nowIso,
+        actualizadoEn: nowIso,
+      });
+    }
 
     // Audit log para análisis de churn
     await db.collection('cancelaciones').add({
       email: userEmail,
-      stripeSubscriptionId: subId,
+      stripeSubscriptionId: subId || null,
+      tipo: subId ? 'stripe_period_end' : 'legacy_immediate',
       razon: razon || null,
       currentPeriodEnd: periodEndIso,
       creadoEn: nowIso,
@@ -188,8 +208,9 @@ router.post('/cancelar', verifyClientToken, async (req: Request, res: Response) 
 
     res.json({
       success: true,
-      cancelAtPeriodEnd: true,
+      cancelAtPeriodEnd: !!subId,
       currentPeriodEnd: periodEndIso,
+      immediate: !subId,
     });
   } catch (err: any) {
     console.error('Error cancelando suscripción:', err);

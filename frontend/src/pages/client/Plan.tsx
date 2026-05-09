@@ -104,7 +104,9 @@ export default function Plan() {
       } else {
         setActionMsg({
           tipo: 'success',
-          texto: 'Cancelación programada. Te enviamos un email con la confirmación. Mantienes el acceso hasta el fin del periodo actual.',
+          texto: data.immediate
+            ? 'Plan cancelado. Tu cuenta pasó a Free. Te enviamos un email con la confirmación.'
+            : 'Cancelación programada. Te enviamos un email con la confirmación. Mantienes el acceso hasta el fin del periodo actual.',
         });
         setConfirmCancelOpen(false);
         setCancelRazon('');
@@ -182,7 +184,7 @@ export default function Plan() {
           )}
 
           {/* Subscription info + cancel/reanudar */}
-          {plan === 'pro' && subInfo.stripeSubscriptionId && (
+          {plan === 'pro' && (
             <div className="mt-5 pt-5 border-t border-white/8 space-y-3">
               {actionMsg && (
                 <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium border
@@ -212,10 +214,14 @@ export default function Plan() {
                 </>
               ) : (
                 <>
-                  <div className="text-[13px] text-white/50">
-                    Próxima renovación:{' '}
-                    <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
-                  </div>
+                  {subInfo.stripeSubscriptionId ? (
+                    <div className="text-[13px] text-white/50">
+                      Próxima renovación:{' '}
+                      <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
+                    </div>
+                  ) : (
+                    <div className="text-[13px] text-white/50">Plan Pro activo.</div>
+                  )}
                   <button
                     onClick={() => { setConfirmCancelOpen(true); setActionMsg(null); setCancelRazon(''); }}
                     className="text-[13px] font-medium text-white/50 hover:text-red-300 transition underline underline-offset-2"
@@ -323,9 +329,15 @@ export default function Plan() {
           <div className="w-full max-w-[440px] rounded-2xl border border-white/10 bg-[#111111] p-6">
             <h3 className="text-[17px] font-semibold text-white mb-1">¿Cancelar suscripción Pro?</h3>
             <p className="text-[13.5px] text-white/55 mb-4 leading-[1.6]">
-              Mantienes el acceso completo hasta{' '}
-              <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>.
-              Después pasarás a Free. Puedes reanudar en cualquier momento antes de esa fecha.
+              {subInfo.stripeSubscriptionId ? (
+                <>
+                  Mantienes el acceso completo hasta{' '}
+                  <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>.
+                  Después pasarás a Free. Puedes reanudar en cualquier momento antes de esa fecha.
+                </>
+              ) : (
+                <>Tu plan pasará a Free de inmediato. Te enviaremos un email de confirmación.</>
+              )}
             </p>
 
             <div className="mb-5">

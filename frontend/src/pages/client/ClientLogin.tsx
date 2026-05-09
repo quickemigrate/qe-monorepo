@@ -45,11 +45,15 @@ export default function ClientLogin() {
     }
     setResetSending(true);
     try {
-      await sendPasswordResetEmail(auth, resetEmail.trim());
+      const origin = window.location.origin;
+      await sendPasswordResetEmail(auth, resetEmail.trim(), {
+        url: `${origin}/cliente/login`,
+        handleCodeInApp: false,
+      });
       // Mensaje genérico sin revelar si email existe (security)
       setResetMsg({
         tipo: 'success',
-        texto: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y la carpeta de spam.',
+        texto: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y la carpeta de spam. Abre el enlace pronto: caduca en 1 hora.',
       });
     } catch (err: any) {
       // Aún en error mostramos genérico salvo throttle

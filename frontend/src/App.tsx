@@ -27,6 +27,7 @@ import Expediente from './pages/client/Expediente';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
 import OnboardingGuard from './components/OnboardingGuard';
 import Onboarding from './pages/client/Onboarding';
+import AuthAction from './pages/client/AuthAction';
 import DiagnosticoPage from './pages/DiagnosticoPage';
 import DiagnosticoExitoPage from './pages/DiagnosticoExitoPage';
 import LegalPage from './pages/LegalPage';
@@ -67,6 +68,7 @@ function AppShell() {
         <Route path="/diagnostico" element={<DiagnosticoPage />} />
         <Route path="/diagnostico/exito" element={<DiagnosticoExitoPage />} />
         <Route path="/cliente/login" element={<ClientLogin />} />
+        <Route path="/cliente/auth-action" element={<AuthAction />} />
         <Route path="/cliente/onboarding" element={<ClientProtectedRoute><Onboarding /></ClientProtectedRoute>} />
         <Route path="/cliente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         <Route path="/cliente/inicio" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Inicio /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
