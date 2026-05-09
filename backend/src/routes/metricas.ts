@@ -144,7 +144,6 @@ router.get('/series', verifyToken, async (req, res) => {
       const snap = await db.collection('diagnosticos')
         .where('estado', '==', 'completado')
         .where('completadoEn', '>=', startIso)
-        .orderBy('completadoEn', 'asc')
         .limit(2000)
         .get();
 
@@ -158,7 +157,6 @@ router.get('/series', verifyToken, async (req, res) => {
     } else if (metric === 'leads') {
       const snap = await db.collection('leads')
         .where('createdAt', '>=', startIso)
-        .orderBy('createdAt', 'asc')
         .limit(2000)
         .get();
 
