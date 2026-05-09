@@ -63,6 +63,7 @@ export default function Plan() {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionMsg, setActionMsg] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [cancelRazon, setCancelRazon] = useState('');
 
   const fetchPerfil = async () => {
     try {
@@ -91,7 +92,11 @@ export default function Plan() {
       const token = await getAuth().currentUser?.getIdToken();
       const res = await fetch(`${API}/api/suscripcion/cancelar`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ razon: cancelRazon.trim().substring(0, 500) }),
       });
       const data = await res.json();
       if (!data.success) {
@@ -99,9 +104,10 @@ export default function Plan() {
       } else {
         setActionMsg({
           tipo: 'success',
-          texto: 'Cancelación programada. Mantienes el acceso hasta el fin del periodo actual.',
+          texto: 'Cancelación programada. Te enviamos un email con la confirmación. Mantienes el acceso hasta el fin del periodo actual.',
         });
         setConfirmCancelOpen(false);
+        setCancelRazon('');
         await fetchPerfil();
       }
     } catch {
@@ -211,7 +217,7 @@ export default function Plan() {
                     <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
                   </div>
                   <button
-                    onClick={() => { setConfirmCancelOpen(true); setActionMsg(null); }}
+                    onClick={() => { setConfirmCancelOpen(true); setActionMsg(null); setCancelRazon(''); }}
                     className="text-[13px] font-medium text-white/50 hover:text-red-300 transition underline underline-offset-2"
                   >
                     Cancelar suscripción
@@ -316,11 +322,30 @@ export default function Plan() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-[440px] rounded-2xl border border-white/10 bg-[#111111] p-6">
             <h3 className="text-[17px] font-semibold text-white mb-1">¿Cancelar suscripción Pro?</h3>
-            <p className="text-[13.5px] text-white/55 mb-5 leading-[1.6]">
+            <p className="text-[13.5px] text-white/55 mb-4 leading-[1.6]">
               Mantienes el acceso completo hasta{' '}
               <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>.
               Después pasarás a Free. Puedes reanudar en cualquier momento antes de esa fecha.
             </p>
+
+            <div className="mb-5">
+              <label htmlFor="cancel-razon" className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 mb-1.5">
+                ¿Por qué cancelas? <span className="normal-case font-normal">(opcional, nos ayuda a mejorar)</span>
+              </label>
+              <textarea
+                id="cancel-razon"
+                value={cancelRazon}
+                onChange={e => setCancelRazon(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Ej: ya resolví mi caso, demasiado caro, falta una función..."
+                className="w-full rounded-xl border border-white/15 bg-[#0A0A0A] px-3.5 py-2.5
+                           text-[13.5px] text-white placeholder:text-white/25 resize-none
+                           focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 focus:border-transparent transition"
+              />
+              <div className="text-right text-[11px] text-white/30 mt-1">{cancelRazon.length}/500</div>
+            </div>
+
             <div className="flex gap-2.5">
               <button
                 onClick={() => setConfirmCancelOpen(false)}

@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import * as pdfParseModule from 'pdf-parse';
 const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
+// @ts-ignore — no types
+import heicConvert from 'heic-convert';
 import Anthropic from '@anthropic-ai/sdk';
 import { verifyClientToken } from '../middleware/clientAuth';
 import { db } from '../firebase';
@@ -16,6 +18,9 @@ const ALLOWED_MIMES = [
   'image/jpeg',
   'image/png',
   'image/webp',
+  'image/heic',
+  'image/heif',
+  'application/octet-stream', // some browsers send this for HEIC — magic-byte gated below
 ];
 
 const upload = multer({
@@ -68,31 +73,27 @@ function isTxtBuffer(buf: Buffer): boolean {
   }
 }
 
-function validarContenido(buf: Buffer, mimetype: string): string | null {
-  if (mimetype === 'application/pdf') {
-    if (!isPdfBuffer(buf)) return 'El archivo no es un PDF válido.';
-    return null;
-  }
-  if (mimetype === 'text/plain') {
-    if (!isTxtBuffer(buf)) return 'El archivo no es un TXT válido (encoding no permitido).';
-    return null;
-  }
-  if (mimetype === 'image/jpeg') {
-    if (!isJpegBuffer(buf)) return 'El archivo no es un JPG válido.';
-    return null;
-  }
-  if (mimetype === 'image/png') {
-    if (!isPngBuffer(buf)) return 'El archivo no es un PNG válido.';
-    return null;
-  }
-  if (mimetype === 'image/webp') {
-    if (!isWebpBuffer(buf)) return 'El archivo no es un WebP válido.';
-    return null;
-  }
-  if (isHeicBuffer(buf)) {
-    return 'Las fotos HEIC del iPhone no se soportan. En tu móvil ve a Ajustes → Cámara → Formatos → "Más compatible" para que las fotos se guarden como JPG.';
-  }
-  return 'Formato no soportado.';
+type DetectedKind = 'pdf' | 'txt' | 'jpeg' | 'png' | 'webp' | 'heic' | null;
+
+function detectarTipo(buf: Buffer): DetectedKind {
+  if (isPdfBuffer(buf)) return 'pdf';
+  if (isJpegBuffer(buf)) return 'jpeg';
+  if (isPngBuffer(buf)) return 'png';
+  if (isWebpBuffer(buf)) return 'webp';
+  if (isHeicBuffer(buf)) return 'heic';
+  if (isTxtBuffer(buf)) return 'txt';
+  return null;
+}
+
+function validarContenido(buf: Buffer, mimetype: string): { error: string | null; kind: DetectedKind } {
+  const kind = detectarTipo(buf);
+  if (!kind) return { error: 'Formato no soportado.', kind: null };
+
+  // Magic byte ↔ mimetype consistency for non-image text/PDF (where browsers are reliable)
+  if (mimetype === 'application/pdf' && kind !== 'pdf') return { error: 'El archivo no es un PDF válido.', kind: null };
+  if (mimetype === 'text/plain' && kind !== 'txt') return { error: 'El archivo no es un TXT válido (encoding no permitido).', kind: null };
+
+  return { error: null, kind };
 }
 
 const MAX_DOCS_PRO = 5;
@@ -131,8 +132,18 @@ async function extraerTextoImagen(buffer: Buffer, mediaType: 'image/jpeg' | 'ima
   }
 }
 
-async function extraerTexto(buffer: Buffer, mimetype: string): Promise<string> {
-  if (mimetype === 'application/pdf') {
+async function convertirHeicAJpeg(buffer: Buffer): Promise<Buffer | null> {
+  try {
+    const out = await heicConvert({ buffer, format: 'JPEG', quality: 0.85 });
+    return Buffer.from(out);
+  } catch (err) {
+    console.error('Error convirtiendo HEIC:', err);
+    return null;
+  }
+}
+
+async function extraerTexto(buffer: Buffer, kind: DetectedKind): Promise<string> {
+  if (kind === 'pdf') {
     // Try native text extraction first (fast, free)
     try {
       const data = await pdfParse(buffer);
@@ -171,11 +182,16 @@ async function extraerTexto(buffer: Buffer, mimetype: string): Promise<string> {
       return '';
     }
   }
-  if (mimetype === 'text/plain') {
+  if (kind === 'txt') {
     return buffer.toString('utf-8').substring(0, MAX_TEXT_CHARS);
   }
-  if (mimetype === 'image/jpeg' || mimetype === 'image/png' || mimetype === 'image/webp') {
-    return extraerTextoImagen(buffer, mimetype);
+  if (kind === 'jpeg') return extraerTextoImagen(buffer, 'image/jpeg');
+  if (kind === 'png')  return extraerTextoImagen(buffer, 'image/png');
+  if (kind === 'webp') return extraerTextoImagen(buffer, 'image/webp');
+  if (kind === 'heic') {
+    const jpeg = await convertirHeicAJpeg(buffer);
+    if (!jpeg) return '';
+    return extraerTextoImagen(jpeg, 'image/jpeg');
   }
   return '';
 }
@@ -223,9 +239,9 @@ router.post('/', verifyClientToken, upload.single('archivo'), async (req: Reques
       return res.status(400).json({ success: false, error: 'Archivo requerido (PDF o TXT, máx. 5MB)' });
     }
 
-    const validationError = validarContenido(req.file.buffer, req.file.mimetype);
-    if (validationError) {
-      return res.status(400).json({ success: false, error: validationError });
+    const { error: validationError, kind } = validarContenido(req.file.buffer, req.file.mimetype);
+    if (validationError || !kind) {
+      return res.status(400).json({ success: false, error: validationError || 'Formato no soportado.' });
     }
 
     const maxDocs = plan === 'premium' ? MAX_DOCS_PREMIUM : MAX_DOCS_PRO;
@@ -238,12 +254,23 @@ router.post('/', verifyClientToken, upload.single('archivo'), async (req: Reques
     }
 
     const etiqueta = (req.body.etiqueta || '').trim().substring(0, 100);
-    const texto = await extraerTexto(req.file.buffer, req.file.mimetype);
+    const texto = await extraerTexto(req.file.buffer, kind);
+
+    // For HEIC the browser-mime is unreliable; persist a canonical mime by kind.
+    const tipoCanon: Record<NonNullable<DetectedKind>, string> = {
+      pdf: 'application/pdf',
+      txt: 'text/plain',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      heic: 'image/heic',
+    };
+    const tipo = tipoCanon[kind];
 
     const docRef = await db.collection('usuarios').doc(userEmail).collection('documentos').add({
       nombre: req.file.originalname,
       etiqueta,
-      tipo: req.file.mimetype,
+      tipo,
       tamaño: req.file.size,
       textoExtraido: texto,
       creadoEn: new Date().toISOString(),
@@ -255,7 +282,7 @@ router.post('/', verifyClientToken, upload.single('archivo'), async (req: Reques
         id: docRef.id,
         nombre: req.file.originalname,
         etiqueta,
-        tipo: req.file.mimetype,
+        tipo,
         tamaño: req.file.size,
         tieneTexto: !!texto,
         creadoEn: new Date().toISOString(),

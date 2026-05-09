@@ -25,7 +25,7 @@ function formatBytes(bytes: number): string {
 
 const MAX_DOCS: Record<string, number> = { pro: 5, premium: 10 };
 const MAX_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_EXT = ['.pdf', '.txt', '.jpg', '.jpeg', '.png', '.webp'];
+const ACCEPTED_EXT = ['.pdf', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 
 function isExtAccepted(name: string): boolean {
   const lower = name.toLowerCase();
@@ -77,11 +77,7 @@ export default function Documentos() {
   };
 
   const validarArchivo = (f: File): string => {
-    const lower = f.name.toLowerCase();
-    if (lower.endsWith('.heic') || lower.endsWith('.heif')) {
-      return 'Las fotos HEIC del iPhone no se soportan. Cambia el formato en Ajustes → Cámara → Formatos → "Más compatible" o exporta la foto como JPG.';
-    }
-    if (!isExtAccepted(f.name)) return 'Formato no soportado. Acepta PDF, TXT, JPG, PNG o WebP.';
+    if (!isExtAccepted(f.name)) return 'Formato no soportado. Acepta PDF, TXT, JPG, PNG, WebP o HEIC.';
     if (f.size > MAX_BYTES) return `Archivo demasiado grande (${(f.size / 1024 / 1024).toFixed(1)} MB). Máx 5 MB.`;
     return '';
   };
@@ -203,7 +199,7 @@ export default function Documentos() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.txt,.jpg,.jpeg,.png,.webp,application/pdf,text/plain,image/jpeg,image/png,image/webp"
+                  accept=".pdf,.txt,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,text/plain,image/jpeg,image/png,image/webp,image/heic,image/heif"
                   className="hidden"
                   onChange={e => seleccionarArchivo(e.target.files?.[0] || null)}
                 />
@@ -226,7 +222,7 @@ export default function Documentos() {
                     <p className="text-[13.5px] text-white/50">
                       Arrastra un archivo aquí o <span className="text-[#25D366] font-medium">haz click</span>
                     </p>
-                    <p className="text-[12px] text-white/30">PDF, TXT, JPG, PNG o WebP · máx. 5 MB</p>
+                    <p className="text-[12px] text-white/30">PDF, TXT, JPG, PNG, WebP o HEIC · máx. 5 MB</p>
                   </>
                 )}
               </div>
