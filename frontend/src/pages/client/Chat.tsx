@@ -286,7 +286,10 @@ export default function Chat() {
 
   return (
     <ClientLayout>
-      <div className="flex flex-col h-[100dvh] lg:h-screen p-4 lg:p-8 gap-0">
+      <div
+        className="flex flex-col h-full min-h-0 p-4 lg:p-8 gap-0"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -379,7 +382,7 @@ export default function Chat() {
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex-1 qe-card rounded-2xl overflow-y-auto p-5 space-y-4 mb-3 mt-4"
+          className="flex-1 min-h-0 qe-card rounded-2xl overflow-y-auto p-5 space-y-4 mb-3 mt-4"
         >
           {loadingMas && (
             <div className="flex justify-center py-2">
@@ -503,6 +506,7 @@ export default function Chat() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ block: 'end' }), 250)}
               placeholder="Escribe tu pregunta... (Enter para enviar)"
               rows={1}
               disabled={enviando}

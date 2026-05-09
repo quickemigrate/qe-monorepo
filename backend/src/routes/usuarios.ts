@@ -120,6 +120,79 @@ router.post('/registro', registroLimiter, async (req: Request, res: Response) =>
   }
 });
 
+// Reenvía email de verificación. Frontend llama tras click "Reenviar verificación".
+const verifyEmailLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyName: 'verify-email-resend',
+  message: 'Demasiadas solicitudes. Espera 1 hora.',
+});
+
+router.post('/verify-email/resend', verifyClientToken, verifyEmailLimiter, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email as string;
+    const emailVerified = (req as any).user.email_verified;
+    if (emailVerified) {
+      return res.json({ success: true, alreadyVerified: true });
+    }
+
+    const apiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Quick Emigrate <hola@quickemigrate.com>';
+    const baseUrl = process.env.FRONTEND_URL || 'https://quickemigrate.com';
+    if (!apiKey) return res.json({ success: true });
+
+    const { getAuth } = await import('firebase-admin/auth');
+    let firebaseLink: string;
+    try {
+      firebaseLink = await getAuth().generateEmailVerificationLink(userEmail);
+    } catch (err) {
+      console.error('[verify-email/resend] Error generando link:', err);
+      return res.json({ success: true });
+    }
+
+    let customLink = firebaseLink;
+    try {
+      const u = new URL(firebaseLink);
+      const oobCode = u.searchParams.get('oobCode') || '';
+      const fbApiKey = u.searchParams.get('apiKey') || '';
+      const lang = u.searchParams.get('lang') || 'es';
+      customLink = `${baseUrl}/cliente/auth-action?mode=verifyEmail&oobCode=${encodeURIComponent(oobCode)}&apiKey=${encodeURIComponent(fbApiKey)}&lang=${encodeURIComponent(lang)}`;
+    } catch { /* fallback */ }
+
+    const html = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f4f4f5; padding: 32px 16px;">
+  <div style="background: #1A1C1C; border-radius: 16px; padding: 28px;">
+    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Quick Emigrate</p>
+    <h1 style="color: #fff; font-size: 22px; margin: 0;">Verifica tu email</h1>
+  </div>
+  <div style="background: #fff; border-radius: 16px; padding: 28px; margin-top: 16px; color: #374151; line-height: 1.65; font-size: 14.5px;">
+    <p>Confirma que <strong>${escapeHtmlReset(userEmail)}</strong> es tu email para activar tu cuenta.</p>
+    <div style="text-align: center; margin: 24px 0 8px;">
+      <a href="${customLink}" style="display: inline-block; background: #25D366; color: #062810; font-weight: 700; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-size: 14px;">Verificar email</a>
+    </div>
+    <p style="color: #6B7280; font-size: 11.5px; word-break: break-all; margin-top: 16px;">¿No funciona el botón? Copia este enlace:<br>${escapeHtmlReset(customLink)}</p>
+  </div>
+</div>`.trim();
+
+    try {
+      const resend = new Resend(apiKey);
+      await resend.emails.send({
+        from: fromEmail,
+        to: userEmail,
+        subject: 'Verifica tu email — Quick Emigrate',
+        html,
+      });
+    } catch (err) {
+      console.error('[verify-email/resend] Error enviando email:', err);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[verify-email/resend] Error:', err);
+    res.json({ success: true });
+  }
+});
+
 // Reset password — genera link via Admin SDK, envía email propio (Resend) con URL propia.
 // Bypassa el handler default de Firebase (*.firebaseapp.com) para evitar prefetch de scanners.
 // Respuesta siempre genérica: no revela existencia de cuenta.
@@ -209,6 +282,53 @@ router.post('/reset-password', resetPasswordLimiter, async (req: Request, res: R
       success: true,
       message: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña.',
     });
+  }
+});
+
+// Avatar: cliente sube foto comprimida en base64 (data URL JPEG/PNG/WebP).
+// Max 200KB para evitar bloat en Firestore. Cliente debe comprimir antes.
+const AVATAR_MAX_BYTES = 200 * 1024;
+router.put('/avatar', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email as string;
+    const { dataUrl } = req.body || {};
+
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
+      return res.status(400).json({ success: false, error: 'dataUrl inválido' });
+    }
+    const m = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+    if (!m) {
+      return res.status(400).json({ success: false, error: 'Formato no permitido. Usa JPG, PNG o WebP.' });
+    }
+    const approxBytes = Math.floor((m[2].length * 3) / 4);
+    if (approxBytes > AVATAR_MAX_BYTES) {
+      return res.status(400).json({ success: false, error: 'Imagen demasiado grande tras compresión.' });
+    }
+
+    await db.collection('usuarios').doc(userEmail).update({
+      photoURL: dataUrl,
+      actualizadoEn: new Date().toISOString(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error al guardar avatar:', err);
+    res.status(500).json({ success: false, error: 'Error al guardar avatar' });
+  }
+});
+
+router.delete('/avatar', verifyClientToken, async (req: Request, res: Response) => {
+  try {
+    const userEmail = (req as any).user.email as string;
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await db.collection('usuarios').doc(userEmail).update({
+      photoURL: FieldValue.delete(),
+      actualizadoEn: new Date().toISOString(),
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error al borrar avatar:', err);
+    res.status(500).json({ success: false, error: 'Error al borrar avatar' });
   }
 });
 

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Resend } from 'resend';
-import { verifyClientToken } from '../middleware/clientAuth';
+import { verifyClientToken, requireEmailVerified } from '../middleware/clientAuth';
 import { db } from '../firebase';
 import { stripe } from '../config/stripe';
 
@@ -97,7 +97,7 @@ async function getOrCreateCustomer(userEmail: string, nombre?: string): Promise<
 }
 
 // Crea Subscription real Stripe — devuelve clientSecret del primer invoice
-router.post('/create-subscription', verifyClientToken, async (req: Request, res: Response) => {
+router.post('/create-subscription', verifyClientToken, requireEmailVerified, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
     const userDoc = await db.collection('usuarios').doc(userEmail).get();
@@ -244,7 +244,7 @@ router.post('/reanudar', verifyClientToken, async (req: Request, res: Response) 
   }
 });
 
-router.post('/create-payment-intent', verifyClientToken, async (req: Request, res: Response) => {
+router.post('/create-payment-intent', verifyClientToken, requireEmailVerified, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
 

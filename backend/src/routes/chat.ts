@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { verifyClientToken } from '../middleware/clientAuth';
+import { verifyClientToken, requireEmailVerified } from '../middleware/clientAuth';
 import { db } from '../firebase';
 import Anthropic from '@anthropic-ai/sdk';
 import { obtenerContextoLegal } from '../services/rag';
@@ -93,7 +93,7 @@ router.post('/consentimiento', verifyClientToken, async (req: Request, res: Resp
   }
 });
 
-router.post('/mensaje', verifyClientToken, async (req: Request, res: Response) => {
+router.post('/mensaje', verifyClientToken, requireEmailVerified, async (req: Request, res: Response) => {
   try {
     const userEmail = (req as any).user.email as string;
     const { mensaje, preferenciasIA } = req.body;

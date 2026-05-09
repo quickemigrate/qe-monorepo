@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   EmailAuthProvider,
@@ -7,7 +7,7 @@ import {
   verifyBeforeUpdateEmail,
   signOut,
 } from 'firebase/auth';
-import { CheckCircle2, AlertCircle, Mail, Download, Trash2, Check } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Mail, Download, Trash2, Check, Camera, Loader2 } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
 import NotificacionesPanel from '../../components/client/NotificacionesPanel';
 import { useAuth } from '../../context/AuthContext';
@@ -78,6 +78,103 @@ export default function Perfil() {
 
   // Export
   const [exportando, setExportando] = useState(false);
+
+  // Avatar
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const res = await fetch(`${API}/api/usuarios/perfil`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data?.photoURL) setPhotoURL(data.data.photoURL);
+        }
+      } catch { /* silent */ }
+    })();
+  }, [getToken]);
+
+  const compressImage = (file: File, maxDim = 256, quality = 0.82): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Imagen inválida'));
+        img.onload = () => {
+          const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject(new Error('Canvas no soportado'));
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setAvatarError('');
+    if (!/^image\/(jpeg|png|webp|heic|heif)$/i.test(f.type) && !/\.(jpg|jpeg|png|webp|heic|heif)$/i.test(f.name)) {
+      setAvatarError('Formato no soportado. Usa JPG, PNG o WebP.');
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setAvatarError('Imagen demasiado grande (máx 10 MB).');
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const dataUrl = await compressImage(f);
+      const token = await getToken();
+      const res = await fetch(`${API}/api/usuarios/avatar`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setAvatarError(data.error || 'No se pudo subir la imagen.');
+      } else {
+        setPhotoURL(dataUrl);
+      }
+    } catch (err: any) {
+      setAvatarError(err?.message || 'Error procesando la imagen.');
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    setAvatarUploading(true);
+    setAvatarError('');
+    try {
+      const token = await getToken();
+      await fetch(`${API}/api/usuarios/avatar`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPhotoURL(null);
+    } catch {
+      setAvatarError('Error al eliminar.');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   // Borrar cuenta
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -228,6 +325,64 @@ export default function Perfil() {
         {/* Datos de cuenta */}
         <div className="qe-card rounded-2xl p-5 md:p-6">
           <h2 className="text-[15px] font-semibold text-white mb-4">Datos de cuenta</h2>
+
+          {/* Avatar */}
+          <div className="flex items-center gap-4 mb-5">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
+              {photoURL ? (
+                <img src={photoURL} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[28px] font-semibold text-white/60">
+                  {(user?.email?.[0] || '?').toUpperCase()}
+                </span>
+              )}
+              {avatarUploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Loader2 size={18} className="animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic,.heif"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white
+                             text-[12.5px] font-semibold px-3 py-2 transition disabled:opacity-50"
+                >
+                  <Camera size={13} />
+                  {photoURL ? 'Cambiar foto' : 'Subir foto'}
+                </button>
+                {photoURL && (
+                  <button
+                    type="button"
+                    onClick={handleAvatarRemove}
+                    disabled={avatarUploading}
+                    className="inline-flex items-center gap-1.5 rounded-xl text-red-300 hover:bg-red-500/10
+                               text-[12.5px] font-semibold px-3 py-2 transition disabled:opacity-50"
+                  >
+                    <Trash2 size={13} />
+                    Quitar
+                  </button>
+                )}
+              </div>
+              {avatarError && (
+                <p className="mt-2 text-[12px] text-red-400">{avatarError}</p>
+              )}
+              {!avatarError && (
+                <p className="mt-2 text-[11.5px] text-white/35">JPG, PNG o WebP. Se reduce a 256×256.</p>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div>
               <div className={labelCls}>Nombre</div>

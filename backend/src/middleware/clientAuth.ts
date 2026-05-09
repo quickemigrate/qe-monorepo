@@ -18,3 +18,19 @@ export const verifyClientToken = async (req: Request, res: Response, next: NextF
     return res.status(401).json({ error: 'Token inválido' });
   }
 };
+
+// Bloquea acciones críticas (chat, suscripción) si el email no está verificado.
+// Usar DESPUÉS de verifyClientToken — depende de req.user.
+export const requireEmailVerified = (req: Request, res: Response, next: NextFunction) => {
+  const user = (req as any).user;
+  // Google sign-in marca email_verified=true automáticamente.
+  // Email/password requiere clic en el link de verificación.
+  if (!user?.email_verified && user?.firebase?.sign_in_provider !== 'google.com') {
+    return res.status(403).json({
+      success: false,
+      error: 'Verifica tu email para continuar.',
+      code: 'email_not_verified',
+    });
+  }
+  next();
+};

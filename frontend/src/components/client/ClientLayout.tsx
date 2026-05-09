@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings, Menu, X, PanelLeftClose, PanelLeftOpen, CreditCard } from 'lucide-react';
+import { LogOut, Home, MessageCircle, FolderOpen, FileText, Settings, Menu, X, PanelLeftClose, PanelLeftOpen, CreditCard, MailWarning } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const navigate = useNavigate();
   const location = useLocation();
   const { plan, loading: loadingPlan } = useClientePlan();
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) { setPhotoURL(null); return; }
+    let cancel = false;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const apiBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const res = await fetch(`${apiBase}/api/usuarios/perfil`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok || cancel) return;
+        const data = await res.json();
+        if (!cancel && data.data?.photoURL) setPhotoURL(data.data.photoURL);
+      } catch { /* silent */ }
+    })();
+    return () => { cancel = true; };
+  }, [user]);
   const { tema } = usePreferencias();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userCollapsed, setUserCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === 'true');
@@ -235,7 +254,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               ...(collapsed ? {} : { borderLeft: `2px solid ${t.accent}`, paddingLeft: '10px' }),
             } : {}}
           >
-            <Settings size={17} className="shrink-0" />
+            {photoURL ? (
+              <img src={photoURL} alt="" className="w-[18px] h-[18px] rounded-full object-cover shrink-0" />
+            ) : (
+              <Settings size={17} className="shrink-0" />
+            )}
             {!collapsed && <span>Mi Perfil</span>}
           </Link>
 
@@ -290,6 +313,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </button>
         </header>
 
+        <EmailVerifyBanner />
         <main
           className={`flex-1 overflow-y-auto overflow-x-hidden ${t.isDark ? 'qe-aurora-bg' : 'qe-aurora-bg qe-aurora-bg-light'}`}
           style={{ backgroundColor: t.main }}
@@ -297,6 +321,93 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="w-full h-full">{children}</div>
         </main>
       </div>
+    </div>
+  );
+}
+
+function EmailVerifyBanner() {
+  const { user } = useAuth();
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [hidden, setHidden] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  if (!user || hidden) return null;
+  // Google sign-in marca emailVerified=true automáticamente.
+  if (user.emailVerified) return null;
+  const provider = user.providerData[0]?.providerId;
+  if (provider === 'google.com') return null;
+
+  const apiBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+  const handleResend = async () => {
+    setSending(true);
+    setError('');
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${apiBase}/api/usuarios/verify-email/resend`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 429) {
+        setError('Demasiados intentos. Espera 1 hora.');
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError('Error de conexión.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await user.reload();
+      // Si verificó: refresh token para que backend reciba email_verified=true
+      await user.getIdToken(true);
+      if (user.emailVerified) setHidden(true);
+    } catch { /* silent */ }
+    finally { setRefreshing(false); }
+  };
+
+  return (
+    <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2.5 flex items-start gap-3 shrink-0">
+      <MailWarning size={16} className="text-amber-300 mt-0.5 shrink-0" />
+      <div className="flex-1 min-w-0 text-[13px] text-amber-200/90 leading-[1.45]">
+        {sent ? (
+          <span>Email enviado a <strong>{user.email}</strong>. Revisa la bandeja y la carpeta de spam.</span>
+        ) : error ? (
+          <span className="text-red-300">{error}</span>
+        ) : (
+          <span>
+            Verifica tu email para acceder al chat IA y a los planes pago.{' '}
+            <button
+              onClick={handleResend}
+              disabled={sending}
+              className="font-semibold text-amber-100 underline underline-offset-2 hover:text-white disabled:opacity-50"
+            >
+              {sending ? 'Enviando…' : 'Reenviar enlace'}
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="ml-3 font-semibold text-amber-100 underline underline-offset-2 hover:text-white disabled:opacity-50"
+            >
+              {refreshing ? 'Comprobando…' : 'Ya verifiqué'}
+            </button>
+          </span>
+        )}
+      </div>
+      <button
+        onClick={() => setHidden(true)}
+        aria-label="Cerrar"
+        className="text-amber-200/60 hover:text-white shrink-0"
+      >
+        <X size={14} />
+      </button>
     </div>
   );
 }
