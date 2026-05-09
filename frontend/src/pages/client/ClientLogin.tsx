@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '../../firebase';
 
@@ -45,26 +44,22 @@ export default function ClientLogin() {
     }
     setResetSending(true);
     try {
-      const origin = window.location.origin;
-      await sendPasswordResetEmail(auth, resetEmail.trim(), {
-        url: `${origin}/cliente/login`,
-        handleCodeInApp: false,
+      const res = await fetch(`${API}/api/usuarios/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim() }),
       });
-      // Mensaje genérico sin revelar si email existe (security)
+      if (res.status === 429) {
+        setResetMsg({ tipo: 'error', texto: 'Demasiados intentos. Espera 1 hora antes de reintentar.' });
+        return;
+      }
+      // Respuesta genérica para no revelar si email existe
       setResetMsg({
         tipo: 'success',
-        texto: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y la carpeta de spam. Abre el enlace pronto: caduca en 1 hora.',
+        texto: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y la carpeta de spam. El enlace caduca en 1 hora.',
       });
-    } catch (err: any) {
-      // Aún en error mostramos genérico salvo throttle
-      if (err?.code === 'auth/too-many-requests') {
-        setResetMsg({ tipo: 'error', texto: 'Demasiados intentos. Espera unos minutos antes de reintentar.' });
-      } else {
-        setResetMsg({
-          tipo: 'success',
-          texto: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña.',
-        });
-      }
+    } catch {
+      setResetMsg({ tipo: 'error', texto: 'Error de conexión. Inténtalo de nuevo.' });
     } finally {
       setResetSending(false);
     }

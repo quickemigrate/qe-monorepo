@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Resend } from 'resend';
 import { verifyToken } from '../middleware/auth';
 import { verifyClientToken } from '../middleware/clientAuth';
 import { rateLimit } from '../middleware/rateLimit';
@@ -12,6 +13,17 @@ const registroLimiter = rateLimit({
   keyName: 'registro',
   message: 'Demasiados registros desde tu IP. Espera 1 hora antes de reintentar.',
 });
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyName: 'reset-password',
+  message: 'Demasiadas solicitudes de reset. Espera 1 hora antes de reintentar.',
+});
+
+function escapeHtmlReset(s: string): string {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
+}
 
 // Admin: list all users
 router.get('/', verifyToken, async (_req: Request, res: Response) => {
@@ -105,6 +117,97 @@ router.post('/registro', registroLimiter, async (req: Request, res: Response) =>
   } catch (error) {
     console.error('Error en registro:', error);
     res.status(500).json({ success: false, error: 'Error al registrar usuario' });
+  }
+});
+
+// Reset password — genera link via Admin SDK, envía email propio (Resend) con URL propia.
+// Bypassa el handler default de Firebase (*.firebaseapp.com) para evitar prefetch de scanners.
+// Respuesta siempre genérica: no revela existencia de cuenta.
+router.post('/reset-password', resetPasswordLimiter, async (req: Request, res: Response) => {
+  const genericOk = () => res.json({
+    success: true,
+    message: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña.',
+  });
+
+  try {
+    const email = (req.body?.email || '').toString().trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return res.status(400).json({ success: false, error: 'Email no válido' });
+    }
+
+    const apiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Quick Emigrate <hola@quickemigrate.com>';
+    const baseUrl = process.env.FRONTEND_URL || 'https://quickemigrate.com';
+
+    if (!apiKey) {
+      console.error('[reset-password] RESEND_API_KEY no configurada');
+      return genericOk();
+    }
+
+    const { getAuth } = await import('firebase-admin/auth');
+    let firebaseLink: string;
+    try {
+      firebaseLink = await getAuth().generatePasswordResetLink(email, {
+        url: `${baseUrl}/cliente/login`,
+        handleCodeInApp: false,
+      });
+    } catch (err: any) {
+      // auth/user-not-found → respuesta genérica (no enumeration)
+      if (err?.code === 'auth/user-not-found' || err?.errorInfo?.code === 'auth/user-not-found') {
+        return genericOk();
+      }
+      console.error('[reset-password] Error generando link Firebase:', err);
+      return genericOk();
+    }
+
+    // Reescribir link → URL propia, conservando oobCode/apiKey/mode
+    let customLink = firebaseLink;
+    try {
+      const u = new URL(firebaseLink);
+      const oobCode = u.searchParams.get('oobCode') || '';
+      const fbApiKey = u.searchParams.get('apiKey') || '';
+      const lang = u.searchParams.get('lang') || 'es';
+      customLink = `${baseUrl}/cliente/auth-action?mode=resetPassword&oobCode=${encodeURIComponent(oobCode)}&apiKey=${encodeURIComponent(fbApiKey)}&lang=${encodeURIComponent(lang)}`;
+    } catch {
+      // si falla parse, dejar link original (peor caso → handler default)
+    }
+
+    const html = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f4f4f5; padding: 32px 16px;">
+  <div style="background: #1A1C1C; border-radius: 16px; padding: 28px;">
+    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Quick Emigrate</p>
+    <h1 style="color: #fff; font-size: 22px; margin: 0;">Restablece tu contraseña</h1>
+  </div>
+  <div style="background: #fff; border-radius: 16px; padding: 28px; margin-top: 16px; color: #374151; line-height: 1.65; font-size: 14.5px;">
+    <p>Recibimos una solicitud para restablecer la contraseña de <strong>${escapeHtmlReset(email)}</strong>.</p>
+    <p>Pulsa el botón para crear una nueva contraseña. El enlace caduca en 1 hora.</p>
+    <div style="text-align: center; margin: 24px 0 8px;">
+      <a href="${customLink}" style="display: inline-block; background: #25D366; color: #062810; font-weight: 700; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-size: 14px;">Cambiar contraseña</a>
+    </div>
+    <p style="color: #6B7280; font-size: 12.5px; margin-top: 20px;">Si no fuiste tú, puedes ignorar este email — tu contraseña actual seguirá funcionando.</p>
+    <p style="color: #6B7280; font-size: 11.5px; word-break: break-all; margin-top: 16px;">¿No funciona el botón? Copia este enlace en tu navegador:<br>${escapeHtmlReset(customLink)}</p>
+  </div>
+</div>`.trim();
+
+    try {
+      const resend = new Resend(apiKey);
+      await resend.emails.send({
+        from: fromEmail,
+        to: email,
+        subject: 'Restablece tu contraseña — Quick Emigrate',
+        html,
+      });
+    } catch (err) {
+      console.error('[reset-password] Error enviando email Resend:', err);
+    }
+
+    return genericOk();
+  } catch (err) {
+    console.error('[reset-password] Error inesperado:', err);
+    res.json({
+      success: true,
+      message: 'Si esa cuenta existe, te enviamos un enlace para restablecer tu contraseña.',
+    });
   }
 });
 
