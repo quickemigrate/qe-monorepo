@@ -110,4 +110,73 @@ router.get('/', verifyToken, async (_req, res) => {
   }
 });
 
+const PERIODOS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
+const METRICAS_VALIDAS = new Set(['diagnosticos', 'leads', 'ingresos']);
+
+function dayKey(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+router.get('/series', verifyToken, async (req, res) => {
+  try {
+    const metric = String(req.query.metric || 'diagnosticos');
+    const period = String(req.query.period || '30d');
+    if (!METRICAS_VALIDAS.has(metric)) return res.status(400).json({ error: 'Métrica inválida' });
+    const days = PERIODOS[period];
+    if (!days) return res.status(400).json({ error: 'Período inválido' });
+
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (days - 1));
+    const startIso = start.toISOString();
+
+    const buckets: Record<string, number> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      buckets[dayKey(d.toISOString())] = 0;
+    }
+
+    if (metric === 'diagnosticos' || metric === 'ingresos') {
+      const configDoc = await db.collection('config').doc('planes').get();
+      const precioStarter: number = configDoc.data()?.planes?.find((p: any) => p.id === 'starter')?.precio ?? 59;
+
+      const snap = await db.collection('diagnosticos')
+        .where('estado', '==', 'completado')
+        .where('completadoEn', '>=', startIso)
+        .orderBy('completadoEn', 'asc')
+        .limit(2000)
+        .get();
+
+      snap.docs.forEach(doc => {
+        const data = doc.data();
+        const key = dayKey(data.completadoEn);
+        if (key in buckets) {
+          buckets[key] += metric === 'ingresos' ? (data.precio ?? precioStarter) : 1;
+        }
+      });
+    } else if (metric === 'leads') {
+      const snap = await db.collection('leads')
+        .where('createdAt', '>=', startIso)
+        .orderBy('createdAt', 'asc')
+        .limit(2000)
+        .get();
+
+      snap.docs.forEach(doc => {
+        const key = dayKey(doc.data().createdAt);
+        if (key in buckets) buckets[key] += 1;
+      });
+    }
+
+    const series = Object.entries(buckets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({ date, value }));
+
+    res.json({ success: true, data: { metric, period, series } });
+  } catch (error) {
+    console.error('Error series:', error);
+    res.status(500).json({ success: false, error: 'Error al obtener series' });
+  }
+});
+
 export default router;

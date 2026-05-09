@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, Users, FolderOpen, FileText, BookOpen, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, FolderOpen, FileText, BookOpen, Settings, Bell, LogOut, Menu, X } from 'lucide-react';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { icon: FileText,        label: 'Blog',          path: '/admin/blog' },
   { icon: BookOpen,        label: 'Conocimiento',  path: '/admin/conocimiento' },
   { icon: Users,           label: 'Usuarios',      path: '/admin/usuarios' },
+  { icon: Bell,            label: 'Notificaciones', path: '/admin/notificaciones' },
   { icon: Settings,        label: 'Configuración', path: '/admin/config' },
 ];
 

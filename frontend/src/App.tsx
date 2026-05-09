@@ -15,6 +15,7 @@ import AdminBlog from './pages/admin/AdminBlog';
 import Conocimiento from './pages/admin/Conocimiento';
 import Usuarios from './pages/admin/Usuarios';
 import Config from './pages/admin/Config';
+import Notificaciones from './pages/admin/Notificaciones';
 import Chat from './pages/client/Chat';
 import ClientLogin from './pages/client/ClientLogin';
 import ClientDashboard from './pages/client/ClientDashboard';
@@ -63,6 +64,7 @@ function AppShell() {
         <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
         <Route path="/admin/conocimiento" element={<ProtectedRoute><Conocimiento /></ProtectedRoute>} />
         <Route path="/admin/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
+        <Route path="/admin/notificaciones" element={<ProtectedRoute><Notificaciones /></ProtectedRoute>} />
         <Route path="/admin/config" element={<ProtectedRoute><Config /></ProtectedRoute>} />
         <Route path="/legal/:slug" element={<LegalPage />} />
         <Route path="/diagnostico" element={<DiagnosticoPage />} />

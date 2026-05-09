@@ -164,7 +164,7 @@ const missionTabs = [
     title: 'No somos un formulario.',
     body: 'Personas reales detrás de cada caso, cada duda y cada cita. Pequeños por diseño para que ningún caso pase desapercibido.',
     cta: 'El equipo',
-    href: '/nosotros',
+    href: '#team',
   },
 ];
 
@@ -219,13 +219,23 @@ const Mission = () => {
               {tab.title}
             </h3>
             <p className="text-white/60 text-[16px] leading-[1.65]">{tab.body}</p>
-            <Link
-              to={tab.href}
-              className="inline-flex items-center gap-2 mt-2 w-fit rounded-full bg-[#25D366] text-[#062810] font-bold px-6 py-3 text-[14.5px] hover:bg-[#2adc6c] transition-colors"
-            >
-              {tab.cta}
-              <ArrowRight size={15} />
-            </Link>
+            {tab.href.startsWith('#') ? (
+              <a
+                href={tab.href}
+                className="inline-flex items-center gap-2 mt-2 w-fit rounded-full bg-[#25D366] text-[#062810] font-bold px-6 py-3 text-[14.5px] hover:bg-[#2adc6c] transition-colors"
+              >
+                {tab.cta}
+                <ArrowRight size={15} />
+              </a>
+            ) : (
+              <Link
+                to={tab.href}
+                className="inline-flex items-center gap-2 mt-2 w-fit rounded-full bg-[#25D366] text-[#062810] font-bold px-6 py-3 text-[14.5px] hover:bg-[#2adc6c] transition-colors"
+              >
+                {tab.cta}
+                <ArrowRight size={15} />
+              </Link>
+            )}
           </div>
           <div className="flex items-center justify-center">
             <div className="w-full max-w-[320px] aspect-square rounded-2xl bg-[#0A0A0A] border border-white/8 flex items-center justify-center">
@@ -263,7 +273,7 @@ const Team = () => {
   ];
 
   return (
-    <section className="mx-auto max-w-[1200px] px-6 py-24">
+    <section id="team" className="mx-auto max-w-[1200px] px-6 py-24 scroll-mt-20">
       <div className="text-center mb-14">
         <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#25D366]">El equipo</span>
         <h2 className="mt-3 text-[38px] md:text-[52px] font-bold tracking-[-0.03em] leading-[1.05] text-white">
@@ -298,9 +308,7 @@ const Team = () => {
                 <div className="mt-0.5 text-[13.5px] font-semibold text-[#25D366]">{m.role}</div>
                 <p className="mt-4 text-[14.5px] leading-[1.6] text-white/60">{m.bio}</p>
                 <div className="mt-5 pt-5 border-t border-white/10 flex items-center gap-3">
-                  <a href={m.linkedin} className="text-[12px] text-white/40 hover:text-white transition-colors">LinkedIn</a>
-                  <span className="text-white/20">·</span>
-                  <a href="#" className="text-[12px] text-white/40 hover:text-white transition-colors">Email</a>
+                  <a href={m.linkedin} target="_blank" rel="noopener noreferrer" className="text-[12px] text-white/40 hover:text-white transition-colors">LinkedIn</a>
                 </div>
               </div>
             </div>

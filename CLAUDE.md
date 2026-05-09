@@ -74,7 +74,7 @@ FE components: frontend/src/components/{admin/AdminLayout,client/ClientLayout}.t
 FE landing: Navbar,Hero,Problem,Solution,HowItWorks,Services,Trust,FAQ,Contact,Footer
 FE pages admin: frontend/src/pages/admin/{Dashboard,Leads,Expedientes,Blog,Conocimiento}
 FE pages client: frontend/src/pages/client/{ClientLogin,Inicio,Chat,Perfil,Expediente,Plan,Documentos} · auth: ProtectedRoute+ClientProtectedRoute
-FE pages extra: /sobre-nosotros · /blog/:slug · /diagnostico/exito · Vercel Analytics+SpeedInsights
+FE pages extra: /nosotros · /blog/:slug · /diagnostico/exito · Vercel Analytics+SpeedInsights
 BE config: backend/src/config/{firebase,stripe,pinecone}.ts
 BE services: backend/src/services/{embeddings←VoyageAI, rag←ingestar/buscar/contexto}.ts
 BE routes: backend/src/routes/{contact,diagnostico,expedientes,leads,articles,conocimiento,documentos,chat,usuarios,config,metricas}.ts

@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FileText, DollarSign, Users, Inbox, RefreshCw, ArrowRight,
+  FileText, DollarSign, Users, Inbox, RefreshCw, ArrowRight, TrendingUp,
 } from 'lucide-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
+} from 'recharts';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -59,6 +62,152 @@ function Avatar({ name }: { name: string }) {
 
 function Skeleton({ h = 'h-[120px]' }: { h?: string }) {
   return <div className={`qe-card rounded-2xl animate-pulse ${h}`} />;
+}
+
+type SeriesMetric = 'diagnosticos' | 'leads' | 'ingresos';
+type SeriesPeriod = '7d' | '30d' | '90d';
+interface SeriesPoint { date: string; value: number }
+
+const METRIC_LABELS: Record<SeriesMetric, string> = {
+  diagnosticos: 'Diagnósticos',
+  leads: 'Leads',
+  ingresos: 'Ingresos (€)',
+};
+
+function formatTickDate(d: string) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+}
+
+function SeriesChart({ token }: { token: () => Promise<string | null> }) {
+  const [metric, setMetric] = useState<SeriesMetric>('diagnosticos');
+  const [period, setPeriod] = useState<SeriesPeriod>('30d');
+  const [series, setSeries] = useState<SeriesPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const t = await token();
+        if (!t) return;
+        const res = await fetch(`${API}/api/metricas/series?metric=${metric}&period=${period}`, {
+          headers: { Authorization: `Bearer ${t}` },
+        });
+        if (!res.ok) throw new Error('Error al cargar serie');
+        const json = await res.json();
+        if (!cancelled) setSeries(json.data?.series || []);
+      } catch (e: any) {
+        if (!cancelled) setError(e.message || 'Error');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [metric, period, token]);
+
+  const total = series.reduce((s, p) => s + p.value, 0);
+
+  return (
+    <div className="qe-card rounded-2xl p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2">
+          <TrendingUp size={16} className="text-[#25D366]" />
+          <h2 className="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/40">
+            Tendencia · {METRIC_LABELS[metric]}
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={metric}
+            onChange={e => setMetric(e.target.value as SeriesMetric)}
+            className="rounded-lg bg-[#0A0A0A] border border-white/15 px-3 py-1.5 text-[12.5px] text-white focus:outline-none focus:ring-2 focus:ring-[#25D366]/30"
+          >
+            <option value="diagnosticos">Diagnósticos</option>
+            <option value="leads">Leads</option>
+            <option value="ingresos">Ingresos</option>
+          </select>
+          <div className="inline-flex rounded-lg bg-[#0A0A0A] border border-white/15 p-0.5">
+            {(['7d', '30d', '90d'] as SeriesPeriod[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-2.5 py-1 rounded-md text-[12px] font-semibold transition-colors ${
+                  period === p ? 'bg-[#25D366] text-[#062810]' : 'text-white/50 hover:text-white'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-[28px] font-semibold text-white mb-1">
+        {metric === 'ingresos' ? `${total}€` : total}
+      </div>
+      <div className="text-[12px] text-white/40 mb-4">Total últimos {period}</div>
+
+      {loading ? (
+        <div className="h-[220px] animate-pulse bg-white/5 rounded-xl" />
+      ) : error ? (
+        <div className="h-[220px] grid place-items-center text-[13px] text-red-400">{error}</div>
+      ) : (
+        <div className="h-[220px] -ml-3">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={series} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="seriesFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#25D366" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#25D366" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatTickDate}
+                stroke="rgba(255,255,255,0.3)"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={20}
+              />
+              <YAxis
+                stroke="rgba(255,255,255,0.3)"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+                width={36}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: '#111111',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 12,
+                  fontSize: 12,
+                }}
+                labelStyle={{ color: 'rgba(255,255,255,0.6)' }}
+                itemStyle={{ color: '#25D366' }}
+                labelFormatter={(l: string) => new Date(l + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                formatter={(v: number) => [metric === 'ingresos' ? `${v}€` : v, METRIC_LABELS[metric]]}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#25D366"
+                strokeWidth={2}
+                fill="url(#seriesFill)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AdminDashboard() {
@@ -187,6 +336,11 @@ export default function AdminDashboard() {
                 );
               })
           }
+        </div>
+
+        {/* ── SECCIÓN 1.5: Tendencia temporal ── */}
+        <div className="mb-6">
+          <SeriesChart token={getToken} />
         </div>
 
         {/* ── SECCIÓN 2: Top países + Usuarios por plan ── */}

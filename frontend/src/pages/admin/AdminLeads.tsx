@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRightCircle, CheckCircle2, AlertCircle, Search } from 'lucide-react';
+import { X, ArrowRightCircle, CheckCircle2, AlertCircle, Search, Download, Trash2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -66,6 +66,88 @@ export default function AdminLeads() {
 
   const [search, setSearch] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+  const [exporting, setExporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkEstado, setBulkEstado] = useState<string>('');
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = (visibleIds: string[]) => {
+    setSelectedIds(prev => {
+      const allSelected = visibleIds.every(id => prev.has(id));
+      if (allSelected) {
+        const next = new Set(prev);
+        visibleIds.forEach(id => next.delete(id));
+        return next;
+      }
+      const next = new Set(prev);
+      visibleIds.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const runBulk = async (action: 'updateEstado' | 'delete', estado?: string) => {
+    if (selectedIds.size === 0) return;
+    if (action === 'delete' && !window.confirm(`¿Eliminar ${selectedIds.size} lead(s)? No se puede deshacer.`)) return;
+    setBulkProcessing(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`${API}/api/leads/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ids: [...selectedIds], action, estado }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Error en operación masiva');
+      }
+      clearSelection();
+      setBulkEstado('');
+      await fetchLeads();
+    } catch (err: any) {
+      alert(err.message || 'Error en operación masiva');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const params = new URLSearchParams();
+      if (filtroEstado !== 'todos') params.set('estado', filtroEstado);
+      const res = await fetch(`${API}/api/leads/export?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Error al exportar');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('Error al exportar CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const fetchLeads = async () => {
     const token = await getToken();
@@ -172,6 +254,14 @@ export default function AdminLeads() {
               <option value="todos">Todos los estados</option>
               {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
             </select>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-2 qe-card rounded-xl px-4 py-2.5 text-[13.5px] font-semibold text-white/70 hover:text-white hover:bg-white/6 disabled:opacity-40 transition-colors"
+            >
+              <Download size={14} />
+              {exporting ? 'Exportando…' : 'Exportar CSV'}
+            </button>
           </div>
         )}
 
@@ -182,6 +272,8 @@ export default function AdminLeads() {
             if (q && !`${l.nombre} ${l.email}`.toLowerCase().includes(q)) return false;
             return true;
           });
+          const visibleIds = leadsFiltrados.map(l => l.id);
+          const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
           return (
         <div className="qe-card rounded-2xl overflow-hidden">
           {loading ? (
@@ -195,6 +287,15 @@ export default function AdminLeads() {
               <table className="w-full min-w-[600px] text-[13.5px]">
                 <thead>
                   <tr className="border-b border-white/10">
+                    <th className="pl-5 pr-2 py-3 w-8">
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={() => toggleAllVisible(visibleIds)}
+                        className="accent-[#25D366] w-4 h-4 cursor-pointer"
+                        aria-label="Seleccionar todos"
+                      />
+                    </th>
                     {['Nombre', 'Email', 'País', 'Interés', 'Mensaje', 'Estado', 'Fecha', ''].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40">
                         {h}
@@ -208,8 +309,17 @@ export default function AdminLeads() {
                       key={lead.id}
                       onClick={() => openPanel(lead)}
                       className={`border-b border-white/8 cursor-pointer hover:bg-white/5 transition-colors
-                        ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}
+                        ${i % 2 === 0 ? '' : 'bg-white/[0.02]'} ${selectedIds.has(lead.id) ? 'bg-[#25D366]/8' : ''}`}
                     >
+                      <td className="pl-5 pr-2 py-3.5 w-8" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(lead.id)}
+                          onChange={() => toggleSelect(lead.id)}
+                          className="accent-[#25D366] w-4 h-4 cursor-pointer"
+                          aria-label={`Seleccionar ${lead.nombre}`}
+                        />
+                      </td>
                       <td className="px-5 py-3.5 font-medium text-white">{lead.nombre}</td>
                       <td className="px-5 py-3.5 text-white/60">{lead.email}</td>
                       <td className="px-5 py-3.5 text-white/60">{lead.pais || '—'}</td>
@@ -428,6 +538,48 @@ export default function AdminLeads() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-24px)]">
+          <div className="qe-card-strong rounded-2xl border border-white/15 shadow-2xl px-4 py-3 flex flex-wrap items-center gap-3">
+            <span className="text-[13px] font-semibold text-white whitespace-nowrap">
+              {selectedIds.size} seleccionado{selectedIds.size === 1 ? '' : 's'}
+            </span>
+            <div className="h-5 w-px bg-white/15" />
+            <select
+              value={bulkEstado}
+              onChange={e => setBulkEstado(e.target.value)}
+              disabled={bulkProcessing}
+              className="rounded-lg bg-[#0A0A0A] border border-white/15 px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-2 focus:ring-[#25D366]/30"
+            >
+              <option value="">Cambiar estado…</option>
+              {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+            <button
+              disabled={!bulkEstado || bulkProcessing}
+              onClick={() => runBulk('updateEstado', bulkEstado)}
+              className="rounded-lg bg-[#25D366] text-[#062810] font-bold px-4 py-2 text-[13px] hover:bg-[#2adc6c] disabled:opacity-40 transition-colors"
+            >
+              Aplicar
+            </button>
+            <button
+              disabled={bulkProcessing}
+              onClick={() => runBulk('delete')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/15 text-red-400 font-semibold px-3 py-2 text-[13px] hover:bg-red-500/25 disabled:opacity-40 transition-colors"
+            >
+              <Trash2 size={14} />
+              Eliminar
+            </button>
+            <button
+              disabled={bulkProcessing}
+              onClick={clearSelection}
+              className="text-white/50 hover:text-white text-[13px] px-2 transition-colors"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
