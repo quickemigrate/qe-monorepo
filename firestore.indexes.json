@@ -42,6 +42,22 @@
         { "fieldPath": "ruta_migratoria", "order": "ASCENDING" },
         { "fieldPath": "activo", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "diagnosticos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "completadoEn", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "diagnosticos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "completadoEn", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

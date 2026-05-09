@@ -147,13 +147,14 @@ router.post('/reset-password', resetPasswordLimiter, async (req: Request, res: R
     const { getAuth } = await import('firebase-admin/auth');
     let firebaseLink: string;
     try {
-      firebaseLink = await getAuth().generatePasswordResetLink(email, {
-        url: `${baseUrl}/cliente/login`,
-        handleCodeInApp: false,
-      });
+      // Sin actionCodeSettings: evita "Domain not allowlisted" si el dominio
+      // del front no está en Authorized domains. El continueUrl no se usa —
+      // reescribimos la URL completa abajo apuntando a /cliente/auth-action.
+      firebaseLink = await getAuth().generatePasswordResetLink(email);
     } catch (err: any) {
       // auth/user-not-found → respuesta genérica (no enumeration)
-      if (err?.code === 'auth/user-not-found' || err?.errorInfo?.code === 'auth/user-not-found') {
+      const code = err?.code || err?.errorInfo?.code || '';
+      if (code === 'auth/user-not-found') {
         return genericOk();
       }
       console.error('[reset-password] Error generando link Firebase:', err);
