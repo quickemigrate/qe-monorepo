@@ -123,12 +123,15 @@ router.post('/create-subscription', verifyClientToken, requireEmailVerified, asy
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
+      expand: ['latest_invoice.confirmation_secret'],
       metadata: { userEmail, planId: 'pro' },
     });
 
-    const paymentIntent = subscription.latest_invoice?.payment_intent;
-    if (!paymentIntent?.client_secret) {
+    const clientSecret =
+      subscription.latest_invoice?.confirmation_secret?.client_secret ||
+      subscription.latest_invoice?.payment_intent?.client_secret;
+    if (!clientSecret) {
+      console.error('Sin clientSecret en subscription:', JSON.stringify(subscription.latest_invoice, null, 2));
       return res.status(500).json({ success: false, error: 'Error iniciando el pago' });
     }
 
@@ -140,7 +143,7 @@ router.post('/create-subscription', verifyClientToken, requireEmailVerified, asy
 
     res.json({
       success: true,
-      clientSecret: paymentIntent.client_secret,
+      clientSecret,
       subscriptionId: subscription.id,
     });
   } catch (err: any) {
