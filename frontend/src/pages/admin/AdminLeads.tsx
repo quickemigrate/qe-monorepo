@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRightCircle, CheckCircle2, AlertCircle, Search, Download, Trash2 } from 'lucide-react';
+import { X, ArrowRightCircle, CheckCircle2, AlertCircle, Search, Download, Trash2, Inbox, ExternalLink } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -279,7 +279,26 @@ export default function AdminLeads() {
           {loading ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Cargando leads...</div>
           ) : leads.length === 0 ? (
-            <div className="px-6 py-10 text-center text-white/40 text-[14px]">Sin leads aún.</div>
+            <div className="flex flex-col items-center justify-center py-14 px-6 gap-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#25D366]/12 flex items-center justify-center">
+                <Inbox size={28} className="text-[#25D366]" />
+              </div>
+              <div>
+                <h3 className="text-[16px] font-semibold text-white mb-1.5">No tienes leads todavía</h3>
+                <p className="text-[13px] text-white/50 max-w-[380px] mx-auto leading-[1.5]">
+                  Los leads entran por el formulario de contacto de la landing y por el flujo de diagnóstico.
+                </p>
+              </div>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full qe-card border border-white/10 px-4 py-2 text-[13px] font-semibold text-white/70 hover:text-white hover:border-white/25 transition-colors"
+              >
+                <ExternalLink size={13} />
+                Ver landing
+              </a>
+            </div>
           ) : leadsFiltrados.length === 0 ? (
             <div className="px-6 py-10 text-center text-white/40 text-[14px]">Sin resultados para los filtros aplicados.</div>
           ) : (

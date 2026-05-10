@@ -168,6 +168,15 @@ export default function Chat() {
     if (searchOpen) setTimeout(() => searchRef.current?.focus(), 50);
   }, [searchOpen]);
 
+  useEffect(() => {
+    if (estado?.plan === 'starter') {
+      try {
+        const prev = parseInt(localStorage.getItem('qe_chat_blocked_visits') || '0', 10) || 0;
+        localStorage.setItem('qe_chat_blocked_visits', String(prev + 1));
+      } catch {}
+    }
+  }, [estado?.plan]);
+
   const handleConsentimiento = async (acepta: boolean) => {
     const token = await getToken();
     if (!token) return;

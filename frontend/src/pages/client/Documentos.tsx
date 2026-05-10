@@ -281,13 +281,24 @@ export default function Documentos() {
               </button>
             </div>
           ) : docs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-6">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
-                <FolderOpen size={22} className="text-white/20" />
+            <div className="flex flex-col items-center justify-center py-14 gap-4 text-center px-6">
+              <div className="w-16 h-16 rounded-2xl bg-[#25D366]/12 flex items-center justify-center">
+                <FolderOpen size={28} className="text-[#25D366]" />
               </div>
-              <p className="text-[13.5px] text-white/40">
-                Aún no has subido ningún documento.
-              </p>
+              <div>
+                <h3 className="text-[16px] font-semibold text-white mb-1.5">Sube tu primer documento</h3>
+                <p className="text-[13px] text-white/50 max-w-[320px] mx-auto leading-[1.5]">
+                  Pasaporte, contratos, antecedentes… Mia los usará para darte respuestas concretas a tu caso.
+                </p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!!limite}
+                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] text-[#062810] font-bold px-5 py-2.5 text-[13.5px] hover:bg-[#2adc6c] disabled:opacity-40 transition-colors"
+              >
+                <Upload size={14} />
+                Subir documento
+              </button>
             </div>
           ) : (
             <div className="divide-y divide-white/6">

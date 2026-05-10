@@ -7,6 +7,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { useAuth } from '../../context/AuthContext';
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -58,10 +59,6 @@ function Avatar({ name }: { name: string }) {
       <span className="text-[13px] font-bold text-[#25D366]">{(name || '?')[0].toUpperCase()}</span>
     </div>
   );
-}
-
-function Skeleton({ h = 'h-[120px]' }: { h?: string }) {
-  return <div className={`qe-card rounded-2xl animate-pulse ${h}`} />;
 }
 
 type SeriesMetric = 'diagnosticos' | 'leads' | 'ingresos';
@@ -152,7 +149,7 @@ function SeriesChart({ token }: { token: () => Promise<string | null> }) {
       <div className="text-[12px] text-white/40 mb-4">Total últimos {period}</div>
 
       {loading ? (
-        <div className="h-[220px] animate-pulse bg-white/5 rounded-xl" />
+        <Skeleton className="h-[220px] rounded-xl" />
       ) : error ? (
         <div className="h-[220px] grid place-items-center text-[13px] text-red-400">{error}</div>
       ) : (
@@ -346,7 +343,7 @@ export default function AdminDashboard() {
         {/* ── SECCIÓN 2: Top países + Usuarios por plan ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {loading
-            ? [1,2].map(i => <Skeleton key={i} h="h-[240px]" />)
+            ? [1,2].map(i => <Skeleton key={i} className="h-[240px] rounded-2xl" />)
             : (
               <>
                 {/* Top países */}
@@ -417,7 +414,7 @@ export default function AdminDashboard() {
         {/* ── SECCIÓN 3: Actividad reciente ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {loading
-            ? [1,2].map(i => <Skeleton key={i} h="h-[240px]" />)
+            ? [1,2].map(i => <Skeleton key={i} className="h-[240px] rounded-2xl" />)
             : (
               <>
                 {/* Últimos diagnósticos */}

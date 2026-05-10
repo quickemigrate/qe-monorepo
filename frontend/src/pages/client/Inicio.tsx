@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MessageCircle, FolderOpen, FileText, User, ArrowRight, Loader2, Download,
-  ChevronLeft, ChevronRight, Percent, List, Clock, AlertTriangle,
+  ChevronLeft, ChevronRight, Percent, List, Clock, AlertTriangle, Sparkles, Zap,
 } from 'lucide-react';
 import { getAuth } from 'firebase/auth';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -42,6 +42,44 @@ interface CardProps {
   description: string;
   to: string;
   accent?: boolean;
+}
+
+const CHAT_BLOCKED_VISITS_KEY = 'qe_chat_blocked_visits';
+
+function readChatBlockedVisits(): number {
+  try {
+    return parseInt(localStorage.getItem(CHAT_BLOCKED_VISITS_KEY) || '0', 10) || 0;
+  } catch { return 0; }
+}
+
+interface BannerProps {
+  icon: React.ElementType;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  to: string;
+}
+
+function UpgradeBanner({ icon: Icon, title, body, ctaLabel, to }: BannerProps) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#25D366]/15 to-[#25D366]/5 border border-[#25D366]/25 p-5 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+        <div className="shrink-0 w-11 h-11 rounded-xl bg-[#25D366]/20 grid place-items-center text-[#25D366]">
+          <Icon size={20} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-bold text-white">{title}</div>
+          <p className="mt-1 text-[13.5px] text-white/65 leading-[1.5]">{body}</p>
+        </div>
+        <Link
+          to={to}
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#25D366] text-[#062810] font-bold px-5 py-2.5 text-[13px] hover:bg-[#2adc6c] transition-colors"
+        >
+          {ctaLabel} <ArrowRight size={14} />
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 function QuickCard({ icon: Icon, title, description, to, accent }: CardProps) {
@@ -244,6 +282,35 @@ export default function Inicio() {
       `}</style>
 
       <div className="w-full h-full p-4 md:p-6 lg:p-8">
+
+        {/* Banner contextual de upgrade */}
+        {!loading && !loadingUser && (() => {
+          const sinDiagnostico = diagnosticoEstado !== 'completado' && diagnosticoEstado !== 'procesando';
+          const isFree = !plan || plan === 'free';
+          if (isFree && sinDiagnostico) {
+            return (
+              <UpgradeBanner
+                icon={Sparkles}
+                title="Diagnóstico personalizado por 59€"
+                body="Informe completo con plan migratorio, checklist de documentos, plazos y probabilidad de éxito."
+                ctaLabel="Hacer diagnóstico"
+                to="/diagnostico"
+              />
+            );
+          }
+          if (plan === 'starter' && readChatBlockedVisits() >= 5) {
+            return (
+              <UpgradeBanner
+                icon={Zap}
+                title="Pro 39€/mes desbloquea Mia"
+                body="Chat ilimitado con la IA especializada en inmigración + gestión de documentos."
+                ctaLabel="Ver Pro"
+                to="/cliente/plan"
+              />
+            );
+          }
+          return null;
+        })()}
 
         {/* Saludo */}
         <div className="mb-6 md:mb-8">

@@ -147,6 +147,13 @@ export default function Plan() {
     return new Date(iso).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
+  const diasHasta = (iso?: string | null): number | null => {
+    if (!iso) return null;
+    const ms = new Date(iso).getTime() - Date.now();
+    if (Number.isNaN(ms)) return null;
+    return Math.max(0, Math.ceil(ms / 86400000));
+  };
+
   return (
     <ClientLayout>
       <div className="p-8 max-w-[700px]">
@@ -214,12 +221,18 @@ export default function Plan() {
                 </>
               ) : (
                 <>
-                  {subInfo.stripeSubscriptionId ? (
-                    <div className="text-[13px] text-white/50">
-                      Próxima renovación:{' '}
-                      <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
-                    </div>
-                  ) : (
+                  {subInfo.stripeSubscriptionId ? (() => {
+                    const dias = diasHasta(subInfo.subscriptionCurrentPeriodEnd);
+                    return (
+                      <div className="text-[13px] text-white/50">
+                        Próximo cobro:{' '}
+                        <strong className="text-white">{formatFecha(subInfo.subscriptionCurrentPeriodEnd)}</strong>
+                        {dias !== null && (
+                          <span className="text-white/40"> · en {dias} {dias === 1 ? 'día' : 'días'}</span>
+                        )}
+                      </div>
+                    );
+                  })() : (
                     <div className="text-[13px] text-white/50">Plan Pro activo.</div>
                   )}
                   <button
