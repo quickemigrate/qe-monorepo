@@ -14,6 +14,7 @@ import configRouter from './routes/config';
 import metricasRouter from './routes/metricas';
 import documentosRouter from './routes/documentos';
 import suscripcionRouter from './routes/suscripcion';
+import pagosRouter from './routes/pagos';
 import notificacionesRouter from './routes/notificaciones';
 import stripeWebhookRouter from './routes/stripeWebhook';
 import sitemapRouter from './routes/sitemap';
@@ -93,6 +94,7 @@ app.use('/api/config', configRouter);
 app.use('/api/metricas', metricasRouter);
 app.use('/api/documentos', documentosRouter);
 app.use('/api/suscripcion', suscripcionRouter);
+app.use('/api/pagos', pagosRouter);
 app.use('/api/notificaciones', notificacionesRouter);
 app.use('/sitemap.xml', sitemapRouter);
 

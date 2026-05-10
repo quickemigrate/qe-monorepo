@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { MessageCircle, FolderOpen, FileText, Check, Loader2, AlertCircle, X, Sparkles } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
-import StripeCheckoutForm from '../../components/StripeCheckoutForm';
 import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
 import { usePlanes } from '../../hooks/usePlanes';
@@ -31,7 +30,6 @@ export default function SuscripcionPro() {
   const precioNum = proPlan?.precio ?? 39;
 
   const [clientSecret, setClientSecret] = useState('');
-  const [precioTexto, setPrecioTexto] = useState('');
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [error, setError] = useState('');
 
@@ -46,29 +44,19 @@ export default function SuscripcionPro() {
     setLoadingIntent(true);
     try {
       const token = await getToken();
-      const res = await fetch(`${API}/api/suscripcion/create-subscription`, {
+      const res = await fetch(`${API}/api/pagos/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tipo: 'pro' }),
       });
       const data = await res.json();
       if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
       setClientSecret(data.clientSecret);
-      setPrecioTexto(precioDisplay);
     } catch {
       setError('Error de conexión. Inténtalo de nuevo.');
     } finally {
       setLoadingIntent(false);
     }
-  };
-
-  const handleConfirm = async (paymentIntentId: string) => {
-    const token = await getToken();
-    const res = await fetch(`${API}/api/suscripcion/confirm-payment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ paymentIntentId }),
-    });
-    return res.json();
   };
 
   if (loadingPlan || plan === 'pro' || plan === 'premium') {
@@ -144,15 +132,11 @@ export default function SuscripcionPro() {
               {loadingIntent ? 'Cargando...' : `Suscribirse — ${precioDisplay}`}
             </button>
           ) : (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-              <StripeCheckoutForm
-                precioTexto={precioTexto || precioDisplay}
-                submitLabel={`Activar Plan Pro — ${precioTexto || precioDisplay}`}
-                onConfirm={handleConfirm}
-                onSuccess={() => navigate('/cliente/inicio')}
-                onError={(msg) => setError(msg)}
-              />
-            </Elements>
+            <div className="rounded-2xl overflow-hidden bg-white">
+              <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            </div>
           )}
         </div>
 

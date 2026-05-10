@@ -42,6 +42,9 @@ router.post('/', raw({ type: 'application/json' }), async (req: Request, res: Re
 
   try {
     switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object);
+        break;
       case 'payment_intent.succeeded':
         await handlePaymentIntentSucceeded(event.data.object);
         break;
@@ -77,6 +80,64 @@ router.post('/', raw({ type: 'application/json' }), async (req: Request, res: Re
 });
 
 // ─── Handlers ────────────────────────────────────────────────
+
+async function handleCheckoutSessionCompleted(session: any) {
+  // Solo procesar si el pago se completó
+  if (session.payment_status !== 'paid' && session.status !== 'complete') return;
+
+  const tipo = session.metadata?.tipo;
+  const userEmail = session.metadata?.userEmail;
+
+  if (tipo === 'diagnostico') {
+    const diagnosticoId = session.metadata?.diagnosticoId;
+    if (!diagnosticoId) {
+      console.warn('[stripe-webhook] checkout diagnostico sin diagnosticoId');
+      return;
+    }
+    const diagRef = db.collection('diagnosticos').doc(diagnosticoId);
+    const diagSnap = await diagRef.get();
+    if (!diagSnap.exists) {
+      console.warn(`[stripe-webhook] diagnosticoId ${diagnosticoId} no existe`);
+      return;
+    }
+    const data = diagSnap.data()!;
+
+    // Idempotencia: si ya en flujo, no re-procesar
+    if (['procesando', 'completado', 'error'].includes(data.estado)) return;
+
+    await diagRef.update({
+      estado: 'procesando',
+      stripeSessionId: session.id,
+      stripePaymentIntentId: session.payment_intent || null,
+      pagadoEn: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (userEmail) {
+      await db.collection('usuarios').doc(userEmail).set({
+        diagnosticoId,
+        plan: data.plan || 'starter',
+        actualizadoEn: new Date().toISOString(),
+      }, { merge: true });
+    }
+
+    const { procesarConRetry } = await import('../services/diagnosticoProcessor');
+    procesarConRetry(diagnosticoId, { ...data, email: userEmail || data.email });
+    return;
+  }
+
+  if (tipo === 'pro') {
+    // Subscription updates llegan vía customer.subscription.created/updated; aquí solo
+    // garantizamos que el usuario tenga el subscriptionId guardado por si el evento de
+    // subscription llega después.
+    if (userEmail && session.subscription) {
+      await db.collection('usuarios').doc(userEmail).set({
+        stripeSubscriptionId: session.subscription,
+        actualizadoEn: new Date().toISOString(),
+      }, { merge: true });
+    }
+  }
+}
 
 async function handlePaymentIntentSucceeded(pi: any) {
   // Caso A: pago de diagnóstico Starter
@@ -115,19 +176,6 @@ async function handlePaymentIntentSucceeded(pi: any) {
 
     const { procesarConRetry } = await import('../services/diagnosticoProcessor');
     procesarConRetry(diagnosticoId, { ...data, email: data.email });
-    return;
-  }
-
-  // Caso B: pago Pro (legacy paymentIntent flow — migrar a subscriptions)
-  const userEmail = pi.metadata?.userEmail;
-  const planId = pi.metadata?.planId;
-  if (userEmail && planId === 'pro') {
-    await db.collection('usuarios').doc(userEmail).set({
-      plan: 'pro',
-      planActivadoEn: new Date().toISOString(),
-      stripePaymentIntentId: pi.id,
-      actualizadoEn: new Date().toISOString(),
-    }, { merge: true });
   }
 }
 

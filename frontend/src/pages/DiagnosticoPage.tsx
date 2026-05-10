@@ -4,9 +4,8 @@ import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail, FileText, ExternalLink } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
-import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
 
@@ -39,7 +38,6 @@ export default function DiagnosticoPage() {
   const [perfilData, setPerfilData] = useState<PerfilFormState | null>(null);
   const [error, setError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
-  const [diagnosticoId, setDiagnosticoId] = useState('');
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   useEffect(() => {
@@ -330,14 +328,15 @@ export default function DiagnosticoPage() {
               try {
                 const auth = getAuth();
                 const token = await auth.currentUser?.getIdToken();
-                const res = await fetch(`${API}/api/diagnostico/create-payment-intent`, {
+                if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
+                const res = await fetch(`${API}/api/pagos/checkout`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ tipo: 'diagnostico' }),
                 });
                 const data = await res.json();
                 if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
                 setClientSecret(data.clientSecret);
-                setDiagnosticoId(data.diagnosticoId);
               } catch {
                 setError('Error al iniciar el pago. Inténtalo de nuevo.');
               } finally {
@@ -352,26 +351,11 @@ export default function DiagnosticoPage() {
             {loadingPayment ? 'Cargando...' : `Pagar ${starterPrecioTexto}`}
           </button>
         ) : (
-          <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-            <StripeCheckoutForm
-              precioTexto={starterPrecioTexto}
-              onConfirm={async (paymentIntentId) => {
-                const auth = getAuth();
-                const token = await auth.currentUser?.getIdToken();
-                const res = await fetch(`${API}/api/diagnostico/confirm-payment`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ paymentIntentId, diagnosticoId }),
-                });
-                return res.json();
-              }}
-              onSuccess={() => {
-                if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
-                navigate('/diagnostico/exito');
-              }}
-              onError={(msg) => setError(msg)}
-            />
-          </Elements>
+          <div className="rounded-2xl overflow-hidden bg-white">
+            <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </div>
         )}
 
         {/* Garantías */}
