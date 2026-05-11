@@ -86,7 +86,7 @@ export default function Pago() {
         className="absolute inset-0 cursor-default"
       />
 
-      <div className="relative w-full max-w-[520px] qe-card-strong rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.7)]">
+      <div className="relative w-full max-w-[820px] qe-card-strong rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.7)]">
         <div className="flex items-start gap-3 px-6 pt-6 pb-4 border-b border-white/8">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] text-[11px] font-semibold mb-2">
