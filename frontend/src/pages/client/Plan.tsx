@@ -288,14 +288,14 @@ export default function Plan() {
 
         {/* CTA cambio de plan */}
         <div className="qe-card rounded-2xl p-6">
-          {plan === 'starter' ? (
+          {(plan === 'free' || plan === 'starter' || !plan) ? (
             <>
               <h2 className="text-[15px] font-semibold text-white mb-1">Actualiza al Plan Pro</h2>
               <p className="text-[13.5px] text-white/50 mb-4">
                 Desbloquea el asistente IA, sube documentos y obtén respuestas personalizadas a tu caso.
               </p>
               <button
-                onClick={() => navigate('/cliente/suscripcion-pro')}
+                onClick={() => navigate('/cliente/pago?tipo=pro')}
                 className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
                            px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
               >
@@ -320,18 +320,8 @@ export default function Plan() {
             </>
           ) : (
             <>
-              <h2 className="text-[15px] font-semibold text-white mb-1">¿Necesitas cambiar de plan?</h2>
-              <p className="text-[13.5px] text-white/50 mb-4">
-                Contacta con nuestro equipo y te ayudamos.
-              </p>
-              <a
-                href="mailto:hola@quickemigrate.com?subject=Cambio de plan"
-                className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
-                           px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
-              >
-                <Mail size={15} />
-                Contactar
-              </a>
+              <h2 className="text-[15px] font-semibold text-white mb-1">Ya tienes el plan más alto</h2>
+              <p className="text-[13.5px] text-white/50">Premium es nuestro plan superior. Si necesitas algo extra, contacta con soporte.</p>
             </>
           )}
         </div>
