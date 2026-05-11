@@ -3,14 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail, FileText, ExternalLink } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { loadStripe } from '@stripe/stripe-js';
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
+import StripeCheckoutEmbedded from '../components/StripeCheckoutEmbedded';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
-
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
@@ -351,11 +347,7 @@ export default function DiagnosticoPage() {
             {loadingPayment ? 'Cargando...' : `Pagar ${starterPrecioTexto}`}
           </button>
         ) : (
-          <div className="rounded-2xl overflow-hidden bg-white">
-            <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
-          </div>
+          <StripeCheckoutEmbedded clientSecret={clientSecret} />
         )}
 
         {/* Garantías */}

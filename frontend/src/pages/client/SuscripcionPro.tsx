@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { MessageCircle, FolderOpen, FileText, Check, Loader2, AlertCircle, X, Sparkles } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
+import StripeCheckoutEmbedded from '../../components/StripeCheckoutEmbedded';
 import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
 import { usePlanes } from '../../hooks/usePlanes';
 
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PRO_FEATURES = [
@@ -132,11 +129,7 @@ export default function SuscripcionPro() {
               {loadingIntent ? 'Cargando...' : `Suscribirse — ${precioDisplay}`}
             </button>
           ) : (
-            <div className="rounded-2xl overflow-hidden bg-white">
-              <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
-            </div>
+            <StripeCheckoutEmbedded clientSecret={clientSecret} />
           )}
         </div>
 
