@@ -56,7 +56,7 @@ export async function crearCheckoutDiagnostico(params: {
   const amount = await getPrecioStarterCents();
 
   const session = await stripe.checkout.sessions.create({
-    ui_mode: 'embedded',
+    ui_mode: 'embedded_page',
     mode: 'payment',
     customer: customerId,
     line_items: [{
@@ -93,7 +93,7 @@ export async function crearCheckoutPro(params: {
   const customerId = await getOrCreateCustomer(userEmail, nombre);
 
   const session = await stripe.checkout.sessions.create({
-    ui_mode: 'embedded',
+    ui_mode: 'embedded_page',
     mode: 'subscription',
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
