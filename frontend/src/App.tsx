@@ -54,9 +54,12 @@ function RouteFallback() {
 
 function AppShell() {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
-  const isClient = location.pathname.startsWith('/cliente');
-  const isHome = location.pathname === '/';
+  const state = location.state as { backgroundLocation?: Location } | null;
+  const backgroundLocation = state?.backgroundLocation;
+  const routedLocation = backgroundLocation || location;
+  const isAdmin = routedLocation.pathname.startsWith('/admin');
+  const isClient = routedLocation.pathname.startsWith('/cliente');
+  const isHome = routedLocation.pathname === '/';
   const isLandingRoute = isAdmin || isClient || isHome;
 
   return (
@@ -64,7 +67,7 @@ function AppShell() {
       <ScrollToTop />
       {!isLandingRoute && <Navbar />}
       <Suspense fallback={<RouteFallback />}>
-        <Routes>
+        <Routes location={routedLocation}>
           <Route path="/" element={<EarlyAccessLanding />} />
           <Route path="/nosotros" element={<AboutPage />} />
           <Route path="/blog" element={<BlogListPage />} />
@@ -89,11 +92,18 @@ function AppShell() {
           <Route path="/cliente/perfil" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/plan" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/suscripcion-pro" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><SuscripcionPro /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
-          <Route path="/cliente/pago" element={<ClientProtectedRoute><Pago /></ClientProtectedRoute>} />
+          {!backgroundLocation && (
+            <Route path="/cliente/pago" element={<PreferenciasProvider><ClientProtectedRoute><Pago /></ClientProtectedRoute></PreferenciasProvider>} />
+          )}
           <Route path="/cliente/documentos" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
         </Routes>
+        {backgroundLocation && (
+          <Routes>
+            <Route path="/cliente/pago" element={<ClientProtectedRoute><Pago /></ClientProtectedRoute>} />
+          </Routes>
+        )}
       </Suspense>
       {!isLandingRoute && <Footer />}
       <CookieBanner />

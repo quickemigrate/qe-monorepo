@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail, FileText, ExternalLink } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -26,6 +26,7 @@ export default function DiagnosticoPage() {
   const { planes } = usePlanes();
   const starterPrecioTexto = planes.find(p => p.id === 'starter')?.precioTexto ?? '59€';
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [estado, setEstado] = useState<Estado>('loading');
   const [userEmail, setUserEmail] = useState('');
@@ -318,7 +319,7 @@ export default function DiagnosticoPage() {
           <button
             onClick={() => {
               if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
-              navigate('/cliente/pago?tipo=diagnostico');
+              navigate('/cliente/pago?tipo=diagnostico', { state: { backgroundLocation: location } });
             }}
             className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
                        hover:bg-[#2adc6c] active:scale-[0.98] transition flex items-center justify-center gap-2"

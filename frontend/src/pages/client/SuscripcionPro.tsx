@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MessageCircle, FolderOpen, FileText, Check, Loader2, Sparkles } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
@@ -16,6 +16,7 @@ export default function SuscripcionPro() {
   const { plan, loading: loadingPlan } = useClientePlan();
   const { planes } = usePlanes();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const proPlan = planes.find(p => p.id === 'pro');
   const precioDisplay = proPlan?.precioTexto ?? '39€/mes';
@@ -78,7 +79,7 @@ export default function SuscripcionPro() {
           <p className="text-[12.5px] text-white/30 mb-6">Pago único mensual. Cancela cuando quieras contactando con soporte.</p>
 
           <button
-            onClick={() => navigate('/cliente/pago?tipo=pro')}
+            onClick={() => navigate('/cliente/pago?tipo=pro', { state: { backgroundLocation: location } })}
             className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
                        hover:bg-[#2adc6c] active:scale-[0.98] transition flex items-center justify-center gap-2"
           >

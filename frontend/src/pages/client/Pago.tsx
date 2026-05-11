@@ -61,6 +61,16 @@ export default function Pago() {
     return () => { cancelled = true; };
   }, [tipo]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const close = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/cliente/inicio');
@@ -69,14 +79,14 @@ export default function Pago() {
   const copy = COPY[tipo] ?? COPY.diagnostico;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md qe-aurora-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm">
       <button
         aria-label="Cerrar"
         onClick={close}
         className="absolute inset-0 cursor-default"
       />
 
-      <div className="relative w-full max-w-[520px] qe-card-strong rounded-3xl overflow-hidden">
+      <div className="relative w-full max-w-[520px] qe-card-strong rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.7)]">
         <div className="flex items-start gap-3 px-6 pt-6 pb-4 border-b border-white/8">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] text-[11px] font-semibold mb-2">
@@ -97,7 +107,7 @@ export default function Pago() {
           </button>
         </div>
 
-        <div className="p-4 sm:p-5">
+        <div className="p-4 sm:p-5 max-h-[70vh] overflow-y-auto">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 size={22} className="animate-spin text-white/40" />

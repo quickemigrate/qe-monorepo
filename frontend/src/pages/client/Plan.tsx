@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, X, Mail, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import ClientLayout from '../../components/client/ClientLayout';
 import { useClientePlan } from '../../hooks/useClientePlan';
@@ -58,6 +58,7 @@ interface SubInfo {
 export default function Plan() {
   const { plan, mensajesUsados, mensajesLimit, loading } = useClientePlan();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [subInfo, setSubInfo] = useState<SubInfo>({});
   const [actionLoading, setActionLoading] = useState(false);
@@ -295,7 +296,7 @@ export default function Plan() {
                 Desbloquea el asistente IA, sube documentos y obtén respuestas personalizadas a tu caso.
               </p>
               <button
-                onClick={() => navigate('/cliente/pago?tipo=pro')}
+                onClick={() => navigate('/cliente/pago?tipo=pro', { state: { backgroundLocation: location } })}
                 className="inline-flex items-center gap-2 bg-[#25D366] text-[#062810] font-bold
                            px-5 py-2.5 rounded-full text-[14px] hover:bg-[#2adc6c] transition-colors active:scale-95"
               >
