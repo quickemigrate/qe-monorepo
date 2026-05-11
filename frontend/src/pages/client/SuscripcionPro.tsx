@@ -1,13 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, FolderOpen, FileText, Check, Loader2, AlertCircle, X, Sparkles } from 'lucide-react';
+import { MessageCircle, FolderOpen, FileText, Check, Loader2, Sparkles } from 'lucide-react';
 import ClientLayout from '../../components/client/ClientLayout';
-import StripeCheckoutEmbedded from '../../components/StripeCheckoutEmbedded';
-import { useAuth } from '../../context/AuthContext';
 import { useClientePlan } from '../../hooks/useClientePlan';
 import { usePlanes } from '../../hooks/usePlanes';
-
-const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 const PRO_FEATURES = [
   { icon: MessageCircle, text: 'Asistente IA Mia (50 mensajes/mes)' },
@@ -17,7 +13,6 @@ const PRO_FEATURES = [
 ];
 
 export default function SuscripcionPro() {
-  const { getToken } = useAuth();
   const { plan, loading: loadingPlan } = useClientePlan();
   const { planes } = usePlanes();
   const navigate = useNavigate();
@@ -26,35 +21,11 @@ export default function SuscripcionPro() {
   const precioDisplay = proPlan?.precioTexto ?? '39€/mes';
   const precioNum = proPlan?.precio ?? 39;
 
-  const [clientSecret, setClientSecret] = useState('');
-  const [loadingIntent, setLoadingIntent] = useState(false);
-  const [error, setError] = useState('');
-
   useEffect(() => {
     if (!loadingPlan && (plan === 'pro' || plan === 'premium')) {
       navigate('/cliente/plan', { replace: true });
     }
   }, [plan, loadingPlan]);
-
-  const initPayment = async () => {
-    setError('');
-    setLoadingIntent(true);
-    try {
-      const token = await getToken();
-      const res = await fetch(`${API}/api/pagos/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tipo: 'pro' }),
-      });
-      const data = await res.json();
-      if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
-      setClientSecret(data.clientSecret);
-    } catch {
-      setError('Error de conexión. Inténtalo de nuevo.');
-    } finally {
-      setLoadingIntent(false);
-    }
-  };
 
   if (loadingPlan || plan === 'pro' || plan === 'premium') {
     return (
@@ -82,17 +53,6 @@ export default function SuscripcionPro() {
           </p>
         </div>
 
-        {error && (
-          <div className="flex items-center gap-2.5 mb-6 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-[13px] text-red-400">
-            <AlertCircle size={15} />
-            {error}
-            <button onClick={() => setError('')} className="ml-auto text-red-400/60 hover:text-red-400">
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {/* Features card */}
         <div className="qe-card rounded-2xl p-6 mb-4">
           <h2 className="text-[13px] font-semibold text-white/50 uppercase tracking-[0.08em] mb-4">
             Incluido en Pro
@@ -110,7 +70,6 @@ export default function SuscripcionPro() {
           </ul>
         </div>
 
-        {/* Price + payment */}
         <div className="qe-card rounded-2xl p-6">
           <div className="flex items-baseline gap-2 mb-1">
             <span className="text-[40px] font-bold text-white leading-none">{precioNum}€</span>
@@ -118,19 +77,13 @@ export default function SuscripcionPro() {
           </div>
           <p className="text-[12.5px] text-white/30 mb-6">Pago único mensual. Cancela cuando quieras contactando con soporte.</p>
 
-          {!clientSecret ? (
-            <button
-              onClick={initPayment}
-              disabled={loadingIntent}
-              className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
-                         hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loadingIntent && <Loader2 size={16} className="animate-spin" />}
-              {loadingIntent ? 'Cargando...' : `Suscribirse — ${precioDisplay}`}
-            </button>
-          ) : (
-            <StripeCheckoutEmbedded clientSecret={clientSecret} />
-          )}
+          <button
+            onClick={() => navigate('/cliente/pago?tipo=pro')}
+            className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition flex items-center justify-center gap-2"
+          >
+            Suscribirse — {precioDisplay}
+          </button>
         </div>
 
         <p className="mt-4 text-[12px] text-white/25 text-center">

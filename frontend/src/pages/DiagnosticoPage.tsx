@@ -4,7 +4,6 @@ import { motion } from 'motion/react';
 import { Loader2, Edit2, ShieldCheck, Clock, Mail, FileText, ExternalLink } from 'lucide-react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import PerfilWizard, { type PerfilFormState } from '../components/PerfilWizard';
-import StripeCheckoutEmbedded from '../components/StripeCheckoutEmbedded';
 import { usePlanes } from '../hooks/usePlanes';
 import { AuroraBackground } from '../components/ui/aurora-background';
 
@@ -33,7 +32,6 @@ export default function DiagnosticoPage() {
   const [userPlan, setUserPlan] = useState<string>('');
   const [perfilData, setPerfilData] = useState<PerfilFormState | null>(null);
   const [error, setError] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   useEffect(() => {
@@ -316,38 +314,17 @@ export default function DiagnosticoPage() {
             {loadingPayment && <Loader2 size={16} className="animate-spin" />}
             {loadingPayment ? 'Generando...' : 'Generar mi diagnóstico'}
           </button>
-        ) : !clientSecret ? (
-          <button
-            onClick={async () => {
-              setError('');
-              setLoadingPayment(true);
-              try {
-                const auth = getAuth();
-                const token = await auth.currentUser?.getIdToken();
-                if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
-                const res = await fetch(`${API}/api/pagos/checkout`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ tipo: 'diagnostico' }),
-                });
-                const data = await res.json();
-                if (!data.success) { setError(data.error || 'Error al iniciar el pago.'); return; }
-                setClientSecret(data.clientSecret);
-              } catch {
-                setError('Error al iniciar el pago. Inténtalo de nuevo.');
-              } finally {
-                setLoadingPayment(false);
-              }
-            }}
-            disabled={loadingPayment}
-            className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
-                       hover:bg-[#2adc6c] active:scale-[0.98] transition disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {loadingPayment && <Loader2 size={16} className="animate-spin" />}
-            {loadingPayment ? 'Cargando...' : `Pagar ${starterPrecioTexto}`}
-          </button>
         ) : (
-          <StripeCheckoutEmbedded clientSecret={clientSecret} />
+          <button
+            onClick={() => {
+              if (userEmail) sessionStorage.setItem('diagnostico_email', userEmail);
+              navigate('/cliente/pago?tipo=diagnostico');
+            }}
+            className="w-full rounded-full bg-[#25D366] text-[#062810] font-bold py-4 text-[15px]
+                       hover:bg-[#2adc6c] active:scale-[0.98] transition flex items-center justify-center gap-2"
+          >
+            Pagar {starterPrecioTexto}
+          </button>
         )}
 
         {/* Garantías */}

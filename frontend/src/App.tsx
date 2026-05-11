@@ -33,6 +33,7 @@ const Inicio = lazy(() => import('./pages/client/Inicio'));
 const Perfil = lazy(() => import('./pages/client/Perfil'));
 const Plan = lazy(() => import('./pages/client/Plan'));
 const SuscripcionPro = lazy(() => import('./pages/client/SuscripcionPro'));
+const Pago = lazy(() => import('./pages/client/Pago'));
 const Documentos = lazy(() => import('./pages/client/Documentos'));
 const Expediente = lazy(() => import('./pages/client/Expediente'));
 const Chat = lazy(() => import('./pages/client/Chat'));
@@ -88,6 +89,7 @@ function AppShell() {
           <Route path="/cliente/perfil" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Perfil /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/plan" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Plan /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/suscripcion-pro" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><SuscripcionPro /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+          <Route path="/cliente/pago" element={<ClientProtectedRoute><Pago /></ClientProtectedRoute>} />
           <Route path="/cliente/documentos" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
