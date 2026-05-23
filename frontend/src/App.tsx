@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import EarlyAccessLanding from './pages/EarlyAccessLanding';
+import HomePage from './pages/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ClientProtectedRoute from './components/ClientProtectedRoute';
 import OnboardingGuard from './components/OnboardingGuard';
@@ -68,7 +68,7 @@ function AppShell() {
       {!isLandingRoute && <Navbar />}
       <Suspense fallback={<RouteFallback />}>
         <Routes location={routedLocation}>
-          <Route path="/" element={<EarlyAccessLanding />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/nosotros" element={<AboutPage />} />
           <Route path="/blog" element={<BlogListPage />} />
           <Route path="/blog/:slug" element={<ArticlePage />} />

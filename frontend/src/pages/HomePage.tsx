@@ -9,7 +9,7 @@ import PricingSection from '../components/landing/PricingSection';
 import '../styles/early-access.css';
 import '../styles/landing-sections.css';
 
-export default function EarlyAccessLanding() {
+export default function HomePage() {
   const { planes } = usePlanes();
   const pro = planes.find(p => p.id === 'pro');
   const precioTexto = pro?.precioTexto ?? '39€/mes';
