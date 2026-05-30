@@ -6,6 +6,8 @@ interface PulseMarker {
   id: string;
   location: [number, number];
   delay: number;
+  name?: string;
+  labelSide?: 'left' | 'right';
 }
 
 interface GlobePulseProps {
@@ -15,12 +17,13 @@ interface GlobePulseProps {
 }
 
 const defaultMarkers: PulseMarker[] = [
-  { id: 'pulse-madrid', location: [40.42, -3.7], delay: 0 },
-  { id: 'pulse-mexico', location: [19.43, -99.13], delay: 0.3 },
-  { id: 'pulse-bogota', location: [4.71, -74.07], delay: 0.6 },
-  { id: 'pulse-lima', location: [-12.05, -77.04], delay: 0.9 },
-  { id: 'pulse-buenosaires', location: [-34.61, -58.38], delay: 1.2 },
-  { id: 'pulse-caracas', location: [10.48, -66.9], delay: 1.5 },
+  { id: 'pulse-madrid',       location: [40.42, -3.7],    delay: 0,   name: 'Madrid',       labelSide: 'right' },
+  { id: 'pulse-valencia',     location: [39.47, -0.38],   delay: 0.2, name: 'Valencia',     labelSide: 'right' },
+  { id: 'pulse-mexico',       location: [19.43, -99.13],  delay: 0.4, name: 'CDMX',         labelSide: 'left'  },
+  { id: 'pulse-bogota',       location: [4.71, -74.07],   delay: 0.7, name: 'Bogotá',       labelSide: 'left'  },
+  { id: 'pulse-lima',         location: [-12.05, -77.04], delay: 1.0, name: 'Lima',         labelSide: 'left'  },
+  { id: 'pulse-buenosaires',  location: [-34.61, -58.38], delay: 1.3, name: 'Buenos Aires', labelSide: 'left'  },
+  { id: 'pulse-caracas',      location: [10.48, -66.9],   delay: 1.6, name: 'Caracas',      labelSide: 'left'  },
 ];
 
 export function GlobePulse({
@@ -202,6 +205,29 @@ export function GlobePulse({
               boxShadow: '0 0 0 3px #0b2014, 0 0 0 5px #25D366',
             }}
           />
+          {m.name && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '50%',
+                [m.labelSide === 'left' ? 'right' : 'left']: 'calc(50% + 14px)',
+                transform: 'translateY(-50%)',
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                color: 'rgba(255,255,255,0.85)',
+                background: 'rgba(10,10,10,0.7)',
+                backdropFilter: 'blur(6px)',
+                padding: '3px 8px',
+                borderRadius: 999,
+                border: '1px solid rgba(37,211,102,0.35)',
+                whiteSpace: 'nowrap',
+                textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+              }}
+            >
+              {m.name}
+            </span>
+          )}
         </div>
       ))}
     </div>

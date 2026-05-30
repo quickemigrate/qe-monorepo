@@ -27,9 +27,9 @@ interface HeroGeometricProps {
 
 function HeroGeometric({
   badge,
-  title1 = "Tu ruta para emigrar",
-  title2 = "a España, clara.",
-  description = "Asistente IA, diagnóstico personalizado y gestión de documentos. Todo lo que necesitas para emigrar a España.",
+  title1 = "De tu país a España,",
+  title2 = "sin perderte en el camino.",
+  description = "Sabemos que dejar tu país da miedo. Te decimos exacto qué visado pedir, qué papeles juntar y cuánto tarda — en menos de 5 minutos.",
   precioTexto = "39€/mes",
 }: HeroGeometricProps) {
   const badgeText = badge ?? `Early Access · Plan Pro · Solo ${precioTexto}`
