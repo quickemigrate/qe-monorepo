@@ -20,7 +20,7 @@ export default function NotForYouSection() {
     <section className="ea-section" id="no-es-para-ti">
       <div className="ea-wrap" style={{ maxWidth: 880 }}>
         <div className="ea-sec-head">
-          <h2>Para quién <span style={{ color: '#E07856' }}>no</span> es.</h2>
+          <h2>Para quién <span style={{ color: '#25D366' }}>no</span> es.</h2>
           <p>Mejor decírtelo ahora. Ahorramos tiempo los dos.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
@@ -29,18 +29,18 @@ export default function NotForYouSection() {
               key={title}
               className="rounded-3xl p-6 md:p-7"
               style={{
-                background: 'rgba(224,120,86,0.04)',
-                border: '1px solid rgba(224,120,86,0.18)',
+                background: 'rgba(37,211,102,0.04)',
+                border: '1px solid rgba(37,211,102,0.18)',
               }}
             >
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
                 style={{
-                  background: 'rgba(224,120,86,0.12)',
-                  border: '1px solid rgba(224,120,86,0.30)',
+                  background: 'rgba(37,211,102,0.12)',
+                  border: '1px solid rgba(37,211,102,0.30)',
                 }}
               >
-                <X size={18} strokeWidth={2.5} style={{ color: '#E07856' }} />
+                <X size={18} strokeWidth={2.5} style={{ color: '#25D366' }} />
               </div>
               <h3 className="text-[16px] md:text-[17px] font-semibold text-white mb-2 leading-tight">
                 {title}
@@ -51,7 +51,7 @@ export default function NotForYouSection() {
             </div>
           ))}
         </div>
-        <p className="text-center text-[13.5px] text-white/40 mt-8">
+        <p className="text-center text-[13.5px] text-white/40" style={{ marginTop: 56 }}>
           ¿Sigues aquí? Entonces probablemente sí seamos para ti. 👇
         </p>
       </div>
