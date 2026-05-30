@@ -52,7 +52,7 @@ export default function NotForYouSection() {
           ))}
         </div>
         <p className="text-center text-[13.5px] text-white/40" style={{ marginTop: 56 }}>
-          ¿Sigues aquí? Entonces probablemente sí seamos para ti. 👇
+          ¿Sigues aquí? Entonces probablemente sí seamos para ti. 
         </p>
       </div>
     </section>
