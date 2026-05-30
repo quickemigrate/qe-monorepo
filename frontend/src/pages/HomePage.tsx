@@ -1,6 +1,5 @@
 import { usePlanes } from '../hooks/usePlanes';
 import { HeroGeometric } from '../components/ui/shape-landing-hero';
-import DiagnosticPreviewSection from '../components/DiagnosticPreviewSection';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import IncludesSection from '../components/landing/IncludesSection';
@@ -19,7 +18,6 @@ export default function HomePage() {
     <div className="ea-root">
       <Navbar />
       <HeroGeometric precioTexto={precioTexto} />
-      <DiagnosticPreviewSection />
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />
       <PricingSection precioTexto={precioTexto} precioViejo={precioViejo} />
