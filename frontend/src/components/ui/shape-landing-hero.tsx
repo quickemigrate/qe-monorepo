@@ -37,11 +37,11 @@ function HeroGeometric({
     <div
       className="relative w-full overflow-hidden bg-[#0A0A0A] flex items-center"
       style={{
-        minHeight: 'min(100dvh, 920px)',
+        minHeight: 'min(100dvh, 820px)',
         paddingLeft: 'clamp(20px, 3.5vw, 48px)',
         paddingRight: 'clamp(20px, 3.5vw, 48px)',
-        paddingTop: 'clamp(96px, 12vh, 140px)',
-        paddingBottom: 'clamp(56px, 8vh, 96px)',
+        paddingTop: 'clamp(88px, 10vh, 120px)',
+        paddingBottom: 'clamp(48px, 6vh, 80px)',
       }}
     >
       <div
@@ -88,7 +88,7 @@ function HeroGeometric({
             initial="hidden"
             animate="visible"
             className="font-bold tracking-tight leading-[1.05]"
-            style={{ fontSize: 'clamp(34px, 6.2vw, 80px)' }}
+            style={{ fontSize: 'clamp(28px, 4.4vw, 60px)' }}
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
               {title1}
@@ -110,7 +110,7 @@ function HeroGeometric({
             initial="hidden"
             animate="visible"
             className="text-white/70 leading-relaxed font-light tracking-wide"
-            style={{ fontSize: 'clamp(15px, 1.4vw, 20px)', maxWidth: 'min(560px, 100%)' }}
+            style={{ fontSize: 'clamp(14px, 1.1vw, 17px)', maxWidth: 'min(520px, 100%)' }}
           >
             {description}
           </motion.p>
@@ -141,7 +141,7 @@ function HeroGeometric({
           <div className="absolute inset-0 -m-8 md:-m-12 rounded-full bg-[#25D366]/8 blur-3xl" />
           <GlobePulse
             className="relative w-full mx-auto"
-            style={{ maxWidth: 'min(620px, 80vw)' }}
+            style={{ maxWidth: 'min(440px, 55vw)' }}
           />
         </motion.div>
       </div>
