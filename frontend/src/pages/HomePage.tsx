@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import TrustBand from '../components/landing/TrustBand';
 import IncludesSection from '../components/landing/IncludesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
+import NotForYouSection from '../components/landing/NotForYouSection';
 import PricingSection from '../components/landing/PricingSection';
 import FaqSection from '../components/landing/FaqSection';
 import '../styles/early-access.css';
@@ -23,6 +24,7 @@ export default function HomePage() {
       <TrustBand />
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />
+      <NotForYouSection />
       <PricingSection precioTexto={precioTexto} precioViejo={precioViejo} />
       <FaqSection />
       <Footer />
