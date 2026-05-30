@@ -1,7 +1,7 @@
 import { ScrollText, Scale, ShieldCheck, Unlock } from 'lucide-react';
 
 const ITEMS = [
-  { icon: ScrollText,  title: 'Normativa al día',     sub: 'Ley de extranjería vigente, sin desfase' },
+  { icon: ScrollText,  title: 'Información oficial actualizada', sub: 'Trabajamos con la ley de extranjería vigente' },
   { icon: Scale,       title: 'Basado en el BOE',     sub: 'Fuentes oficiales, no rumores' },
   { icon: ShieldCheck, title: 'Datos cifrados',       sub: 'Tu información, solo tuya' },
   { icon: Unlock,      title: 'Sin permanencia',      sub: 'Cancela cuando quieras' },
