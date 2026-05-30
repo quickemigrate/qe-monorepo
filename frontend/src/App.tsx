@@ -15,6 +15,7 @@ const ArticlePage = lazy(() => import('./pages/ArticlePage'));
 const LegalPage = lazy(() => import('./pages/LegalPage'));
 const DiagnosticoPage = lazy(() => import('./pages/DiagnosticoPage'));
 const DiagnosticoExitoPage = lazy(() => import('./pages/DiagnosticoExitoPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -98,6 +99,7 @@ function AppShell() {
           <Route path="/cliente/documentos" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Documentos /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/expediente" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Expediente /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
           <Route path="/cliente/chat" element={<PreferenciasProvider><ClientProtectedRoute><OnboardingGuard><Chat /></OnboardingGuard></ClientProtectedRoute></PreferenciasProvider>} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {backgroundLocation && (
           <Routes>
