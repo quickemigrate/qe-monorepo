@@ -26,7 +26,7 @@ export default function HowItWorksSection({ precioTexto }: Props) {
   }, []);
 
   return (
-    <section className="ea-section" id="como">
+    <section className="ea-section" id="como" style={{ background: '#0C0B0A' }}>
       <div className="ea-wrap">
         <div className="ea-sec-head">
           <h2><span style={{ color: 'var(--green)' }}>Tres pasos.</span> Menos de 10 minutos.</h2>
@@ -42,7 +42,7 @@ export default function HowItWorksSection({ precioTexto }: Props) {
             <span className="ea-dot"></span>
             <div className="ea-num">Paso 2</div>
             <h3>Estudiamos tu caso</h3>
-            <p>Lo comparamos con la ley española de extranjería actualizada a 2026. Mismo cuidado que con un caso real.</p>
+            <p>Lo comparamos con la ley española de extranjería vigente a día de hoy. Mismo cuidado que con un caso real.</p>
           </li>
           <li className="ea-step">
             <span className="ea-dot"></span>

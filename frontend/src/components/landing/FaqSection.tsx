@@ -17,7 +17,7 @@ const FAQS: Faq[] = [
   },
   {
     q: '¿Cómo de actualizada está la información?',
-    a: 'Trabajamos sobre la normativa de extranjería española actualizada a 2026 y publicaciones del BOE. Cuando hay cambios relevantes (nuevos visados, requisitos, cuantías), actualizamos la base en días, no meses.',
+    a: 'Trabajamos sobre la normativa de extranjería española vigente a día de hoy y publicaciones del BOE. Cuando hay cambios relevantes (nuevos visados, requisitos, cuantías), actualizamos la base en días, no meses.',
   },
   {
     q: '¿Puedo cancelar la suscripción?',
