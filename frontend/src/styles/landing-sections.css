@@ -27,12 +27,12 @@
 
 /* ---------- SECTION LAYOUT ---------- */
 .ea-section{
-  padding:120px 32px;
+  padding:clamp(64px, 8vw, 120px) clamp(20px, 3.5vw, 48px);
   position:relative;
   z-index:1;
   background:var(--bg);
 }
-.ea-wrap{max-width:1120px;margin:0 auto}
+.ea-wrap{max-width:min(1200px, 92vw);margin:0 auto}
 
 /* ---------- SHARED CTA ---------- */
 .ea-btn-primary{
@@ -63,7 +63,7 @@
   line-height:1.1;letter-spacing:-0.03em;font-weight:800;
   text-wrap:balance;
 }
-.ea-sec-head p{margin-top:14px!important;color:var(--text-muted);font-size:17px;line-height:1.5;text-wrap:balance}
+.ea-sec-head p{margin-top:14px!important;color:var(--text-muted);font-size:clamp(15px, 1.5vw, 18px);line-height:1.5;text-wrap:balance}
 
 /* ---------- INCLUDES CARDS ---------- */
 .ea-cards{
@@ -88,8 +88,8 @@
   margin-bottom:24px;
   border:1px solid rgba(37,211,102,0.18);
 }
-.ea-card h3{font-size:18px;font-weight:600;letter-spacing:-0.015em;margin-bottom:10px!important}
-.ea-card p{font-size:15px;line-height:1.55;color:var(--text-muted);orphans:3;widows:3}
+.ea-card h3{font-size:clamp(16px, 1.6vw, 20px);font-weight:600;letter-spacing:-0.015em;margin-bottom:10px!important}
+.ea-card p{font-size:clamp(14px, 1.3vw, 16px);line-height:1.55;color:var(--text-muted);orphans:3;widows:3}
 
 /* ---------- HOW IT WORKS / TIMELINE ---------- */
 .ea-timeline{
@@ -122,8 +122,8 @@
   text-transform:uppercase;color:var(--green);
   margin-bottom:8px!important;
 }
-.ea-step h3{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px!important}
-.ea-step p{color:var(--text-muted);font-size:16px;line-height:1.55;max-width:520px;orphans:3;widows:3}
+.ea-step h3{font-size:clamp(19px, 1.9vw, 26px);font-weight:600;letter-spacing:-0.02em;margin-bottom:8px!important}
+.ea-step p{color:var(--text-muted);font-size:clamp(14px, 1.4vw, 17px);line-height:1.55;max-width:520px;orphans:3;widows:3}
 
 /* ---------- PRICE / FINAL CTA ---------- */
 .ea-price-card{
@@ -154,7 +154,7 @@
   text-decoration-thickness:1px;
 }
 .ea-price-now{
-  font-size:80px;font-weight:800;color:var(--green);
+  font-size:clamp(56px, 7.5vw, 96px);font-weight:800;color:var(--green);
   letter-spacing:-0.04em;line-height:1;
   margin-top:6px!important;
 }
@@ -213,12 +213,14 @@
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:880px){
-  .ea-cards{grid-template-columns:1fr}
-  .ea-section{padding:88px 22px}
-  .ea-price-card{padding:44px 24px}
-  .ea-price-now{font-size:64px}
+  .ea-cards{grid-template-columns:1fr;gap:16px}
+  .ea-price-card{padding:clamp(32px, 6vw, 44px) clamp(20px, 5vw, 28px)}
   .ea-timeline{padding-left:36px}
   .ea-step .ea-dot{left:-32px}
+}
+
+@media(min-width:1600px){
+  .ea-wrap{max-width:1280px}
 }
 
 @media(prefers-reduced-motion:reduce){
