@@ -23,7 +23,7 @@ export default function PricingSection({ precioTexto, precioViejo }: Props) {
   }, []);
 
   return (
-    <section className="ea-section" id="precio" style={{ background: '#0B0C0E' }}>
+    <section className="ea-section" id="precio" style={{ background: '#0E1015' }}>
       <div className="ea-wrap">
         <div className="ea-price-card" id="ea-price-card">
           <span className="ea-price-label">Plan Pro</span>

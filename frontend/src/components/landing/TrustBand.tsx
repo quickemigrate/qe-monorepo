@@ -9,7 +9,7 @@ const ITEMS = [
 
 export default function TrustBand() {
   return (
-    <section className="relative border-y border-white/[0.06] py-8 md:py-10" style={{ background: '#0C0B0A' }}>
+    <section className="relative border-y border-white/[0.06] py-8 md:py-10" style={{ background: '#13110E' }}>
       <div className="max-w-7xl mx-auto px-5 md:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-6">
           {ITEMS.map(({ icon: Icon, title, sub }) => (

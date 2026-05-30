@@ -26,7 +26,7 @@ export default function HowItWorksSection({ precioTexto }: Props) {
   }, []);
 
   return (
-    <section className="ea-section" id="como" style={{ background: '#0C0B0A' }}>
+    <section className="ea-section" id="como" style={{ background: '#13110E' }}>
       <div className="ea-wrap">
         <div className="ea-sec-head">
           <h2><span style={{ color: 'var(--green)' }}>Tres pasos.</span> Menos de 10 minutos.</h2>
