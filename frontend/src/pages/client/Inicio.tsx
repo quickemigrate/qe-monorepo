@@ -250,7 +250,7 @@ export default function Inicio() {
       </h2>
       <div className="grid grid-cols-2 gap-3">
         <QuickCard icon={User} title="Mi Perfil" description="Gestiona tu cuenta y datos personales" to="/cliente/perfil" />
-        {isPro && <QuickCard icon={MessageCircle} title="Asistente IA" description="Resuelve tus dudas sobre el proceso" to="/cliente/chat" accent />}
+        {isPro && <QuickCard icon={MessageCircle} title="Milo" description="Resuelve tus dudas sobre el proceso" to="/cliente/chat" accent />}
         {isPro && <QuickCard icon={FolderOpen} title="Mis Documentos" description="Sube y gestiona tu documentación" to="/cliente/documentos" />}
         {isPremium && <QuickCard icon={FileText} title="Mi Expediente" description="Sigue el estado de tu proceso migratorio" to="/cliente/expediente" />}
         {!loading && !isPro && (
@@ -261,7 +261,7 @@ export default function Inicio() {
           >
             <div className="text-[14px] font-semibold">Desbloquea más funciones</div>
             <div className="text-[13px] leading-[1.5]">
-              Con el plan Pro obtienes el Asistente IA y gestión de documentos.
+              Con el plan Pro obtienes a Milo y gestión de documentos.
             </div>
             <div className="text-[12px] font-semibold text-[#25D366] flex items-center gap-1 mt-auto">
               Ver planes <ArrowRight size={13} />
@@ -302,7 +302,7 @@ export default function Inicio() {
             return (
               <UpgradeBanner
                 icon={Zap}
-                title="Pro 39€/mes desbloquea Mia"
+                title="Pro 39€/mes desbloquea a Milo"
                 body="Chat ilimitado con la IA especializada en inmigración + gestión de documentos."
                 ctaLabel="Ver Pro"
                 to="/cliente/plan"
@@ -333,7 +333,7 @@ export default function Inicio() {
         {!loading && isPro && mensajesLimit > 0 && (
           <div className="qe-card rounded-2xl p-5 mb-6 flex items-center gap-4">
             <div className="flex-1">
-              <div className="text-[13px] text-white/50 mb-1.5">Mensajes del Asistente IA este mes</div>
+              <div className="text-[13px] text-white/50 mb-1.5">Mensajes con Milo este mes</div>
               <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-[#25D366] transition-all"

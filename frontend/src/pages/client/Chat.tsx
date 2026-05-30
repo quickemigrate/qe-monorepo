@@ -303,7 +303,7 @@ export default function Chat() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center">
-              <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
+              <img src="/milo-avatar.png" alt="Milo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-[17px] font-semibold text-white leading-tight">
@@ -402,7 +402,7 @@ export default function Chat() {
           {mensajes.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-5 py-12">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/10">
-                <img src="/mia-avatar.png" alt="Mia" className="w-full h-full object-cover" />
+                <img src="/milo-avatar.png" alt="Milo" className="w-full h-full object-cover" />
               </div>
               <p className="text-[14px] text-white/40 max-w-[300px]">
                 Hola, soy tu asistente de inmigración. Pregúntame cualquier cosa sobre tu proceso de emigración a España.

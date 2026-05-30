@@ -587,8 +587,8 @@ export default function Perfil() {
 
         {/* Personalización IA */}
         <div className="qe-card rounded-2xl p-5 md:p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-1">Asistente IA</h2>
-          <p className="text-[13px] text-white/40 mb-6">Ajusta cómo responde Mia a tus preguntas</p>
+          <h2 className="text-[15px] font-semibold text-white mb-1">Milo</h2>
+          <p className="text-[13px] text-white/40 mb-6">Ajusta cómo responde Milo a tus preguntas</p>
 
           {/* Tono */}
           <div className="mb-5">
@@ -671,7 +671,7 @@ export default function Perfil() {
           <div className="w-full max-w-[460px] rounded-2xl border border-red-500/30 bg-[#111111] p-6">
             <h3 className="text-[17px] font-semibold text-white mb-1">Eliminar cuenta permanentemente</h3>
             <p className="text-[13px] text-white/55 mb-4 leading-[1.55]">
-              Se borrarán: perfil, chat con Mia, documentos subidos y diagnósticos.
+              Se borrarán: perfil, chat con Milo, documentos subidos y diagnósticos.
               Esta acción es irreversible.
             </p>
 

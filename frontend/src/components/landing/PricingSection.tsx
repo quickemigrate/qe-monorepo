@@ -35,7 +35,7 @@ export default function PricingSection({ precioTexto, precioViejo }: Props) {
             <li><span className="ea-check">✓</span>Informe PDF personalizado</li>
             <li><span className="ea-check">✓</span>Vía migratoria recomendada</li>
             <li><span className="ea-check">✓</span>Checklist de documentos</li>
-            <li><span className="ea-check">✓</span>Asistente IA (50 mensajes/mes)</li>
+            <li><span className="ea-check">✓</span>Milo, tu asistente (50 mensajes/mes)</li>
             <li><span className="ea-check">✓</span>Gestión de documentos</li>
             <li><span className="ea-check">✓</span>Acceso al área de cliente</li>
           </ul>

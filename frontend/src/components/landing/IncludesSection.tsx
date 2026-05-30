@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapPin, ClipboardCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { animate, stagger } from 'animejs';
 
@@ -30,23 +31,23 @@ export default function IncludesSection({ precioTexto }: Props) {
       <div className="ea-wrap">
         <div className="ea-sec-head">
           <h2>Todo lo que necesitas saber <span style={{ color: 'var(--green)' }}>antes de salir.</span></h2>
-          <p>Sin información genérica. Solo lo que aplica a ti.</p>
+          <p>Nada genérico. Solo lo que aplica a tu caso.</p>
         </div>
         <div className="ea-cards" id="ea-cards">
           <article className="ea-card">
-            <div className="ea-icon" aria-hidden="true">→</div>
-            <h3>Vía migratoria exacta</h3>
-            <p>El visado exacto para tu perfil. No una lista de 10 opciones, una recomendación concreta basada en tu situación.</p>
+            <div className="ea-icon" aria-hidden="true"><MapPin size={20} strokeWidth={2} /></div>
+            <h3>Tu visado exacto</h3>
+            <p>Te decimos qué visado pedir, sin lista de 10 opciones. Una recomendación concreta para tu situación.</p>
           </article>
           <article className="ea-card">
-            <div className="ea-icon" aria-hidden="true">✓</div>
-            <h3>Checklist de documentos</h3>
-            <p>Qué documentos necesitas, en qué orden conseguirlos y cuánto tiempo lleva cada uno. Sin sorpresas de última hora.</p>
+            <div className="ea-icon" aria-hidden="true"><ClipboardCheck size={20} strokeWidth={2} /></div>
+            <h3>Tus papeles, en orden</h3>
+            <p>Qué documentos juntar, en qué orden y cuánto tarda cada uno. Sin sorpresas a última hora.</p>
           </article>
           <article className="ea-card">
-            <div className="ea-icon" aria-hidden="true">%</div>
-            <h3>Probabilidad de éxito</h3>
-            <p>Un porcentaje real basado en tu perfil. Con los factores que suman y los que restan, para que puedas mejorarlos.</p>
+            <div className="ea-icon" aria-hidden="true"><Sparkles size={20} strokeWidth={2} /></div>
+            <h3>Tus opciones reales</h3>
+            <p>Un porcentaje honesto basado en tu caso. Te decimos qué suma, qué resta y qué puedes mejorar.</p>
           </article>
         </div>
         <div className="ea-sec-cta">

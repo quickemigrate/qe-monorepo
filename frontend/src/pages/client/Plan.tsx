@@ -274,7 +274,7 @@ export default function Plan() {
               <Fila caracteristica="Diagnóstico IA" starter={<Si />} pro={<Si />} premium={<Si />} actual={plan} />
               <Fila caracteristica="PDF personalizado" starter={<Si />} pro={<Si />} premium={<Si />} actual={plan} />
               <Fila
-                caracteristica="Asistente IA (resetea día 1 cada mes)"
+                caracteristica="Milo, tu asistente (resetea día 1 cada mes)"
                 starter={<No />}
                 pro={<span className="text-emerald-400 font-semibold">50 msgs/mes</span>}
                 premium={<span className="text-emerald-400 font-semibold">200 msgs/mes</span>}

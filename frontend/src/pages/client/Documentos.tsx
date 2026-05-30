@@ -288,7 +288,7 @@ export default function Documentos() {
               <div>
                 <h3 className="text-[16px] font-semibold text-white mb-1.5">Sube tu primer documento</h3>
                 <p className="text-[13px] text-white/50 max-w-[320px] mx-auto leading-[1.5]">
-                  Pasaporte, contratos, antecedentes… Mia los usará para darte respuestas concretas a tu caso.
+                  Pasaporte, contratos, antecedentes… Milo los usará para darte respuestas concretas a tu caso.
                 </p>
               </div>
               <button

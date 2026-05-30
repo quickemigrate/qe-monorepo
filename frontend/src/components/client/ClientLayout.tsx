@@ -86,7 +86,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const navItems = [
     { icon: Home,          label: 'Inicio',         path: '/cliente/inicio',     show: true },
-    { icon: MessageCircle, label: 'Asistente IA',   path: '/cliente/chat',       show: isPro },
+    { icon: MessageCircle, label: 'Milo',           path: '/cliente/chat',       show: isPro },
     { icon: FolderOpen,    label: 'Mis Documentos', path: '/cliente/documentos', show: isPro },
     { icon: FileText,      label: 'Mi Expediente',  path: '/cliente/expediente', show: isPremium },
     { icon: CreditCard,    label: 'Mi Plan',        path: '/cliente/plan',       show: true },

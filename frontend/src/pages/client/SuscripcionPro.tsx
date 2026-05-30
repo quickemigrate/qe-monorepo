@@ -6,7 +6,7 @@ import { useClientePlan } from '../../hooks/useClientePlan';
 import { usePlanes } from '../../hooks/usePlanes';
 
 const PRO_FEATURES = [
-  { icon: MessageCircle, text: 'Asistente IA Mia (50 mensajes/mes)' },
+  { icon: MessageCircle, text: 'Milo, tu asistente (50 mensajes/mes)' },
   { icon: FolderOpen,    text: 'Sube hasta 5 documentos a tu expediente' },
   { icon: FileText,      text: 'Diagnóstico IA incluido' },
   { icon: Sparkles,      text: 'IA responde sobre tus documentos personales' },

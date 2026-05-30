@@ -25,7 +25,7 @@ export default function CommandPalette({ open, onClose }: Props) {
 
   const cmds: Cmd[] = [
     { id: 'inicio',      label: 'Inicio',         sub: 'Panel principal',          icon: <Home size={16} />,          action: () => navigate('/cliente/inicio') },
-    { id: 'chat',        label: 'Asistente IA',   sub: 'Habla con Mia',            icon: <MessageCircle size={16} />, action: () => navigate('/cliente/chat') },
+    { id: 'chat',        label: 'Milo',           sub: 'Tu asistente migratorio',  icon: <MessageCircle size={16} />, action: () => navigate('/cliente/chat') },
     { id: 'documentos',  label: 'Mis Documentos', sub: 'Archivos y expediente',    icon: <FolderOpen size={16} />,    action: () => navigate('/cliente/documentos') },
     { id: 'expediente',  label: 'Mi Expediente',  sub: 'Estado de tu proceso',     icon: <FileText size={16} />,      action: () => navigate('/cliente/expediente') },
     { id: 'perfil',      label: 'Mi Perfil',      sub: 'Ajustes y personalización',icon: <Settings size={16} />,      action: () => navigate('/cliente/perfil') },

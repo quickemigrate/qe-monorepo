@@ -36,19 +36,19 @@ export default function HowItWorksSection({ precioTexto }: Props) {
             <span className="ea-dot"></span>
             <div className="ea-num">Paso 1</div>
             <h3>Cuéntanos tu situación</h3>
-            <p>Completas un perfil rápido: país de origen, objetivo, situación económica y plazo.</p>
+            <p>Nos hablas de ti: país, objetivo, plazo y situación. Rápido, sin formularios eternos.</p>
           </li>
           <li className="ea-step">
             <span className="ea-dot"></span>
             <div className="ea-num">Paso 2</div>
-            <h3>Nuestros agentes analizan tu caso</h3>
-            <p>Cruzamos tu perfil con la normativa vigente de extranjería española actualizada a 2026.</p>
+            <h3>Estudiamos tu caso</h3>
+            <p>Lo comparamos con la ley española de extranjería actualizada a 2026. Mismo cuidado que con un caso real.</p>
           </li>
           <li className="ea-step">
             <span className="ea-dot"></span>
             <div className="ea-num">Paso 3</div>
-            <h3>Recibes tu diagnóstico y accedes al área de cliente</h3>
-            <p>Informe PDF personalizado, asistente IA para resolver dudas y gestión de tus documentos del proceso.</p>
+            <h3>Recibes tu informe</h3>
+            <p>Tu PDF personalizado, Milo resolviendo dudas y un sitio donde guardar tus papeles.</p>
           </li>
         </ol>
         <div className="ea-sec-cta">
