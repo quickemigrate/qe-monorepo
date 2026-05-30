@@ -48,7 +48,10 @@ const Navbar = () => {
           : 'bg-transparent py-[18px]'
       }`}
     >
-      <div className="w-full px-4 md:px-8 flex md:grid md:grid-cols-3 items-center justify-between">
+      <div
+        className="w-full flex md:grid md:grid-cols-3 items-center justify-between"
+        style={{ paddingLeft: 'clamp(16px, 3.5vw, 48px)', paddingRight: 'clamp(16px, 3.5vw, 48px)' }}
+      >
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-[9px] min-w-0">

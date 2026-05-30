@@ -34,7 +34,16 @@ function HeroGeometric({
 }: HeroGeometricProps) {
   const badgeText = badge ?? `Early Access · Plan Pro · Solo ${precioTexto}`
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#0A0A0A] px-5 md:px-6 pt-24 pb-16 md:py-0 flex items-center">
+    <div
+      className="relative w-full overflow-hidden bg-[#0A0A0A] flex items-center"
+      style={{
+        minHeight: 'min(100dvh, 920px)',
+        paddingLeft: 'clamp(20px, 3.5vw, 48px)',
+        paddingRight: 'clamp(20px, 3.5vw, 48px)',
+        paddingTop: 'clamp(96px, 12vh, 140px)',
+        paddingBottom: 'clamp(56px, 8vh, 96px)',
+      }}
+    >
       <div
         className="absolute inset-0"
         style={{
@@ -52,7 +61,13 @@ function HeroGeometric({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
+      <div
+        className="relative z-10 w-full mx-auto grid grid-cols-1 md:grid-cols-2 items-center"
+        style={{
+          maxWidth: 'min(1280px, 92vw)',
+          gap: 'clamp(32px, 5vw, 64px)',
+        }}
+      >
         <div className="flex flex-col items-start gap-5 md:gap-6 text-left">
           <motion.div
             custom={0}
@@ -72,7 +87,8 @@ function HeroGeometric({
             variants={fadeUpVariants}
             initial="hidden"
             animate="visible"
-            className="text-4xl sm:text-6xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]"
+            className="font-bold tracking-tight leading-[1.05]"
+            style={{ fontSize: 'clamp(34px, 6.2vw, 80px)' }}
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
               {title1}
@@ -93,7 +109,8 @@ function HeroGeometric({
             variants={fadeUpVariants}
             initial="hidden"
             animate="visible"
-            className="text-[15px] sm:text-lg md:text-xl text-white/70 leading-relaxed font-light tracking-wide max-w-lg"
+            className="text-white/70 leading-relaxed font-light tracking-wide"
+            style={{ fontSize: 'clamp(15px, 1.4vw, 20px)', maxWidth: 'min(560px, 100%)' }}
           >
             {description}
           </motion.p>
@@ -122,7 +139,10 @@ function HeroGeometric({
           className="relative order-first md:order-last"
         >
           <div className="absolute inset-0 -m-8 md:-m-12 rounded-full bg-[#25D366]/8 blur-3xl" />
-          <GlobePulse className="relative w-full max-w-[520px] mx-auto" />
+          <GlobePulse
+            className="relative w-full mx-auto"
+            style={{ maxWidth: 'min(620px, 80vw)' }}
+          />
         </motion.div>
       </div>
     </div>

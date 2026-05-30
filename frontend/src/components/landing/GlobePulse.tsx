@@ -14,6 +14,7 @@ interface GlobePulseProps {
   markers?: PulseMarker[];
   className?: string;
   speed?: number;
+  style?: React.CSSProperties;
 }
 
 const defaultMarkers: PulseMarker[] = [
@@ -30,6 +31,7 @@ export function GlobePulse({
   markers = defaultMarkers,
   className = '',
   speed = 0.003,
+  style,
 }: GlobePulseProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
@@ -136,7 +138,7 @@ export function GlobePulse({
   }, [markers, speed]);
 
   return (
-    <div className={`relative aspect-square select-none ${className}`}>
+    <div className={`relative aspect-square select-none ${className}`} style={style}>
       <style>{`
         @keyframes pulse-expand {
           0% { transform: scaleX(0.3) scaleY(0.3); opacity: 0.8; }
