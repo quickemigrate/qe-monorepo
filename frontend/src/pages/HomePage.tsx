@@ -2,6 +2,7 @@ import { usePlanes } from '../hooks/usePlanes';
 import { HeroGeometric } from '../components/ui/shape-landing-hero';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import TrustBand from '../components/landing/TrustBand';
 import IncludesSection from '../components/landing/IncludesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import PricingSection from '../components/landing/PricingSection';
@@ -18,6 +19,7 @@ export default function HomePage() {
     <div className="ea-root">
       <Navbar />
       <HeroGeometric precioTexto={precioTexto} />
+      <TrustBand />
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />
       <PricingSection precioTexto={precioTexto} precioViejo={precioViejo} />
