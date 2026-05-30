@@ -6,6 +6,7 @@ import TrustBand from '../components/landing/TrustBand';
 import IncludesSection from '../components/landing/IncludesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import PricingSection from '../components/landing/PricingSection';
+import FaqSection from '../components/landing/FaqSection';
 import '../styles/early-access.css';
 import '../styles/landing-sections.css';
 
@@ -23,6 +24,7 @@ export default function HomePage() {
       <IncludesSection precioTexto={precioTexto} />
       <HowItWorksSection precioTexto={precioTexto} />
       <PricingSection precioTexto={precioTexto} precioViejo={precioViejo} />
+      <FaqSection />
       <Footer />
     </div>
   );
